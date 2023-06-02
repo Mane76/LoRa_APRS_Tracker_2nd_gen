@@ -16,22 +16,19 @@
 #include "pins.h"
 #include "power_management.h"
 
-#define VERSION "2023.05.31"
+#define VERSION "2023.06.01"
 
 logging::Logger logger;
 
 String configurationFilePath = "/tracker_config.json";
 Configuration   Config(configurationFilePath);
-
-static int myBeaconsIndex = 0;
-int        myBeaconsSize  = Config.beacons.size();
-Beacon     *currentBeacon = &Config.beacons[myBeaconsIndex];
-
+static int      myBeaconsIndex = 0;
+int             myBeaconsSize  = Config.beacons.size();
+Beacon          *currentBeacon = &Config.beacons[myBeaconsIndex];
 PowerManagement powerManagement;
 OneButton       userButton = OneButton(BUTTON_PIN, true, true);
-
-HardwareSerial neo6m_gps(1);
-TinyGPSPlus    gps;
+HardwareSerial  neo6m_gps(1);
+TinyGPSPlus     gps;
 
 void validateConfigFile();
 void setup_lora();
@@ -43,21 +40,24 @@ String createTimeString(time_t t);
 String getSmartBeaconState();
 String padding(unsigned int number, unsigned int width);
 
-static int menuDisplay              = 0;
-static bool send_update             = true;
-static String lastHeardTracker      = "NONE";
-static int numAPRSMessages          = 0;
-static int messagesIterator         = 0;
-static String lastMessageAPRS       = "";
-static bool noMessageWarning        = false;
-static bool statusAfterBootState    = true;
+static int      menuDisplay           = 0;
+static bool     displayEcoMode        = Config.displayEcoMode;
+static bool     displayState          = true;
+static uint32_t displayTime           = millis();
+static bool     send_update           = true;
+static String   lastHeardTracker      = "NONE";
+static int      numAPRSMessages       = 0;
+static int      messagesIterator      = 0;
+static String   lastMessageAPRS       = "";
+static bool     noMessageWarning      = false;
+static bool     statusAfterBootState  = true;
+
+String          firstNearTracker      = "";
+String          secondNearTracker     = "";
+String          thirdNearTracker      = "";
+String          fourthNearTracker     = "";
 
 std::vector<String> loadedAPRSMessages;
-
-String firstNearTracker   = "";
-String secondNearTracker  = "";
-String thirdNearTracker   = "";
-String fourthNearTracker  = "";
 
 static uint32_t lastDeleteListenedTracker = millis();
 
@@ -172,7 +172,12 @@ void sendMessage(String station, String textMessage) {
 
 static void ButtonSinglePress() {
   if (menuDisplay == 0) {
-    send_update = true;
+    if (!displayState) {
+      display_toggle(true);
+      displayTime = millis();
+    } else {
+      send_update = true;
+    }
   } else if (menuDisplay == 1) {
     loadMessagesFromMemory();
     if (noMessageWarning) {
@@ -193,6 +198,8 @@ static void ButtonSinglePress() {
     }
   } else if (menuDisplay == 20) {
     menuDisplay = 2;
+  } else if (menuDisplay == 3) {
+    show_display("__INFO____", "", "NOTHING YET ...", 1000);
   }
 }
 
@@ -204,6 +211,8 @@ static void ButtonLongPress() {
       myBeaconsIndex++;
     }
     statusAfterBootState  = true;
+    display_toggle(true);
+    displayTime = millis();
     show_display("__INFO____", "", "CHANGING CALLSIGN ...", 1000);
   } else if (menuDisplay == 1) {
     deleteFile();
@@ -211,20 +220,30 @@ static void ButtonLongPress() {
     loadNumMessages();
   } else if (menuDisplay == 2) {
     menuDisplay = 20;
+  } else if (menuDisplay == 3) {
+    if (!displayEcoMode) {
+      displayEcoMode = true;
+      show_display("__DISPLAY_", "", "   ECO MODE -> ON", 1000);
+    } else {
+      displayEcoMode = false;
+      show_display("__DISPLAY_", "", "   ECO MODE -> OFF", 1000);
+    }
   }
 }
 
 static void ButtonDoublePress() {
+  display_toggle(true);
   if (menuDisplay == 0) {
     menuDisplay = 1;
   } else if (menuDisplay == 1) {
     menuDisplay = 2;
     messagesIterator = 0;
   } else if (menuDisplay == 2) {
+    menuDisplay = 3;
+  } else if (menuDisplay == 3 || menuDisplay == 20) {
     menuDisplay = 0;
-  } else if (menuDisplay == 20) {
-    menuDisplay = 0;
-  }
+    displayTime = millis();
+  } 
 }
 
 void startingStatus() {
@@ -724,11 +743,19 @@ void setup() {
 
 // cppcheck-suppress unusedFunction
 void loop() {
+  uint32_t lastDisplayTime = millis() - displayTime;
+  if (displayEcoMode) {
+    if (menuDisplay == 0 && lastDisplayTime >= Config.displayTimeout*1000) {
+      display_toggle(false);
+      displayState = false;
+    }
+  }
+
   currentBeacon = &Config.beacons[myBeaconsIndex];
 
   userButton.tick();
 
-    while (neo6m_gps.available() > 0) {
+  while (neo6m_gps.available() > 0) {
     gps.encode(neo6m_gps.read());
   }
 
@@ -767,10 +794,11 @@ void loop() {
 
   static double   lastTxLat             = 0.0;
   static double   lastTxLng             = 0.0;
-  static double   lastTxdistance        = 0.0;
+  static double   lastTxDistance        = 0.0;
   static uint32_t txInterval            = 60000L;
   static uint32_t lastTxTime            = millis();
   static bool		  sendStandingUpdate 		= false;
+  int 			      currentSpeed 			    = (int)gps.speed.kmph();
 
   static bool   BatteryIsConnected   = false;
   static String batteryVoltage       = "";
@@ -794,18 +822,24 @@ void loop() {
   if (!send_update && gps_loc_update && currentBeacon->smartBeaconState) {
     uint32_t lastTx = millis() - lastTxTime;
     currentHeading  = gps.course.deg();
-    lastTxdistance  = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastTxLat, lastTxLng);
+    lastTxDistance  = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastTxLat, lastTxLng);
     if (lastTx >= txInterval) {
-      if (lastTxdistance > currentBeacon->minTxDist) {
+      if (lastTxDistance > currentBeacon->minTxDist) {
         send_update = true;
         sendStandingUpdate = false;
       }
     }
 
     if (!send_update) {
+      int TurnMinAngle;
       double headingDelta = abs(previousHeading - currentHeading);
       if (lastTx > currentBeacon->minDeltaBeacon * 1000) {
-        if (headingDelta > currentBeacon->turnMinDeg && lastTxdistance > currentBeacon->minTxDist) {
+        if (currentSpeed == 0) {
+					TurnMinAngle = currentBeacon->turnMinDeg + (currentBeacon->turnSlope/(currentSpeed+1));
+				} else {
+          TurnMinAngle = currentBeacon->turnMinDeg + (currentBeacon->turnSlope/currentSpeed);
+				}
+				if (headingDelta > TurnMinAngle && lastTxDistance > currentBeacon->minTxDist) {
           send_update = true;
           sendStandingUpdate = false;
         }
@@ -817,7 +851,6 @@ void loop() {
 		}
   }
 
-  // para cuando se tiene smartbeacon apagado
   if (!currentBeacon->smartBeaconState) {
     uint32_t lastTx = millis() - lastTxTime;
     if (lastTx >= Config.nonSmartBeaconRate*60*1000) {
@@ -868,36 +901,36 @@ void loop() {
     
     infoField += currentBeacon->symbol;
 
-    if (Config.sendAltitude) {					// Send Altitude or... (APRS calculates Speed also)
-			int Alt1, Alt2;
-			int Talt;
-			Talt = gps.altitude.feet();
-			if(Talt>0){
-				double ALT=log(Talt)/log(1.002);
-				Alt1= int(ALT/91);
-				Alt2=(int)ALT%91;
-			}else{
-				Alt1=0;
-				Alt2=0;
-			}
-			if (sendStandingUpdate) {
-				infoField += " ";
-			} else {
-				infoField +=char(Alt1+33);
-			}
-			infoField +=char(Alt2+33);
-			infoField +=char(0x30+33);
-		} else {							// ... just send Course and Speed
-			ax25_base91enc(helper_base91, 1, (uint32_t) Tcourse/4 );
-			if (sendStandingUpdate) {
-				infoField += " ";
-			} else {
-				infoField += helper_base91[0];
-			}
-			ax25_base91enc(helper_base91, 1, (uint32_t) (log1p(Tspeed)/0.07696));
-			infoField += helper_base91[0];
-			infoField += "\x47";	
-		}
+    if (Config.sendAltitude) {      // Send Altitude or... (APRS calculates Speed also)
+      int Alt1, Alt2;
+      int Talt;
+      Talt = gps.altitude.feet();
+      if(Talt>0){
+        double ALT=log(Talt)/log(1.002);
+        Alt1= int(ALT/91);
+        Alt2=(int)ALT%91;
+      }else{
+        Alt1=0;
+        Alt2=0;
+      }
+      if (sendStandingUpdate) {
+        infoField += " ";
+      } else {
+        infoField +=char(Alt1+33);
+      }
+      infoField +=char(Alt2+33);
+      infoField +=char(0x30+33);
+    } else {                      // ... just send Course and Speed
+      ax25_base91enc(helper_base91, 1, (uint32_t) Tcourse/4 );
+      if (sendStandingUpdate) {
+        infoField += " ";
+      } else {
+        infoField += helper_base91[0];
+      }
+      ax25_base91enc(helper_base91, 1, (uint32_t) (log1p(Tspeed)/0.07696));
+      infoField += helper_base91[0];
+      infoField += "\x47";
+    }
 
     if (currentBeacon->comment != "") {
       infoField += currentBeacon->comment;
@@ -914,8 +947,7 @@ void loop() {
       lastTxLat       = gps.location.lat();
       lastTxLng       = gps.location.lng();
       previousHeading = currentHeading;
-      lastTxdistance  = 0.0;
-      //lastTxTime      = millis();
+      lastTxDistance  = 0.0;
     }
     lastTxTime = millis();
     send_update = false;
@@ -931,7 +963,10 @@ void loop() {
         show_display("__MENU_1__", "", "1P -> Read Msg (" + String(numAPRSMessages) + ")", "LP -> Delete Msg", "2P -> Menu 2");
         break;
       case 2:
-        show_display("__MENU_2__", "", "1P -> Weather Report", "LP -> Listen Trackers", "2P -> (Back) Tracking");
+        show_display("__MENU_2__", "", "1P -> Weather Report", "LP -> Listen Trackers", "2P -> Menu 3");
+        break;
+      case 3:
+        show_display("__MENU_3__", "", "1P -> Nothing Yet", "LP -> Display EcoMode", "2P -> (Back) Tracking");
         break;
 
       case 10:            // Display Received/Saved APRS Messages
@@ -1019,13 +1054,12 @@ void loop() {
     
 
     if (currentBeacon->smartBeaconState) {
-      int curr_speed = (int)gps.speed.kmph();
-      if (curr_speed < currentBeacon->slowSpeed) {
+      if (currentSpeed < currentBeacon->slowSpeed) {
         txInterval = currentBeacon->slowRate * 1000;
-      } else if (curr_speed > currentBeacon->fastSpeed) {
+      } else if (currentSpeed > currentBeacon->fastSpeed) {
         txInterval = currentBeacon->fastRate * 1000;
       } else {
-        txInterval = min(currentBeacon->slowRate, currentBeacon->fastSpeed * currentBeacon->fastRate / curr_speed) * 1000;
+        txInterval = min(currentBeacon->slowRate, currentBeacon->fastSpeed * currentBeacon->fastRate / currentSpeed) * 1000;
       }
     }
   }
@@ -1042,7 +1076,7 @@ void loop() {
 void validateConfigFile() {
   if (currentBeacon->callsign == "NOCALL-7") {
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "Config", "Change your settings in 'data/tracker_config.json' and upload it via 'Upload File System image'");
-    show_display("ERROR", "Change your settings", "in 'data' folder", "'tracker_config.json'", "upload it via", "'Upload File System image'");
+    show_display("ERROR", "Change your settings", "'tracker_config.json'", "upload it via --> ", "'Upload File System image'");
     while (true) {}
   }
 }
