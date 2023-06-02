@@ -1,56 +1,56 @@
 {
 	"beacons": [
 		{
-			"callsign": "NOCALL-7",
+			"callsign": "DC2MH-4",
+			"symbol": "b",
+			"comment": "",
+			"smart_beacon": {
+				"active": true,
+				"slowRate": 300,
+				"slowSpeed": 5,
+				"fastRate": 60,
+				"fastSpeed": 20,
+				"minTxDist": 100,
+				"minDeltaBeacon": 20,
+				"turnMinDeg": 20,
+				"turnSlope": 60
+			}
+		},
+		{
+			"callsign": "DC2MH-7",
 			"symbol": "[",
-			"comment": "https://github.com/richonguzman/LoRa_APRS_Tracker",
+			"comment": "",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 3,
 				"fastRate": 60,
-				"fastSpeed": 15,
-				"minTxDist": 50,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 12,
-				"turnSlope": 60
-			}
-		},
-		{
-			"callsign": "NOCALL-8",
-			"symbol": "b",
-			"comment": "https://github.com/richonguzman/LoRa_APRS_Tracker",
-			"smart_beacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 5,
-				"fastRate": 60,
-				"fastSpeed": 40,
+				"fastSpeed": 10,
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
-				"turnMinDeg": 12,
+				"turnMinDeg": 20,
 				"turnSlope": 60
 			}
 		},
 		{
-			"callsign": "NOCALL-9",
+			"callsign": "DC2MH-9",
 			"symbol": ">",
-			"comment": "https://github.com/richonguzman/LoRa_APRS_Tracker",
+			"comment": "",
 			"smart_beacon": {
 				"active": true,
-				"slowRate": 120,
+				"slowRate": 300,
 				"slowSpeed": 10,
 				"fastRate": 60,
 				"fastSpeed": 70,
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
-				"turnMinDeg": 10,
+				"turnMinDeg": 20,
 				"turnSlope": 80
 			}
 		}
 	],
 	"lora": {
-		"frequency": 433775000,
+		"frequency": 433776000,
 		"spreadingFactor": 12,
 		"signalBandwidth": 125000,
 		"codingRate4": 5,
@@ -58,14 +58,14 @@
 	},
 	"other": {
 		"destination": "APLR01",
-		"path": "WIDE1-1",
+		"path": "",
 		"overlay": "/",
 		"nonSmartBeaconRate": 15,
-		"listeningTrackerTime": 30,
+		"listeningTrackerTime": 300,
 		"maxDistanceToTracker": 30, 
-		"defaultStatusAfterBoot" : true,
+		"defaultStatusAfterBoot" : false,
 		"defaultStatus": "https://github.com/richonguzman/LoRa_APRS_Tracker",
-		"ecoMode": false,
+		"ecoMode": true,
 		"standingUpdateTime": 15,
 		"sendAltitude": true
 	}
