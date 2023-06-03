@@ -6,14 +6,14 @@
 			"comment": "",
 			"smart_beacon": {
 				"active": true,
-				"slowRate": 300,
+				"slowRate": 120,
 				"slowSpeed": 5,
 				"fastRate": 60,
 				"fastSpeed": 20,
 				"minTxDist": 100,
 				"minDeltaBeacon": 20,
 				"turnMinDeg": 20,
-				"turnSlope": 60
+				"turnSlope": 50
 			}
 		},
 		{
@@ -29,7 +29,7 @@
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
 				"turnMinDeg": 20,
-				"turnSlope": 60
+				"turnSlope": 30
 			}
 		},
 		{
@@ -38,7 +38,7 @@
 			"comment": "",
 			"smart_beacon": {
 				"active": true,
-				"slowRate": 300,
+				"slowRate": 120,
 				"slowSpeed": 10,
 				"fastRate": 60,
 				"fastSpeed": 70,
@@ -64,7 +64,7 @@
 		"overlay": "/",
 		"nonSmartBeaconRate": 15,
 		"listeningTrackerTime": 300,
-		"maxDistanceToTracker": 30, 
+		"maxDistanceToTracker": 300, 
 		"defaultStatusAfterBoot" : false,
 		"defaultStatus": "https://github.com/richonguzman/LoRa_APRS_Tracker",
 		"ecoMode": true,
