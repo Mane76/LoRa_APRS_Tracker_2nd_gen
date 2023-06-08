@@ -27,9 +27,9 @@
 				"fastRate": 60,
 				"fastSpeed": 10,
 				"minTxDist": 100,
-				"minDeltaBeacon": 12,
+				"minDeltaBeacon": 20,
 				"turnMinDeg": 20,
-				"turnSlope": 30
+				"turnSlope": 5
 			}
 		},
 		{
@@ -43,7 +43,7 @@
 				"fastRate": 60,
 				"fastSpeed": 70,
 				"minTxDist": 100,
-				"minDeltaBeacon": 12,
+				"minDeltaBeacon": 20,
 				"turnMinDeg": 20,
 				"turnSlope": 80
 			}
@@ -58,7 +58,7 @@
 	},
 	"other": {
 		"displayEcoMode": true,
-		"displayTimeout": 10,
+		"displayTimeout": 30,
 		"destination": "APLR01",
 		"path": "",
 		"overlay": "/",
