@@ -1,25 +1,41 @@
 {
 	"beacons": [
 		{
+			"callsign": "NOCALL-4",
+			"symbol": "b",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
+			"smart_beacon": {
+				"active": true,
+				"slowRate": 120,
+				"slowSpeed": 5,
+				"fastRate": 60,
+				"fastSpeed": 20,
+				"minTxDist": 100,
+				"minDeltaBeacon": 20,
+				"turnMinDeg": 20,
+				"turnSlope": 50
+			}
+		},
+		{
 			"callsign": "NOCALL-7",
 			"symbol": "[",
-			"comment": "",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 3,
 				"fastRate": 60,
-				"fastSpeed": 15,
-				"minTxDist": 50,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 12,
-				"turnSlope": 60
+				"fastSpeed": 10,
+				"minTxDist": 100,
+				"minDeltaBeacon": 12,
+				"turnMinDeg": 20,
+				"turnSlope": 30
 			}
 		},
 		{
-			"callsign": "NOCALL-7",
+			"callsign": "NOCALL-9",
 			"symbol": ">",
-			"comment": "",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
@@ -28,24 +44,8 @@
 				"fastSpeed": 70,
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
-				"turnMinDeg": 10,
+				"turnMinDeg": 20,
 				"turnSlope": 80
-			}
-		},
-		{
-			"callsign": "NOCALL-7",
-			"symbol": "b",
-			"comment": "",
-			"smart_beacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 5,
-				"fastRate": 60,
-				"fastSpeed": 40,
-				"minTxDist": 100,
-				"minDeltaBeacon": 12,
-				"turnMinDeg": 12,
-				"turnSlope": 60
 			}
 		}		
 	],
@@ -58,14 +58,14 @@
 	},
 	"other": {
 		"showSymbolOnDisplay": true,
-		"sendCommentAfterXBeacons": 10,
+		"sendCommentAfterXBeacons": 20,
 		"displayEcoMode": false,
-		"displayTimeout": 4,
+		"displayTimeout": 30,
 		"overlay": "/",
-		"path": "WIDE1-1",
+		"path": "",
 		"nonSmartBeaconRate": 15,
-		"rememberStationTime": 30,
-		"maxDistanceToTracker": 30, 
+		"rememberStationTime": 300,
+		"maxDistanceToTracker": 300, 
 		"standingUpdateTime": 15,
 		"sendAltitude": true
 	}
