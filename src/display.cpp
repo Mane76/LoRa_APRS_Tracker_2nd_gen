@@ -1,11 +1,15 @@
 
-#include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Wire.h>
+#include <Adafruit_GFX.h>
 #include <logger.h>
-
+#include <Wire.h>
+#include "pins_config.h"
 #include "display.h"
-#include "pins.h"
+
+// T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
+// If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
+// Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
+//#define OLED_DISPLAY_HAS_RST_PIN
 
 extern logging::Logger logger;
 
@@ -14,10 +18,13 @@ Adafruit_SSD1306 display(128, 64, &Wire, OLED_RST);
 
 // cppcheck-suppress unusedFunction
 void setup_display() {
-  pinMode(OLED_RST, OUTPUT);
-  digitalWrite(OLED_RST, LOW);
-  delay(20);
-  digitalWrite(OLED_RST, HIGH);
+
+  #ifdef OLED_DISPLAY_HAS_RST_PIN // 
+    pinMode(OLED_RST, OUTPUT);
+    digitalWrite(OLED_RST, LOW);
+    delay(20);
+    digitalWrite(OLED_RST, HIGH);
+  #endif
 
   Wire.begin(OLED_SDA, OLED_SCL);
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) {
@@ -30,7 +37,6 @@ void setup_display() {
   display.setTextColor(WHITE);
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.print("LORA SENDER ");
   display.ssd1306_command(SSD1306_SETCONTRAST);
   display.ssd1306_command(1);
   display.display();

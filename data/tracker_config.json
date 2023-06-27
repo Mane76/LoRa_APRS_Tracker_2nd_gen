@@ -3,7 +3,7 @@
 		{
 			"callsign": "DC2MH-4",
 			"symbol": "b",
-			"comment": "",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
@@ -19,7 +19,7 @@
 		{
 			"callsign": "DC2MH-7",
 			"symbol": "[",
-			"comment": "",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
@@ -35,7 +35,7 @@
 		{
 			"callsign": "DC2MH-9",
 			"symbol": ">",
-			"comment": "",
+			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
 				"slowRate": 120,
@@ -57,17 +57,15 @@
 		"power": 20
 	},
 	"other": {
+		"showSymbolOnDisplay": true,
+		"sendCommentAfterXBeacons": 10,
 		"displayEcoMode": true,
 		"displayTimeout": 30,
-		"destination": "APLR01",
-		"path": "",
 		"overlay": "/",
+		"path": "",
 		"nonSmartBeaconRate": 15,
-		"listeningTrackerTime": 300,
+		"rememberStationTime": 300,
 		"maxDistanceToTracker": 300, 
-		"defaultStatusAfterBoot" : false,
-		"defaultStatus": "https://github.com/richonguzman/LoRa_APRS_Tracker",
-		"ecoMode": true,
 		"standingUpdateTime": 15,
 		"sendAltitude": true
 	}
