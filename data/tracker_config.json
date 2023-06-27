@@ -58,7 +58,7 @@
 	},
 	"other": {
 		"showSymbolOnDisplay": true,
-		"sendCommentAfterXBeacons": 10,
+		"sendCommentAfterXBeacons": 20,
 		"displayEcoMode": true,
 		"displayTimeout": 30,
 		"overlay": "/",
