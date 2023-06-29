@@ -1,6 +1,8 @@
 # Richonguzman / CD2RXU LoRa APRS Tracker/Station
 # (Firmware for Tx and Rx !!!)
 
+### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
+
 NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/R   x LoRa iGate (near you) like:
 
 https://github.com/richonguzman/LoRa_APRS_iGate
