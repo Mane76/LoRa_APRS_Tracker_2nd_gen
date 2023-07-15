@@ -2,6 +2,7 @@
 #include <esp_bt.h>
 #endif
 #include <Arduino.h>
+#include <NimBLEDevice.h>
 #include <OneButton.h>
 #include <TinyGPS++.h>
 #include <logger.h>
@@ -21,14 +22,15 @@
 #include "SPIFFS.h"
 #include "utils.h"
 
-#define VERSION "2023.07.01"
 
 Configuration                 Config;
 PowerManagement               powerManagement;
 HardwareSerial                neo6m_gps(1);
 TinyGPSPlus                   gps;
+NimBLECharacteristic*         pCharacteristic;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
+String    versionDate         = "2023.07.12";
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
 Beacon    *currentBeacon      = &Config.beacons[myBeaconsIndex];
@@ -69,10 +71,10 @@ void setup() {
   delay(500);
   
   setup_display();
-  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " VERSION, 4000);
+  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman -> CD2RXU --> LoRa APRS Tracker/Station");
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: " VERSION);
-  
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
+
   Config.validateConfigFile(currentBeacon->callsign);
 
   MSG_Utils::loadNumMessages();
