@@ -5,7 +5,7 @@
 
 NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/Rx LoRa iGate (near you) like:
 
-https://github.com/richonguzman/LoRa_APRS_iGate or the fork https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen
+https://github.com/richonguzman/LoRa_APRS_iGate or the fork https://github.com/Mane76/LoRa_APRS_iGate_2nd_gen
 
 ____________________________________________________
 - NOW WE HAVE A MENU (just pushing the central button IO38)
