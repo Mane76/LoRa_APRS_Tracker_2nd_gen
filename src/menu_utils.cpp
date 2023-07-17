@@ -53,10 +53,10 @@ void showOnScreen() {
             break;
 
         case 0:       ///////////// MAIN MENU //////////////
-            String hdopState, firstRowMainMenu, secondRowMainMenu, thirdRowMainMenu, fourthRowMainMenu, fifthRowMainMenu, sixthRowMainMenu;;
+            String hdopState, firstRowMainMenu, secondRowMainMenu, thirdRowMainMenu, fourthRowMainMenu, fifthRowMainMenu, sixthRowMainMenu;
 
             firstRowMainMenu = currentBeacon->callsign;
-            if (Config.showSymbolOnDisplay) {
+            if (Config.showSymbolCharacter && !Config.showCustomCharacter) {
                 for (int j=firstRowMainMenu.length();j<9;j++) {
                     firstRowMainMenu += " ";
                 }
@@ -142,6 +142,5 @@ void showOnScreen() {
             break;
     }
 }
-
 
 }
