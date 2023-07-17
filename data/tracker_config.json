@@ -57,12 +57,13 @@
 		"power": 20
 	},
 	"other": {
-		"showSymbolOnDisplay": true,
+		"showSymbolCharacter": true,
+		"showCustomCharacter": true,
 		"sendCommentAfterXBeacons": 20,
-		"displayEcoMode": false,
+		"displayEcoMode": true,
 		"displayTimeout": 30,
 		"overlay": "/",
-		"path": "",
+		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
 		"maxDistanceToTracker": 300, 

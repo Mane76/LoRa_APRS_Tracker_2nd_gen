@@ -6,6 +6,17 @@
 #include "pins_config.h"
 #include "display.h"
 
+#include "configuration.h"
+#include "custom_characters.h"
+#define SYM_HEIGHT 14
+#define SYM_WIDTH  16
+
+extern Configuration    Config;
+extern Beacon           *currentBeacon;
+extern int              menuDisplay;
+
+const uint8_t *symbolsAPRS[]={runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, noSymbol};
+
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
@@ -15,10 +26,9 @@ extern logging::Logger logger;
 
 Adafruit_SSD1306 display(128, 64, &Wire, OLED_RST);
 
-
 // cppcheck-suppress unusedFunction
 void setup_display() {
-
+  delay(500);
   #ifdef OLED_DISPLAY_HAS_RST_PIN // 
     pinMode(OLED_RST, OUTPUT);
     digitalWrite(OLED_RST, LOW);
@@ -160,6 +170,23 @@ void show_display(String header, String line1, String line2, String line3, Strin
   display.println(line5);
   display.ssd1306_command(SSD1306_SETCONTRAST);
   display.ssd1306_command(1);
+
+  if (menuDisplay==0 && Config.showSymbolCharacter && Config.showCustomCharacter) {
+    int symbol;
+    if(currentBeacon->symbol == "[") {
+      symbol = 0;
+    } else if(currentBeacon->symbol == ">") {
+      symbol = 1;
+    } else if(currentBeacon->symbol == "j") {
+      symbol = 2;
+    } else if(currentBeacon->symbol == "b") {
+      symbol = 3;
+    } else {
+      symbol = 4;
+    }
+    display.drawBitmap((display.width() - SYM_WIDTH), 0, symbolsAPRS[symbol], SYM_WIDTH, SYM_HEIGHT, 1);
+  }
+  
   display.display();
   delay(wait);
 }

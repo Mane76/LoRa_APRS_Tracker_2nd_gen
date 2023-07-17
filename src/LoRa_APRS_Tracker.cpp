@@ -22,6 +22,8 @@
 #include "SPIFFS.h"
 #include "utils.h"
 
+//#include "custom_characters.h"
+
 
 Configuration                 Config;
 PowerManagement               powerManagement;
@@ -30,12 +32,12 @@ TinyGPSPlus                   gps;
 NimBLECharacteristic*         pCharacteristic;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
-String    versionDate         = "2023.07.12";
+String    versionDate         = "2023.07.16";
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
 Beacon    *currentBeacon      = &Config.beacons[myBeaconsIndex];
 
-int       menuDisplay         = 0;
+int       menuDisplay         = 100;
 
 int       messagesIterator    = 0;
 std::vector<String>           loadedAPRSMessages;
@@ -67,8 +69,6 @@ void setup() {
   Serial.begin(115200);
 
   powerManagement.setup();
-
-  delay(500);
   
   setup_display();
   show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
@@ -94,6 +94,7 @@ void setup() {
   powerManagement.lowerCpuFrequency();
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
+  menuDisplay = 0;
 }
 
 void loop() {

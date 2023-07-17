@@ -3,9 +3,9 @@
 
 ### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
 
-NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/R   x LoRa iGate (near you) like:
+NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/Rx LoRa iGate (near you) like:
 
-https://github.com/richonguzman/LoRa_APRS_iGate
+https://github.com/richonguzman/LoRa_APRS_iGate or the fork https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen
 
 ____________________________________________________
 - NOW WE HAVE A MENU (just pushing the central button IO38)
@@ -20,7 +20,7 @@ ____________________________________________________
 ____________________________________________________
 
 # INSTRUCTIONS:
-- (1). Change _Callsign_, _Symbol_ and _Comment_ on /data/tracker_config.json
+- (1). Change _Callsign_, _Symbol_ and _Comment_ and adopt _frequency_ (to omit the offset of TTGOs) and _path_ (empty for byte-saving, WIDE1-1 for safe usage of Digipeater) to your needs on /data/tracker_config.json
 - (2). Upload this changes via Platformio --> Upload Filesystem Image (to your TTGO Board)
 - (3). Build and Upload the Firmware with Platformio in VSCODE
 
@@ -55,15 +55,18 @@ Timeline (Versions):
 - 2023.05.14 Adding Menu.
 - 2023.05.21 Adding Last-Heard LoRa Stations/Trackers
 - 2023.05.27 Adding Altitude + Speed or Course + Speed in the encoded GPS info.
-- 2023.05.29 New Config file for adding more new ideas to the Tracker.
+- 2023.05.29 New Config file for adding more new ideas to the Tracker. *)
 - 2023.06.01 Adding Turn Slope calculations for Smart Beacon and Display Eco Mode.
 - 2023.06.20 Major Code Repacking.
 - 2023.06.23 Return to from any Menu number to Main Menu (Tracker) after 30 segs.
 - 2023.06.24 displayEcoMode=true doesn't turn the screen off at boot.
-- 2023.06.25 Sends comment after X count of beacons.
+- 2023.06.25 Sends comment after X count of beacons. *)
 - 2023.06.26 Weather Report now stays until button pressed, to avoid missing it.
 - 2023.07.01 Added Support for new T-Beam AXP2101 v1.2 Board.
 - 2023.07.12 Added Versioninfo
+- 2023.07.16 New Icons for Oled (Runner, Car, Jeep and more...) *)
+
+*) an adoption of the config file is neccessary
 ____________________________________________________
 This code was based on the work by OE5BPA LoRa Tracker, Serge Y. Stroobandt, ON4AA in the byte-saving part of the APRS 434 firmware  and Manfred DC2MH (Mane76) with the mods for multiple Callsigns and processor speed.
 - https://github.com/aprs434/lora.tracker
