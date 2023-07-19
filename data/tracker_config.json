@@ -63,7 +63,7 @@
 		"displayEcoMode": true,
 		"displayTimeout": 30,
 		"overlay": "/",
-		"path": "",
+		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
 		"maxDistanceToTracker": 300, 
