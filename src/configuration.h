@@ -30,14 +30,23 @@ public:
   int   power;
 };
 
+class Ptt {
+public:
+  bool  active;
+  int   io_pin;
+  int   preDelay;
+  int   postDelay;
+  bool  reverse;
+};
+
 class Configuration {
 public:
 
   std::vector<Beacon> beacons;  
   LoraModule loramodule;
-
-  bool    showSymbolCharacter;
-  bool    showCustomCharacter;
+  Ptt ptt;
+  
+  bool    showSymbolOnScreen;
   int     sendCommentAfterXBeacons;
   bool    displayEcoMode;
   int     displayTimeout;

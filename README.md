@@ -65,6 +65,7 @@ Timeline (Versions):
 - 2023.07.01 Added Support for new T-Beam AXP2101 v1.2 Board.
 - 2023.07.12 Added Versioninfo
 - 2023.07.16 New Icons for Oled (Runner, Car, Jeep and more...) *)
+- 2023.07.18 Add Support for triggering PTT to external amplifier. *)
 
 *) an adoption of the config file is neccessary
 ____________________________________________________
