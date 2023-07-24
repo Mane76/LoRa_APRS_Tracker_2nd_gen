@@ -24,6 +24,8 @@ ____________________________________________________
 - (2). Upload this changes via Platformio --> Upload Filesystem Image (to your TTGO Board)
 - (3). Build and Upload the Firmware with Platformio in VSCODE
 
+If you encounter any problem choose in Platformio "erase flash" and repeat step (2) and (3).
+
 ____________________________________________________
 
 # MENU EXPLANATION
@@ -66,8 +68,11 @@ Timeline (Versions):
 - 2023.07.12 Added Versioninfo
 - 2023.07.16 New Icons for Oled (Runner, Car, Jeep and more...) *)
 - 2023.07.18 Add Support for triggering PTT to external amplifier. *)
+- 2023.07.24 New Validation for Callsings, Overlay change and New Icons (Bike, Motorcycle). *)
+
 
 *) an adoption of the config file is neccessary
+
 ____________________________________________________
 This code was based on the work by OE5BPA LoRa Tracker, Serge Y. Stroobandt, ON4AA in the byte-saving part of the APRS 434 firmware  and Manfred DC2MH (Mane76) with the mods for multiple Callsigns and processor speed.
 - https://github.com/aprs434/lora.tracker
