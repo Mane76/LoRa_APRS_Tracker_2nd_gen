@@ -19,6 +19,7 @@
 		{
 			"callsign": "DC2MH-7",
 			"symbol": "[",
+			"overlay": "/",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
@@ -35,6 +36,7 @@
 		{
 			"callsign": "DC2MH-9",
 			"symbol": ">",
+			"overlay": "/",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
@@ -61,7 +63,6 @@
 		"sendCommentAfterXBeacons": 20,
 		"displayEcoMode": true,
 		"displayTimeout": 30,
-		"overlay": "/",
 		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
