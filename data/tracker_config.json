@@ -3,7 +3,7 @@
 		{
 			"callsign": "DC2MH-4",
 			"symbol": "b",
-			"overlay": "/"
+			"overlay": "/",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
