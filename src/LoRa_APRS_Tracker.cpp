@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <LoRa.h>
 #include <vector>
+#include "bluetooth_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
 #include "button_utils.h"
@@ -83,6 +84,7 @@ void setup() {
 
   WiFi.mode(WIFI_OFF);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
+  BLUETOOTH_Utils::setup();
 
   userButton.attachClick(BUTTON_Utils::singlePress);
   userButton.attachLongPressStart(BUTTON_Utils::longPress);
@@ -91,7 +93,7 @@ void setup() {
   powerManagement.lowerCpuFrequency();
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
-  menuDisplay = 0;
+  menuDisplay = BUTTON_PIN == -1 ? 20 : 0;
 }
 
 void loop() {
@@ -112,7 +114,7 @@ void loop() {
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
 
-  int currentSpeed = (int)gps.speed.kmph();
+  int currentSpeed = (int) gps.speed.kmph();
 
   lastTx = millis() - lastTxTime;
   if (!sendUpdate && gps_loc_update && currentBeacon->smartBeaconState) {
@@ -129,9 +131,11 @@ void loop() {
     STATION_Utils::sendBeacon();
   }
 
-  if (gps_time_update) {
+  STATION_Utils::checkSmartBeaconInterval(currentSpeed);
+  
+  if (millis() - displayTime >= 1000 || gps_time_update) {
+    GPS_Utils::checkStartUpFrames();
     MENU_Utils::showOnScreen();
-    STATION_Utils::checkSmartBeaconInterval(currentSpeed);
+    displayTime = millis();
   }
-  GPS_Utils::checkStartUpFrames();
 }
