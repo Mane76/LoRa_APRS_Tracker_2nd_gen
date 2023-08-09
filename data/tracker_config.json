@@ -50,7 +50,7 @@
 				"turnMinDeg": 20,
 				"turnSlope": 80
 			}
-		}		
+		}
 	],
 	"lora": {
 		"frequency": 433775000,
