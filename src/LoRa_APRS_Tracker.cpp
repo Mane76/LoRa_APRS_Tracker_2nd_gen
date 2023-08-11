@@ -1,14 +1,12 @@
-#ifdef ESP32
-#include <esp_bt.h>
-#endif
-#include <Arduino.h>
-#include <NimBLEDevice.h>
+#include <BluetoothSerial.h>
 #include <OneButton.h>
 #include <TinyGPS++.h>
+#include <Arduino.h>
 #include <logger.h>
 #include <WiFi.h>
 #include <LoRa.h>
 #include <vector>
+#include "bluetooth_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
 #include "button_utils.h"
@@ -27,10 +25,10 @@ Configuration                 Config;
 PowerManagement               powerManagement;
 HardwareSerial                neo6m_gps(1);
 TinyGPSPlus                   gps;
-NimBLECharacteristic*         pCharacteristic;
+BluetoothSerial               SerialBT;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
-String    versionDate         = "2023.07.24";
+String    versionDate         = "2023.08.10";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -44,11 +42,13 @@ std::vector<String>           loadedAPRSMessages;
 bool      displayEcoMode      = Config.displayEcoMode;
 bool      displayState        = true;
 uint32_t  displayTime         = millis();
+uint32_t  refreshDisplayTime  = millis();
 
 bool      sendUpdate          = true;
 int       updateCounter       = Config.sendCommentAfterXBeacons;
-bool		  sendStandingUpdate  = false;
+bool	  sendStandingUpdate  = false;
 bool      statusState         = true;
+bool      bluetoothConnected  = false;
 
 uint32_t  lastTx              = 0.0;
 uint32_t  txInterval          = 60000L;
@@ -64,12 +64,15 @@ bool      symbolAvailable     = true;
 
 logging::Logger               logger;
 
-
 void setup() {
   Serial.begin(115200);
 
+#ifndef DEBUG
+  logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
+#endif
+
   powerManagement.setup();
-  
+
   setup_display();
   show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman -> CD2RXU --> LoRa APRS Tracker/Station");
@@ -85,10 +88,8 @@ void setup() {
   LoRa_Utils::setup();
 
   WiFi.mode(WIFI_OFF);
-  btStop();
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi and BT controller stopped");
-  esp_bt_controller_disable();
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "BT controller disabled");
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
+  BLUETOOTH_Utils::setup();
 
   userButton.attachClick(BUTTON_Utils::singlePress);
   userButton.attachLongPressStart(BUTTON_Utils::longPress);
@@ -97,7 +98,7 @@ void setup() {
   powerManagement.lowerCpuFrequency();
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
-  menuDisplay = 0;
+  menuDisplay = BUTTON_PIN == -1 ? 20 : 0;
 }
 
 void loop() {
@@ -117,8 +118,9 @@ void loop() {
 
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
+  BLUETOOTH_Utils::sendToLoRa();
 
-  int currentSpeed = (int)gps.speed.kmph();
+  int currentSpeed = (int) gps.speed.kmph();
 
   lastTx = millis() - lastTxTime;
   if (!sendUpdate && gps_loc_update && currentBeacon->smartBeaconState) {
@@ -136,8 +138,12 @@ void loop() {
   }
 
   if (gps_time_update) {
-    MENU_Utils::showOnScreen();
     STATION_Utils::checkSmartBeaconInterval(currentSpeed);
   }
-  GPS_Utils::checkStartUpFrames();
+
+  if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {
+    GPS_Utils::checkStartUpFrames();
+    MENU_Utils::showOnScreen();
+    refreshDisplayTime = millis();
+  }
 }
