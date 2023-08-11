@@ -64,6 +64,8 @@ ____________________________________________________
 - Type : BLuetooth SPP
 - Module : Select our tracker name
 - Change Callsign and SSID in Aprsdroid to match callsign and SSID in tracker display
+- Change position type from "smart beaconing" to "manual position"
+- by pressing "start tracking" the connection to your phone is established and you can start messaging
 - Tadam !
 
 ## ShareGps (NMEA)
