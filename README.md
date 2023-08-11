@@ -101,7 +101,7 @@ Timeline (Versions):
 - 2023.08.05 New Support for SH1106 Oled Screen (0,96" and 1.3")
 - 2023.08.06 Added Bluetooth Support for TNC in Android/APRSDroid. Thanks Valentin F4HVV
 - 2023.08.08 Added Maidenhead info (now changes between GPS and Maidenhead on Screen) Thanks Mathias "mpbraendli"
-- 2023.08.09 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32
+- 2023.08.10 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32
 
 *) an adoption of the config file is neccessary
 
