@@ -63,6 +63,7 @@ ____________________________________________________
 - Protocol : TNC2 or Kiss
 - Type : BLuetooth SPP
 - Module : Select our tracker name
+- Change Callsign and SSID in Aprsdroid to match callsign and SSID in tracker display
 - Tadam !
 
 ## ShareGps (NMEA)
