@@ -13,7 +13,7 @@ ____________________________________________________
     - Asking Weather Report
     - Listening to other Trackers arround.
     - Changing Display Eco Mode (turn off after 4 seg).
-- Processor from 240Mhz to 80MHz to save almost 20% power consumption (from ~ 100mA to almost ~80mA) (Thanks Mane76).
+- Processor from 240Mhz to 80MHz to save almost 20% power consumption (from ~ 100mA to almost ~80mA)
 - All GPS beacons/packet are encoded for less time on RF/LoRa Tx.
 - 4th line of the OLED SCREEN shows Altitude+Speed+Course or Number of New Messages Received.
 - 5th line of the OLED SCREEN shows Recent Heard Trackers/Station/iGates Tx.
@@ -104,13 +104,16 @@ Timeline (Versions):
 - 2023.08.05 New Support for SH1106 Oled Screen (0,96" and 1.3")
 - 2023.08.06 Added Bluetooth Support for TNC in Android/APRSDroid. Thanks Valentin F4HVV
 - 2023.08.08 Added Maidenhead info (now changes between GPS and Maidenhead on Screen) Thanks Mathias "mpbraendli"
+- 2023.08.08 Adding support for sx1268 T-Beam Boards 
 - 2023.08.10 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32
+- 2023.08.12 Adding also support for old V0_7 board. Thanks Béla Török. You need to choose in platformIO
+- 2023.08.26 Support for BME280 Module (Temperature, Humidity, Pressure) added *)
 
 *) an adoption of the config file is neccessary
 
 ____________________________________________________
 This code was based on the work of :
-- Serge Y. Stroobandt : base91 and others ideas
+- Serge Y. Stroobandt : base91 GPS implementation and others ideas
 - https://github.com/aprs434/lora.tracker : ON4AA in the byte-saving part of the APRS 434 firmware
 - https://github.com/lora-aprs/LoRa_APRS_Tracker : OE5BPA LoRa Tracker
 - https://github.com/Mane76/LoRa_APRS_Tracker : Manfred DC2MH (Mane76) with the mods for multiple Callsigns and processor speed

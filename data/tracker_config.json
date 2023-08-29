@@ -80,5 +80,8 @@
 		"preDelay": 0,
 		"postDelay": 0,
 		"reverse": false
+	},
+	"bme": {
+		"active": false
 	}
 }
