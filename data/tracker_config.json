@@ -35,6 +35,7 @@
 		{
 			"callsign": "NOCALL-9",
 			"symbol": ">",
+			"overlay": "/",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smart_beacon": {
 				"active": true,
@@ -57,17 +58,28 @@
 		"power": 20
 	},
 	"other": {
-		"showSymbolOnDisplay": true,
+		"showSymbolOnScreen": true,
 		"sendCommentAfterXBeacons": 20,
 		"displayEcoMode": false,
 		"displayTimeout": 30,
-		"overlay": "/",
 		"path": "",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
 		"maxDistanceToTracker": 300, 
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
-		"sendBatteryInfo": false
+		"sendBatteryInfo": false,
+		"bluetooth": true,
+		"disableGPS": false
+	},
+	"ptt_trigger": {
+		"active": false,
+		"io_pin": 4,
+		"preDelay": 0,
+		"postDelay": 0,
+		"reverse": false
+	},
+	"bme": {
+		"active": false
 	}
 }

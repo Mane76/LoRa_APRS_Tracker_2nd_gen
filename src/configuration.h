@@ -9,6 +9,7 @@ class Beacon {
 public:
   String callsign;
   String symbol;
+  String overlay;
   String comment;
   bool  smartBeaconState;
   int   slowRate;
@@ -30,17 +31,32 @@ public:
   int   power;
 };
 
+class Ptt {
+public:
+  bool  active;
+  int   io_pin;
+  int   preDelay;
+  int   postDelay;
+  bool  reverse;
+};
+
+class BME {
+public:
+  bool    active;
+};
+
 class Configuration {
 public:
 
   std::vector<Beacon> beacons;  
-  LoraModule loramodule;
-
-  bool    showSymbolOnDisplay;
+  LoraModule          loramodule;
+  Ptt                 ptt;
+  BME                 bme;
+  
+  bool    showSymbolOnScreen;
   int     sendCommentAfterXBeacons;
   bool    displayEcoMode;
   int     displayTimeout;
-  String  overlay;
   String  path;
   int     nonSmartBeaconRate;
   int     rememberStationTime;
@@ -48,6 +64,8 @@ public:
   int     standingUpdateTime;
   bool    sendAltitude;
   bool    sendBatteryInfo;
+  bool    bluetooth;
+  bool    disableGps;
 
   Configuration();
   void validateConfigFile(String currentBeaconCallsign);
