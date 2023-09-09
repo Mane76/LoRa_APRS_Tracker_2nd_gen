@@ -108,6 +108,8 @@ Timeline (Versions):
 - 2023.08.10 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32
 - 2023.08.12 Adding also support for old V0_7 board. Thanks Béla Török. You need to choose in platformIO
 - 2023.08.26 Support for BME280 Module (Temperature, Humidity, Pressure) added *)
+- 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx. *)
+
 
 *) an adoption of the config file is neccessary
 
