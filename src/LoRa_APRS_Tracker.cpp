@@ -29,7 +29,7 @@ TinyGPSPlus                   gps;
 BluetoothSerial               SerialBT;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
-String    versionDate         = "2023.09.05";
+String    versionDate         = "2023.09.12";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -47,8 +47,9 @@ uint32_t  refreshDisplayTime  = millis();
 
 bool      sendUpdate          = true;
 int       updateCounter       = Config.sendCommentAfterXBeacons;
-bool	  sendStandingUpdate  = false;
+bool	    sendStandingUpdate  = false;
 bool      statusState         = true;
+uint32_t  statusTime          = millis();
 bool      bluetoothConnected  = false;
 
 uint32_t  lastTx              = 0.0;
@@ -88,6 +89,7 @@ void setup() {
   GPS_Utils::setup();
   LoRa_Utils::setup();
   BME_Utils::setup();
+  STATION_Utils::loadCallsignIndex();
 
   WiFi.mode(WIFI_OFF);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
@@ -136,17 +138,16 @@ void loop() {
     }
     STATION_Utils::checkStandingUpdateTime();
   }
-
   STATION_Utils::checkSmartBeaconState();
-
   if (sendUpdate && gps_loc_update) {
     STATION_Utils::sendBeacon();
   }
-
   if (gps_time_update) {
     STATION_Utils::checkSmartBeaconInterval(currentSpeed);
   }
-
+  if (gps_loc_update) {
+    utils::checkStatus();
+  }
   if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {
     GPS_Utils::checkStartUpFrames();
     MENU_Utils::showOnScreen();

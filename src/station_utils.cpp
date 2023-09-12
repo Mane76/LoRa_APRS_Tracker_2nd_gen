@@ -1,4 +1,5 @@
 #include <TinyGPS++.h>
+#include <SPIFFS.h>
 #include <vector>
 #include "station_utils.h"
 #include "configuration.h"
@@ -18,6 +19,7 @@ extern PowerManagement      powerManagement;
 extern std::vector<String>  lastHeardStation;
 extern std::vector<String>  lastHeardStation_temp;
 extern String               fourthLine;
+extern int                  myBeaconsIndex;
 
 extern String               firstNearTracker;
 extern String               secondNearTracker;
@@ -30,7 +32,6 @@ extern uint32_t             lastTxTime;
 extern bool                 sendUpdate;
 extern int                  updateCounter;
 extern bool                 sendStandingUpdate;
-extern bool                 statusState;
 
 extern uint32_t             txInterval;
 extern uint32_t             lastTx;
@@ -420,9 +421,32 @@ namespace STATION_Utils {
     }
     lastTxTime = millis();
     sendUpdate = false;
+  }
 
-    if (statusState) {
-      utils::startingStatus();
+  void saveCallsingIndex(int index) {
+    File fileCallsignIndex = SPIFFS.open("/callsignIndex.txt", "w");
+    if(!fileCallsignIndex){
+      return;
+    } 
+    String dataToSave = String(index);
+
+    if (fileCallsignIndex.println(dataToSave)) {
+      logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "New Callsign Index saved to SPIFFS");
+    } 
+    fileCallsignIndex.close();
+  }
+
+  void loadCallsignIndex() {
+    File fileCallsignIndex = SPIFFS.open("/callsignIndex.txt");
+    if(!fileCallsignIndex){
+      return;
+    } else {
+      while (fileCallsignIndex.available()) {
+        String firstLine = fileCallsignIndex.readStringUntil('\n');
+        myBeaconsIndex = firstLine.toInt();
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Callsign Index: %s", firstLine);
+      }
+      fileCallsignIndex.close();
     }
   }
 
