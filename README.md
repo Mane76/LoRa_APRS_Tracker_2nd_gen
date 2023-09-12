@@ -109,6 +109,8 @@ Timeline (Versions):
 - 2023.08.12 Adding also support for old V0_7 board. Thanks Béla Török. You need to choose in platformIO
 - 2023.08.26 Support for BME280 Module (Temperature, Humidity, Pressure) added *)
 - 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx. *)
+- 2023.09.12 Saving last used Callsign into internal Memory to remember it at next boot.
+
 
 
 *) an adoption of the config file is neccessary
