@@ -45,6 +45,22 @@ public:
   bool    active;
 };
 
+class Notification {
+public:
+  bool    ledTx;
+  int     ledTxPin;
+  bool    ledMessage;
+  int     ledMessagePin;
+  bool    buzzerActive;
+  int     buzzerPinTone;
+  int     buzzerPinVcc;
+  bool    bootUpBeep;
+  bool    txBeep;
+  bool    messageRxBeep;
+  bool    stationBeep;
+};
+
+
 class Configuration {
 public:
 
@@ -52,6 +68,7 @@ public:
   LoraModule          loramodule;
   Ptt                 ptt;
   BME                 bme;
+  Notification        notification;
   
   bool    simplifiedTrackerMode;
   bool    showSymbolOnScreen;
