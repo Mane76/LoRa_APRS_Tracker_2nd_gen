@@ -110,6 +110,7 @@ Timeline (Versions):
 - 2023.08.26 Support for BME280 Module (Temperature, Humidity, Pressure) added *)
 - 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx. *)
 - 2023.09.12 Saving last used Callsign into internal Memory to remember it at next boot.
+- 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more *)
 
 
 

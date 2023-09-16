@@ -16,7 +16,7 @@ Configuration::Configuration() {
 }
 
 void Configuration::readFile(fs::FS &fs, const char *fileName) {
-    StaticJsonDocument<2048> data;
+    StaticJsonDocument<2560> data;
     File configFile = fs.open(fileName, "r");
     DeserializationError error = deserializeJson(data, configFile);
     if (error) {
@@ -51,13 +51,25 @@ void Configuration::readFile(fs::FS &fs, const char *fileName) {
     loramodule.codingRate4        = data["lora"]["codingRate4"].as<int>();
     loramodule.power              = data["lora"]["power"].as<int>();
 
-    ptt.active                    = data["ptt_trigger"]["active"].as<bool>();
-    ptt.io_pin                    = data["ptt_trigger"]["io_pin"].as<int>();
-    ptt.preDelay                  = data["ptt_trigger"]["preDelay"].as<int>();
-    ptt.postDelay                 = data["ptt_trigger"]["postDelay"].as<int>();
-    ptt.reverse                   = data["ptt_trigger"]["reverse"].as<bool>();
+    ptt.active                    = data["pttTrigger"]["active"].as<bool>();
+    ptt.io_pin                    = data["pttTrigger"]["io_pin"].as<int>();
+    ptt.preDelay                  = data["pttTrigger"]["preDelay"].as<int>();
+    ptt.postDelay                 = data["pttTrigger"]["postDelay"].as<int>();
+    ptt.reverse                   = data["pttTrigger"]["reverse"].as<bool>();
 
     bme.active                    = data["bme"]["active"].as<bool>();
+
+    notification.ledTx            = data["notification"]["ledTx"].as<bool>();
+    notification.ledTxPin         = data["notification"]["ledTxPin"].as<int>();
+    notification.ledMessage       = data["notification"]["ledTx"].as<bool>();
+		notification.ledMessagePin    = data["notification"]["ledMessagePin"].as<int>();
+		notification.buzzerActive     = data["notification"]["buzzerActive"].as<bool>();
+		notification.buzzerPinTone    = data["notification"]["buzzerPinTone"].as<int>();
+    notification.buzzerPinVcc     = data["notification"]["buzzerPinVcc"].as<int>();
+		notification.bootUpBeep       = data["notification"]["bootUpBeep"].as<bool>();
+		notification.txBeep           = data["notification"]["txBeep"].as<bool>();
+		notification.messageRxBeep    = data["notification"]["messageRxBeep"].as<bool>();
+		notification.stationBeep      = data["notification"]["stationBeep"].as<bool>();
 
     simplifiedTrackerMode         = data["other"]["simplifiedTrackerMode"].as<bool>();
     showSymbolOnScreen            = data["other"]["showSymbolOnScreen"].as<bool>();
