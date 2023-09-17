@@ -111,6 +111,8 @@ Timeline (Versions):
 - 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx. *)
 - 2023.09.12 Saving last used Callsign into internal Memory to remember it at next boot.
 - 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more *)
+- 2023.09.16 Adding Led notification for Beacon Tx and for Message Received.
+
 
 
 
