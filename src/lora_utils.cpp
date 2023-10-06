@@ -13,15 +13,23 @@ extern Configuration Config;
 
 #if defined(TTGO_T_Beam_V1_0_SX1268)
 SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+bool transmissionFlag = true;
+bool enableInterrupt = true;
 #endif
 
 namespace LoRa_Utils {
+
+  void setFlag(void) {
+    #if defined(TTGO_T_Beam_V1_0_SX1268)
+    transmissionFlag = true;
+    #endif
+  }
 
   void setup() {
     #if defined(TTGO_T_Beam_V1_0_SX1268)
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Set SPI pins!");
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
-    float freq = (float)Config.loramodule.frequency/1000000.0;
+    float freq = (float)Config.loramodule.frequency/1000000;
     int state = radio.begin(freq);
     if (state == RADIOLIB_ERR_NONE)
     {
@@ -30,10 +38,11 @@ namespace LoRa_Utils {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
       while (true);
     }
+    radio.setDio1Action(setFlag);
     radio.setSpreadingFactor(Config.loramodule.spreadingFactor);
     radio.setBandwidth(Config.loramodule.signalBandwidth);
     radio.setCodingRate(Config.loramodule.codingRate4);
-    state = radio.setOutputPower(Config.loramodule.power + 2);
+    state = radio.setOutputPower(Config.loramodule.power + 2); // values available: 10, 17, 22 --> if 20 in tracker_conf.json it will be updated to 22.
 
     if (state == RADIOLIB_ERR_NONE) {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "LoRa init done!");
@@ -81,22 +90,19 @@ namespace LoRa_Utils {
       NOTIFICATION_Utils::beaconTxBeep();
     }
     #if defined(TTGO_T_Beam_V1_0_SX1268)
-    Serial.print("Transmiting... ");
+    //Serial.print("Transmiting... ");
     int state = radio.transmit("\x3c\xff\x01" + newPacket);
     if (state == RADIOLIB_ERR_NONE) {
-      Serial.println(F("success!"));
+      /*Serial.println(F("success!"));
 
-      // print measured data rate
-      Serial.print(F("[SX1268] Datarate:\t"));
+      Serial.print(F("[SX1268] Datarate:\t")); // print measured data rate
       Serial.print(radio.getDataRate());
-      Serial.println(F(" bps"));
+      Serial.println(F(" bps"));*/
 
     } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
       Serial.println(F("too long!"));
-
     } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
       Serial.println(F("timeout!"));
-
     } else {
       Serial.print(F("failed, code "));
       Serial.println(state);
@@ -133,18 +139,23 @@ namespace LoRa_Utils {
     }
      #endif
     #if defined(TTGO_T_Beam_V1_0_SX1268)
-    int state = radio.receive(loraPacket);
-    if (state == RADIOLIB_ERR_NONE) {
-      Serial.println(F("success!"));
-      Serial.print(F("[SX1268] Data:\t\t")); Serial.println(loraPacket);
-    } else if (state == RADIOLIB_ERR_RX_TIMEOUT) {
-      // timeout occurred while waiting for a packet
-      //Serial.println(F("timeout!"));
-    } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
-      Serial.println(F("CRC error!"));
-    } else {
-      Serial.print(F("failed, code "));
-      Serial.println(state);
+    if (transmissionFlag) {
+      transmissionFlag = false;
+      radio.startReceive();
+      int state = radio.readData(loraPacket);
+      if (state == RADIOLIB_ERR_NONE) {
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa","Receive data: %s", loraPacket.c_str());
+        //Serial.print(F("[SX1268] Data:\t\t")); Serial.println(loraPacket);
+      } else if (state == RADIOLIB_ERR_RX_TIMEOUT) {
+        // timeout occurred while waiting for a packet
+        //Serial.println(F("timeout!"));
+      } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
+        Serial.println(F("CRC error!"));
+      } else {
+        Serial.print(F("failed, code "));
+        Serial.println(state);
+      }
+      //radio.startReceive();
     }
     #endif
     return loraPacket;

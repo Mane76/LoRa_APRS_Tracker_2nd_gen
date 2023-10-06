@@ -1,5 +1,6 @@
 #include <TinyGPS++.h>
 #include <vector>
+#include "notification_utils.h"
 #include "custom_characters.h"
 #include "station_utils.h"
 #include "configuration.h"
@@ -20,6 +21,7 @@ extern std::vector<String>  loadedAPRSMessages;
 extern int                  messagesIterator;
 extern uint32_t             menuTime;
 extern bool                 symbolAvailable;
+extern int                  lowBatteryPercent;
 
 namespace MENU_Utils {
 
@@ -119,7 +121,7 @@ namespace MENU_Utils {
                     if (time_now % 10 < 5) {
                         fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
                     } else {
-                        fourthRowMainMenu = BME_Utils::readDataSensor();
+                        fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
                     }
                 } else {
                     fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
@@ -132,27 +134,37 @@ namespace MENU_Utils {
 
                 if (powerManagement.getBatteryInfoIsConnected()) {
                     String batteryVoltage = powerManagement.getBatteryInfoVoltage();
-                    String batteryChargeCurrent = powerManagement.getBatteryInfoCurrent();
+                    String batteryCharge = powerManagement.getBatteryInfoCurrent();
                     #ifdef TTGO_T_Beam_V0_7
 					    sixthRowMainMenu = "Bat: " + batteryVoltage + "V";
                     #endif
-                    #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_LORA_V2_1)
-                    if (batteryChargeCurrent.toInt() == 0) {
+                    #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_LORA_V2_1) || defined(TTGO_T_Beam_V1_0_SX1268)
+                    if (batteryCharge.toInt() == 0) {
                         sixthRowMainMenu = "Battery Charged " + batteryVoltage + "V";
-                    } else if (batteryChargeCurrent.toInt() > 0) {
+                    } else if (batteryCharge.toInt() > 0) {
                         sixthRowMainMenu = "Bat: " + batteryVoltage + "V (charging)";
                     } else {
-                        sixthRowMainMenu = "Battery " + batteryVoltage + "V " + batteryChargeCurrent + "mA";
+                        sixthRowMainMenu = "Battery " + batteryVoltage + "V " + batteryCharge + "mA";
                     }
                     #endif
                     #ifdef TTGO_T_Beam_V1_2
+                        if (Config.notification.lowBatteryBeep && !powerManagement.isChargeing() && batteryCharge.toInt() < lowBatteryPercent) {
+                            lowBatteryPercent = batteryCharge.toInt();
+                            NOTIFICATION_Utils::lowBatteryBeep();
+                            if (batteryCharge.toInt() < 6) {
+                                NOTIFICATION_Utils::lowBatteryBeep();
+                            }
+                        } 
+                        if (powerManagement.isChargeing()) {
+                            lowBatteryPercent = 21;
+                        }
                         batteryVoltage = batteryVoltage.toFloat()/1000;
-                        if (powerManagement.isChargeing() && batteryChargeCurrent!="100") {
+                        if (powerManagement.isChargeing() && batteryCharge!="100") {
                             sixthRowMainMenu = "Bat: " + String(batteryVoltage) + "V (charging)";
-                        } else if (!powerManagement.isChargeing() && batteryChargeCurrent=="100") {
+                        } else if (!powerManagement.isChargeing() && batteryCharge=="100") {
                             sixthRowMainMenu = "Battery Charged " + String(batteryVoltage) + "V";
                         } else {
-                            sixthRowMainMenu = "Battery  " + String(batteryVoltage) + "V   " + batteryChargeCurrent + "%";
+                            sixthRowMainMenu = "Battery  " + String(batteryVoltage) + "V   " + batteryCharge + "%";
                         }
                     #endif
                 } else {
