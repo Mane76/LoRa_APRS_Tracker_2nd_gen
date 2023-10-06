@@ -43,6 +43,8 @@ public:
 class BME {
 public:
   bool    active;
+  bool    sendTelemetry;
+  int     heightCorrection;
 };
 
 class Notification {
@@ -58,6 +60,7 @@ public:
   bool    txBeep;
   bool    messageRxBeep;
   bool    stationBeep;
+  bool    lowBatteryBeep;
 };
 
 

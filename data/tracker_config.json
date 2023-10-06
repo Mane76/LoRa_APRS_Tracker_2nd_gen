@@ -83,7 +83,9 @@
 		"reverse": false
 	},
 	"bme": {
-		"active": false
+		"active": false,
+		"sendTelemetry": false,
+		"heightCorrection": 0
 	},
 	"notification": {
 		"ledTx": false,
@@ -96,6 +98,7 @@
 		"bootUpBeep": false,
 		"txBeep": false,
 		"messageRxBeep": false,
-		"stationBeep": false
+		"stationBeep": false,
+		"lowBatteryBeep": false
 	}
 }

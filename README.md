@@ -1,83 +1,59 @@
 # Richonguzman / CD2RXU LoRa APRS Tracker/Station
-# (Firmware for Tx and Rx !!!)
 
 ### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
 
-NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/R   x LoRa iGate (near you) like:
+This firmware is for using ESP32 based boards with LoRa Modules and GPS to live in the APRS world.
 
-https://github.com/richonguzman/LoRa_APRS_iGate
+![Screenshot](https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/OledScreen.jpeg)
+
+(NOTE: To use Tx/Rx capabilities of this tracker you should have also an Tx/Rx <a href="https://github.com/richonguzman/LoRa_APRS_iGate" target="_blank">LoRa iGate</a> near you)
 
 ____________________________________________________
-- NOW WE HAVE A MENU (just pushing the central button IO38)
+- NOW WE HAVE A MENU !!! (just pushing the central button IO38)
     - Saving, Reading and Deleting Messages.
     - Asking Weather Report
     - Listening to other Trackers arround.
     - Changing Display Eco Mode (turn off after 4 seg).
-- Processor from 240Mhz to 80MHz to save almost 20% power consumption (from ~ 100mA to almost ~80mA)
+- Processor from 240Mhz to 80MHz to save almost 20% power consumption.
 - All GPS beacons/packet are encoded for less time on RF/LoRa Tx.
-- 4th line of the OLED SCREEN shows Altitude+Speed+Course or Number of New Messages Received.
-- 5th line of the OLED SCREEN shows Recent Heard Trackers/Station/iGates Tx.
+- Oled Screen shows Altitude+Speed+Course or BME280 Wx Data or Number of New Messages Received.
+- Oled Screen shows Recent Heard Trackers/Station/iGates Tx.
+- Bluetooth capabilities to connect Android + APRSDroid and use it as TNC.
+- Led Notifications for Tx and Messages Received
+- Sound Notifications with YL44 Buzzer Module
+- Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
 ____________________________________________________
 
-# INSTRUCTIONS:
-- (1). Change _Callsign_, _Symbol_ and _Comment_ on /data/tracker_config.json
-- (2). Upload this changes via Platformio --> Upload Filesystem Image (to your TTGO Board)
-- (3). Build and Upload the Firmware with Platformio in VSCODE
+## You can support this project to continue to grow:
 
-____________________________________________________
-
-# MENU EXPLANATION
-
-on the Tracker Screen/Menu 0:
-- 1 short press/push   = Forced GPS Beacon Tx
-- 1 long press/push    = Change between three Callsigns saved on "/data/tracker.json".
-- 2 short press/pushes = Menu 1 (where you cand read Messages)
-
-on the Menu 1:
-- 1 short press/push   = Read Received Messages saved on internal Memory.
-- 1 long press/push    = Delete all Messages from internal Memory.
-- 2 short press/pushes = Menu 2 (where you cand ask for Weather Report and more).
-
-on the Menu 2:
-- 1 short press/push   = Ask for Weather Report (WX report will arrive in seconds).
-- 1 long press/push    = Listen to other Trackers and show distance and course to them.
-- 2 short press/pushes = Menu 3 (where you cand change Display Eco Mode and more).
-
-on the Menu 3:
-- 1 short press/push   = NOTHING YET... (any ideas?).
-- 1 long press/push    = Change Display Eco Mode (Turn off after 4 seg).
-- 2 short press/pushes = Menu 0 (back to the Tracker Screen).
+[<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/github-sponsors.png">](https://github.com/sponsors/richonguzman)     [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/paypalme.png">](http://paypal.me/richonguzman)
 
 ____________________________________________________
 
-# BLUETOOTH EXPLANATION (**Only for Android**)
+# WIKI
 
-## APRSDroid
+### 1. Instalation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Instalation-Guide" target="_blank">here</a>.
 
-- Pair your phone with the tracker. Its name is "Lora Tracker XXXX"
-- Install [APRSDroid](https://aprsdroid.org/) app
-- Open app and go to Settings and click on connection preferences
-- Protocol : TNC2 or Kiss
-- Type : BLuetooth SPP
-- Module : Select our tracker name
-- Tadam !
+### 2. Tracker Configuration and Explanation for each setting --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/2.-Tracker-Configuration" target="_blank">here</a>.
 
-## ShareGps (NMEA)
+### 3. Supported Boards and Environment Selection --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/3.-Supported-Boards-and-Environment-Selection" target="_blank">here</a>.
 
-- Pair your phone with the tracker. Its name is "Lora Tracker XXXX"
-- Install [ShareGPS](https://play.google.com/store/apps/details?id=com.jillybunch.shareGPS&pcampaignid=web_share) app
-- Open app and go to Connections tab
-- Click on add button
-- Choose NMEA as Data Type
-- Choose Bluetooth as Connectoin Method
-- Name it and click next to set you tracker
-- To connect to it : long press on the connection name and click connect
-- BT is listening, repeat the operation a second time to initiate the connection
-- Tadam !
+### 4. Upload Firmware and Filesystem --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/4.-Upload-Firmware-and-Filesystem" target="_blank">here</a>.
+
+### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/5.-Menu-Guide" target="_blank">here</a>.
+
+### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/6.-Bluetooth-Connection" target="_blank">here</a>.
+
+### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/7.-First-Time-Boot-and-GPS" target="_blank">here</a>.
+
+### 8. Adding Leds, Buzzer and BME280 Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/8.-Adding-Leds,-Buzzer-and-BME280-Modules" target="_blank">here</a>.
 
 ____________________________________________________
-Timeline (Versions):
+## Timeline (Versions):
 
+- 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
+- 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module
+- 2023.09.25 Wiki added.
 - 2023.09.16 Adding Led notification for Beacon Tx and for Message Received.
 - 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more.
 - 2023.09.11 Saving last used Callsign into internal Memory to remember it at next boot.
@@ -85,7 +61,7 @@ Timeline (Versions):
 - 2023.08.27 Adding support to connect BME280 and see Temperature, Humidity, Pressure.
 - 2023.08.12 Adding also support for old V0_7 board. Thanks Béla Török.
 - 2023.08.09 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32. Thanks Thomas DL9SAU.
-- 2023.08.08 Added Maidenhead info (now changes between GPS and Maidenhead on Screen) Thanks Mathias "mpbraendli".
+- 2023.08.08 Added Maidenhead info on Screen. Thanks Mathias "mpbraendli".
 - 2023.08.06 Added Bluetooth Support for TNC in Android/APRSDroid. Thanks Valentin F4HVV.
 - 2023.08.05 New Support for SH1106 Oled Screen (0,96" and 1.3")
 - 2023.07.24 New Validation for Callsings, Overlay change and New Icons (Bike, Motorcycle).
@@ -107,12 +83,11 @@ Timeline (Versions):
 
 
 ____________________________________________________
-This code was based on the work of :
-- Serge Y. Stroobandt : base91 GPS implementation and others ideas
-- https://github.com/aprs434/lora.tracker : ON4AA in the byte-saving part of the APRS 434 firmware
-- https://github.com/lora-aprs/LoRa_APRS_Tracker : OE5BPA LoRa Tracker
-- https://github.com/Mane76/LoRa_APRS_Tracker : Manfred DC2MH (Mane76) with the mods for multiple Callsigns and processor speed
-- https://github.com/dl9sau/TTGO-T-Beam-LoRa-APRS : DL9SAU for the Kiss <> TNC2 lib
+## This code was based on the work of :
+- https://github.com/aprs434/lora.tracker : Serge - ON4AA on base91 byte-saving/encoding
+- https://github.com/lora-aprs/LoRa_APRS_Tracker : Peter - OE5BPA LoRa Tracker
+- https://github.com/Mane76/LoRa_APRS_Tracker : Manfred - DC2MH (Mane76) mods for multiple Callsigns and processor speed
+- https://github.com/dl9sau/TTGO-T-Beam-LoRa-APRS : Thomas - DL9SAU for the Kiss <> TNC2 lib
 ____________________________________________________
 
 # Hope You Enjoy this, 73 !!  CD2RXU , Valparaiso, Chile
