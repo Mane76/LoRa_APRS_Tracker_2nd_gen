@@ -15,6 +15,12 @@ This firmware is for using ESP32 based boards with LoRa Modules and GPS to live 
 (NOTE: To use Tx/Rx capabilities of this tracker you should have also an Tx/Rx <a href="https://github.com/richonguzman/LoRa_APRS_iGate" target="_blank">LoRa iGate</a> near you)
 
 ____________________________________________________
+
+## You can support this project to continue to grow:
+
+[<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/github-sponsors.png">](https://github.com/sponsors/richonguzman)     [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/paypalme.png">](http://paypal.me/richonguzman)
+
+____________________________________________________
 - NOW WE HAVE A MENU !!! (just pushing the central button IO38)
     - Saving, Reading and Deleting Messages.
     - Asking Weather Report
@@ -28,25 +34,34 @@ ____________________________________________________
 - Led Notifications for Tx and Messages Received
 - Sound Notifications with YL44 Buzzer Module
 - Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
-____________________________________________________
 
-# INSTRUCTIONS:
-- (1). Change _Callsign_, _Symbol_ and _Comment_ and adopt _frequency_ (to omit the offset of TTGOs) and _path_ (empty for byte-saving, WIDE1-1 for safe usage of Digipeater) to your needs on /data/tracker_config.json
+# BASIC INSTRUCTIONS:
+- (1). Change _Callsign_, _Symbol_ and _Comment_ and adopt _frequency_ (to omit the offset of TTGOs) and _path_ (empty for byte-saving, WIDE1-1 for safe usage of Digipeater) to your needs on /data/tracker_config.json. Parameters are optimized for -4 Bike, -7 Walk and -9 Car. The tracker will remember the last chosen SSID at startup.
 - (2). Upload this changes via Platformio --> Upload Filesystem Image (to your TTGO Board)
 - (3). Build and Upload the Firmware with Platformio in VSCODE
+
+If you encounter any problem choose in Platformio "erase flash" and repeat step (2) and (3).
+
+# BLUETOOTH INSTRUCTIONS: 
+- (1). enable bluetooth in /data/tracker_config.json and repeat step (2) from Basic Instruction
+- (2). Pair your phone with the tracker. Its name is "Lora Tracker XXXX"
+- (3). Install "APRSDroid app" from Playstore or via apk from the website of the programmer (free of charge)
+- (4). Open App, go to settings -> connection preferences and choose as protocol "TNC2 or KISS", as type "Bluetooth SPP" and as module your "Lora Tracker XXXX"
+- (5). go back to settings -> location and change to "manual position"
+- (6). go back to settings and enter your callsign and ssid as well as path matching to the tracker 
+- (7). hit "start tracking in the app". Now you can see on the map the stations the tracker has heard and send messages via the "message button"
 
 
 ## You can support this project to continue to grow:
 
 [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/github-sponsors.png">](https://github.com/sponsors/richonguzman)     [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/paypalme.png">](http://paypal.me/richonguzman)
 
-If you encounter any problem choose in Platformio "erase flash" and repeat step (2) and (3).
 
 ____________________________________________________
 
 # WIKI
 
-### 1. Instalation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Instalation-Guide" target="_blank">here</a>.
+### 1. Installation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Installation-Guide" target="_blank">here</a>.
 
 ### 2. Tracker Configuration and Explanation for each setting --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/2.-Tracker-Configuration" target="_blank">here</a>.
 
@@ -96,6 +111,8 @@ ____________________________________________________
 - 2023.09.25 Wiki added.
 - 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker *)
+- 2023.10.07 Screen Brightness control added
+
 
 
 
