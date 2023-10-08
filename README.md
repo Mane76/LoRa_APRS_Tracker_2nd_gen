@@ -7,6 +7,12 @@ This firmware is for using ESP32 based boards with LoRa Modules and GPS to live 
 (NOTE: To use Tx/Rx capabilities of this tracker you should have also an Tx/Rx <a href="https://github.com/richonguzman/LoRa_APRS_iGate" target="_blank">LoRa iGate</a> near you)
 
 ____________________________________________________
+
+## You can support this project to continue to grow:
+
+[<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/github-sponsors.png">](https://github.com/sponsors/richonguzman)     [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/paypalme.png">](http://paypal.me/richonguzman)
+
+____________________________________________________
 - NOW WE HAVE A MENU !!! (just pushing the central button IO38)
     - Saving, Reading and Deleting Messages.
     - Asking Weather Report
@@ -20,17 +26,13 @@ ____________________________________________________
 - Led Notifications for Tx and Messages Received
 - Sound Notifications with YL44 Buzzer Module
 - Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
-____________________________________________________
 
-## You can support this project to continue to grow:
-
-[<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/github-sponsors.png">](https://github.com/sponsors/richonguzman)     [<img src="https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/paypalme.png">](http://paypal.me/richonguzman)
 
 ____________________________________________________
 
 # WIKI
 
-### 1. Instalation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Instalation-Guide" target="_blank">here</a>.
+### 1. Installation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Installation-Guide" target="_blank">here</a>.
 
 ### 2. Tracker Configuration and Explanation for each setting --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/2.-Tracker-Configuration" target="_blank">here</a>.
 
@@ -49,6 +51,7 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2023.10.07 Screen Brightness control added.
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
 - 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module
 - 2023.09.25 Wiki added.
