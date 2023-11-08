@@ -4,8 +4,8 @@
 #include "custom_characters.h"
 #include "station_utils.h"
 #include "configuration.h"
-#include "menu_utils.h"
 #include "power_utils.h"
+#include "menu_utils.h"
 #include "msg_utils.h"
 #include "bme_utils.h"
 #include "display.h"
@@ -22,26 +22,54 @@ extern int                  messagesIterator;
 extern uint32_t             menuTime;
 extern bool                 symbolAvailable;
 extern int                  lowBatteryPercent;
+extern bool                 keyDetected;
+extern String               messageCallsign;
+extern String               messageText;
+extern bool                 digirepeaterActive;
+extern bool                 sosActive;
+
+String digi, sos;
 
 namespace MENU_Utils {
 
     void showOnScreen() {
+        String lastLine;
         uint32_t lastMenuTime = millis() - menuTime;
-        if (!(menuDisplay==0) && !(menuDisplay==20) && !(menuDisplay==21) && lastMenuTime > 30*1000) {
+        if (!(menuDisplay==0) && !(menuDisplay==30) && !(menuDisplay==40) && lastMenuTime > 30*1000) {
             menuDisplay = 0;
+            messageCallsign = "";
+            messageText = "";
+        }
+        if (keyDetected) {
+            lastLine = "<Back Up/Down Select>";
+        } else {
+            lastLine = "1P=Down 2P=Back LP=Go";
         }
         switch (menuDisplay) { // Graphic Menu is in here!!!!
-            case 1:
-                show_display("__MENU_1__", "", "1P -> Read Msg (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "LP -> Delete Msg", "2P -> Menu 2");
+            case 1:     // 1. Messages
+                show_display("__MENU____","  6.Emergency", "> 1.Messages", "  2.Configuration", "  3.Stations", lastLine);
                 break;
-            case 2:
-                show_display("__MENU_2__", "", "1P -> Weather Report", "LP -> Listen Trackers", "2P -> Menu 3");
+            case 2:     // 2. Configuration
+                show_display("__MENU____", "  1.Messages", "> 2.Configuration", "  3.Stations", "  4.Weather Report", lastLine);
                 break;
-            case 3:
-                show_display("__MENU_3__", "", "1P -> NOTHING YET", "LP -> Display EcoMode", "2P -> (Back) Tracking");
+            case 3:     //3. Stations
+                show_display("__MENU____", "  2.Configuration", "> 3.Stations", "  4.Weather Report", "  5.Winlink/Mail", lastLine);
+                break;
+            case 4:     //4. Weather
+                show_display("__MENU____", "  3.Stations", "> 4.Weather Report", "  5.Winlink/Mail", "  6.Emergency", lastLine);
+                break;
+            case 5:     //5. Winlink
+                show_display("__MENU____", "  4.Weather Report", "> 5.Winlink/Mail", "  6.Emergency", "  1.Messages", lastLine);
+                break;
+            case 6:     //6. Emergency
+                show_display("__MENU____", "  5.Winlink/Mail", "> 6.Emergency", "  1.Messages", "  2.Configuration", lastLine);
                 break;
 
-            case 10:            // Display Received/Saved APRS Messages
+
+            case 10:    // 1.Messages ---> Messages Read
+                show_display("_MESSAGES_", "> Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "", lastLine);
+                break;
+            case 100:   // 1.Messages ---> Messages Read ---> Display Received/Saved APRS Messages
                 {
                     String msgSender      = loadedAPRSMessages[messagesIterator].substring(0,loadedAPRSMessages[messagesIterator].indexOf(","));
                     String restOfMessage  = loadedAPRSMessages[messagesIterator].substring(loadedAPRSMessages[messagesIterator].indexOf(",")+1);
@@ -50,12 +78,127 @@ namespace MENU_Utils {
                     show_display("MSG_APRS>", msgSender + "-->" + msgGate, msgText, "", "", "               Next>");
                 }
                 break;
+            case 11:    // 1.Messages ---> Messages Write
+                show_display("_MESSAGES_", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "> Write", "  Delete", "", lastLine);
+                break;
+            case 110:   // 1.Messages ---> Messages Write ---> Write
+                if (keyDetected) {
+                    show_display("WRITE_MSG>", "", "CALLSIGN = " + String(messageCallsign), "", "", "<Back          Enter>");
+                } else {
+                    show_display("WRITE_MSG>", "", "No Keyboard Detected", "Can't write Message", "", "1P = Back");           
+                }     
+                break;
+            case 111:
+                if (messageText.length() <= 67) {
+                    if (messageText.length() < 10) {
+                        show_display("WRITE_MSG>", "CALLSIGN -> " + messageCallsign, "MSG -> " + messageText, "", "", "<Back   (0" + String(messageText.length()) + ")   Enter>");
+                    } else {
+                        show_display("WRITE_MSG>", "CALLSIGN -> " + messageCallsign, "MSG -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")   Enter>");
+                    }     
+                } else {
+                    show_display("WRITE_MSG>", "---  MSG TO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
+                }
+                break;
+            case 12:    // 1.Messages ---> Messages Delete
+                show_display("_MESSAGES_", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "> Delete", "", lastLine);
+                break;
+            case 120:   // 1.Messages ---> Messages Delete ---> Delete: ALL
+                show_display("DELETE_MSG", "", "     DELETE ALL?", "", "", " Confirm = LP or '>'");
+                break;
 
-            case 20:            // Display Heared Tracker/Stations
+
+            
+            case 20:    // 2.Configuration ---> Callsign
+                show_display("_CONFIG___", "  Power Off", "> Callsign Change","  Display", "  Status",lastLine);
+                break;
+            case 21:    // 2.Configuration ---> Display
+                show_display("_CONFIG___", "  Callsign Change", "> Display", "  Status", "  Notifications",lastLine);
+                break;
+            case 22:    // 2.Configuration ---> Status
+                show_display("_CONFIG___", "  Display", "> Status", "  Notifications", "  Reboot", lastLine);
+                break;
+            case 23:    // 2.Configuration ---> Notifications
+                show_display("_CONFIG___", "  Status","> Notifications", "  Reboot", "  Power Off",lastLine);
+                break;
+            case 24:    // 2.Configuration ---> Reboot
+                show_display("_CONFIG___", "  Notifications", "> Reboot", "  Power Off", "  Callsign Change",lastLine);
+                break;
+            case 25:    // 2.Configuration ---> Power Off
+                show_display("_CONFIG___", "  Reboot", "> Power Off", "  Callsign Change", "  Display",lastLine);
+                break;
+        
+            case 200:   // 2.Configuration ---> Callsign
+                show_display("_CALLSIGN_", "","  Confirm Change?","","","<Back   Enter=Confirm");
+                break;
+
+            case 210:   // 2.Configuration ---> Display ---> ECO Mode
+                show_display("_DISPLAY__", "", "> ECO Mode","  Brightness","",lastLine);
+                break;
+            case 211:   // 2.Configuration ---> Display ---> Brightness
+                show_display("_DISPLAY__", "", "  ECO Mode","> Brightness","",lastLine);
+                break;
+
+            case 220:    // 2.Configuration ---> Status
+                show_display("_STATUS___", "", "> Write","  Select","",lastLine);
+                break;
+            case 221:    // 2.Configuration ---> Status
+                show_display("_STATUS___", "", "  Write","> Select","",lastLine);
+                break;
+
+            case 230:    // 2.Configuration ---> Notifications
+                show_display("_NOTIFIC__", "> Turn Off Sound/Led","","","",lastLine);
+                break;
+
+            case 240:   // 2.Configuration ---> Reboot
+                if (keyDetected) {
+                    show_display("_REBOOT?__", "","Confirm Reboot...","","","<Back   Enter=Confirm");
+                } else {
+                    show_display("_REBOOT?__", "no Keyboard Detected"," Use RST Button to","Reboot Tracker","",lastLine);
+                }
+                break;
+            case 250:   // 2.Configuration ---> Power Off
+                if (keyDetected) {
+                    show_display("POWER_OFF?", "","Confirm Power Off...","","","<Back   Enter=Confirm");
+                } else {
+                    show_display("POWER_OFF?", "no Keyboard Detected"," Use PWR Button to","Power Off Tracker","",lastLine);
+                }
+                break;
+
+
+            case 30:    //3.Stations ---> Display Heared Tracker/Stations
                 show_display("LISTENING>", STATION_Utils::getFirstNearTracker(), STATION_Utils::getSecondNearTracker(), STATION_Utils::getThirdNearTracker(), STATION_Utils::getFourthNearTracker(), "<Back");
                 break;
-            case 21:
+
+
+            case 40:
                 // waiting for Weather Report
+                break;
+
+            case 60:    // 6. Emergency ---> Digirepeater
+                if (digirepeaterActive) {
+                    digi = "ON";
+                } else {
+                    digi = "OFF";
+                }
+                if (sosActive) {
+                    sos = "ON";
+                } else {
+                    sos = "OFF";
+                }
+                show_display("EMERGENCY_", "", "> Digirepeater (" + digi + ")", "  S.O.S. (" + sos + ")","",lastLine);
+                break;
+            case 61:    // 6. Emergency ---> S.O.S.
+                if (digirepeaterActive) {
+                    digi = "ON";
+                } else {
+                    digi = "OFF";
+                }
+                if (sosActive) {
+                    sos = "ON";
+                } else {
+                    sos = "OFF";
+                }
+                show_display("EMERGENCY_", "", "  Digirepeater (" + digi + ")", "> S.O.S. (" + sos + ")","",lastLine);
                 break;
 
             case 0:       ///////////// MAIN MENU //////////////
