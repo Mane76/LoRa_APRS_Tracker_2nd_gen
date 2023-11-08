@@ -12,6 +12,8 @@
 #include "logger.h"
 #include "utils.h"
 
+#include "APRSPacketLib.h"
+
 extern Configuration        Config;
 extern Beacon               *currentBeacon;
 extern logging::Logger      logger;
@@ -181,7 +183,7 @@ namespace STATION_Utils {
       } else {  
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > secondDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = newTrackerInfo;
@@ -191,7 +193,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance < firstDistance) {
               secondNearTracker = firstNearTracker;
               firstNearTracker  = newTrackerInfo;
@@ -221,7 +223,7 @@ namespace STATION_Utils {
       } else {  
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = thirdNearTracker;
@@ -235,7 +237,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               secondNearTracker = thirdNearTracker;
               thirdNearTracker  = newTrackerInfo;
@@ -248,7 +250,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == thirdNearTrackerCallsign) {
           if (distance != thirdDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance <= firstDistance) {
               thirdNearTracker  = secondNearTracker;
               secondNearTracker = firstNearTracker;
@@ -283,7 +285,7 @@ namespace STATION_Utils {
       } else {
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = thirdNearTracker;
@@ -302,7 +304,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               secondNearTracker = thirdNearTracker;
               thirdNearTracker  = fourthNearTracker;
@@ -319,7 +321,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == thirdNearTrackerCallsign) {
           if (distance != thirdDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               thirdNearTracker  = fourthNearTracker;
               fourthNearTracker = newTrackerInfo;
@@ -336,7 +338,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == fourthNearTrackerCallsign) {
           if (distance != fourthDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               fourthNearTracker = newTrackerInfo;
             } else if (distance > secondDistance && distance <= thirdDistance) {
@@ -387,20 +389,13 @@ namespace STATION_Utils {
   }
 
   void sendBeacon(String type) {
-    String packet = currentBeacon->callsign + ">APLRT1";
-    if (Config.path != "") {
-      packet += "," + Config.path;
-    }
-    packet += ":!";
+    String packet;
     if (Config.bme.sendTelemetry && type == "Wx") {
-      packet += "/";
-      packet += GPS_Utils::encondeGPS("Wx");
+      packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
       packet += BME_Utils::readDataSensor("APRS");
     } else {
-      packet += currentBeacon->overlay;
-      packet += GPS_Utils::encondeGPS("GPS");
+      packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
     }
-
     if (currentBeacon->comment != "") {
       updateCounter++;
       if (updateCounter >= Config.sendCommentAfterXBeacons) {
@@ -408,7 +403,6 @@ namespace STATION_Utils {
         updateCounter = 0;
       } 
     }
-
     if (Config.sendBatteryInfo) {
       String batteryVoltage = powerManagement.getBatteryInfoVoltage();
       String batteryChargeCurrent = powerManagement.getBatteryInfoCurrent();
@@ -419,11 +413,9 @@ namespace STATION_Utils {
       packet += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
       #endif
     }
-
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Loop", "%s", packet.c_str());
     show_display("<<< TX >>>", "", packet,100);
     LoRa_Utils::sendNewPacket(packet);
-
+    
     if (currentBeacon->smartBeaconState) {
       lastTxLat       = gps.location.lat();
       lastTxLng       = gps.location.lng();

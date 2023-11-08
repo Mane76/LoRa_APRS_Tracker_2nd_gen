@@ -2,6 +2,7 @@
 #include "lora_utils.h"
 #include "display.h"
 #include "utils.h"
+#include "APRSPacketLib.h"
 
 extern Beacon           *currentBeacon;
 extern Configuration    Config;
@@ -53,16 +54,6 @@ namespace utils {
     return locator;
   }
 
-  char *ax25_base91enc(char *s, uint8_t n, uint32_t v) {
-    /* Creates a Base-91 representation of the value in v in the string */
-    /* pointed to by s, n-characters long. String length should be n+1. */
-    for(s += n, *s = '\0'; n; n--) {
-      *(--s) = v % 91 + 33;
-      v /= 91;
-    }
-    return(s);
-  }
-
   static String padding(unsigned int number, unsigned int width) {
       String result;
       String num(number);
@@ -89,12 +80,7 @@ namespace utils {
       lastTx = millis() - lastTxTime;
       uint32_t statusTx = millis() - statusTime;
       if (statusTx > 15*60*1000 && lastTx > 10*1000) {
-        String packet = currentBeacon->callsign + ">APLRT1";
-        if (Config.path != "") {
-          packet += "," + Config.path;
-        }
-        packet += ":>https://github.com/richonguzman/LoRa_APRS_Tracker " + versionDate;
-        LoRa_Utils::sendNewPacket(packet);
+        LoRa_Utils::sendNewPacket(APRSPacketLib::generateStatusPacket(currentBeacon->callsign, "APLRT1", Config.path, "https://github.com/richonguzman/LoRa_APRS_Tracker " + versionDate));
         statusState = false;
         lastTx = millis();
       }
