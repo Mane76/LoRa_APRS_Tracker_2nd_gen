@@ -114,7 +114,7 @@ ____________________________________________________
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker *)
 - 2023.10.07 Screen Brightness control added
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
-- 2023.10.23 COMPLETE New Menu for Keyboard add-on.
+- 2023.10.23 COMPLETE New Menu on tracker and for Keyboard add-on.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
 
 
