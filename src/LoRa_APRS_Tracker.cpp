@@ -8,6 +8,7 @@
 #include <vector>
 #include "notification_utils.h"
 #include "bluetooth_utils.h"
+#include "keyboard_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
 #include "button_utils.h"
@@ -22,6 +23,8 @@
 #include "SPIFFS.h"
 #include "utils.h"
 
+#include "APRSPacketLib.h"
+
 
 Configuration                 Config;
 PowerManagement               powerManagement;
@@ -30,7 +33,7 @@ TinyGPSPlus                   gps;
 BluetoothSerial               SerialBT;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
-String    versionDate         = "2023.10.07";
+String    versionDate         = "2023.11.07";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -72,14 +75,24 @@ double    previousHeading     = 0;
 uint32_t  menuTime            = millis();
 bool      symbolAvailable     = true;
 
+int       screenBrightness    = 1;
+bool      keyboardConnected   = false;
+bool      keyDetected         = false;
+uint32_t  keyboardTime        = millis();
+String    messageCallsign     = "";
+String    messageText         = "";
+
+bool      digirepeaterActive  = false;
+bool      sosActive           = false;
+
 logging::Logger               logger;
 
 void setup() {
   Serial.begin(115200);
 
-#ifndef DEBUG
+  #ifndef DEBUG
   logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
-#endif
+  #endif
 
   powerManagement.setup();
 
@@ -118,6 +131,7 @@ void setup() {
     userButton.attachClick(BUTTON_Utils::singlePress);
     userButton.attachLongPressStart(BUTTON_Utils::longPress);
     userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+    KEYBOARD_Utils::setup();
   }
 
   powerManagement.lowerCpuFrequency();
@@ -137,6 +151,10 @@ void loop() {
     userButton.tick();
   }
   utils::checkDisplayEcoMode();
+
+  if (keyboardConnected) {
+    KEYBOARD_Utils::read();
+  }
 
   GPS_Utils::getData();
   bool gps_time_update = gps.time.isUpdated();
