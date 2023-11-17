@@ -116,6 +116,7 @@ ____________________________________________________
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
 - 2023.10.23 COMPLETE New Menu on tracker and for Keyboard add-on.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
+- 2023.11.11 Minor Menu update
 
 
 *) an adoption of the config file is neccessary
