@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <LoRa.h>
 #include <vector>
+#include "APRSPacketLib.h"
 #include "notification_utils.h"
 #include "bluetooth_utils.h"
 #include "keyboard_utils.h"
@@ -19,12 +20,10 @@
 #include "msg_utils.h"
 #include "gps_utils.h"
 #include "bme_utils.h"
+#include "ble_utils.h"
 #include "display.h"
 #include "SPIFFS.h"
 #include "utils.h"
-
-#include "APRSPacketLib.h"
-
 
 Configuration                 Config;
 PowerManagement               powerManagement;
@@ -33,7 +32,7 @@ TinyGPSPlus                   gps;
 BluetoothSerial               SerialBT;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 
-String    versionDate         = "2023.11.11";
+String    versionDate         = "2023.12.03";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -55,7 +54,9 @@ bool	    sendStandingUpdate  = false;
 bool      statusState         = true;
 uint32_t  statusTime          = millis();
 bool      bluetoothConnected  = false;
-bool      bluetoothActive     = Config.bluetooth;
+bool      bluetoothActive     = Config.bluetoothActive;
+bool      sendBleToLoRa       = false;
+String    BLEToLoRaPacket     = "";
 
 bool      messageLed          = false;
 uint32_t  messageLedTime      = millis();
@@ -109,8 +110,8 @@ void setup() {
   if (Config.notification.ledMessage){
     pinMode(Config.notification.ledMessagePin, OUTPUT);
   }
-  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CD2RXU) --> LoRa APRS Tracker/Station");
+  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CA2RXU --", "", "      " + versionDate, 4000);
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
 
   if (Config.ptt.active) {
@@ -126,7 +127,11 @@ void setup() {
 
   WiFi.mode(WIFI_OFF);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
-  BLUETOOTH_Utils::setup();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::setup();
+  } else {
+    BLUETOOTH_Utils::setup();
+  }
 
   if (!Config.simplifiedTrackerMode) {
     userButton.attachClick(BUTTON_Utils::singlePress);
@@ -165,7 +170,11 @@ void loop() {
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
   MSG_Utils::ledNotification();
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
-  BLUETOOTH_Utils::sendToLoRa();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::sendToLoRa();
+  } else {
+    BLUETOOTH_Utils::sendToLoRa();
+  }
 
   int currentSpeed = (int) gps.speed.kmph();
 

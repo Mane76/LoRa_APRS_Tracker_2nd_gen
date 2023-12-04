@@ -1,4 +1,4 @@
-# Richonguzman / CD2RXU LoRa APRS Tracker/Station
+# Richonguzman / CA2RXU LoRa APRS Tracker/Station
 
 This firmware is for using ESP32 based boards with LoRa Modules and GPS to live in the APRS world.
 
@@ -51,6 +51,7 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2023.11.28 Adding BLE TNC Tx from aprs.fi app for iOS.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
 - 2023.10.23 COMPLETE New Menu on tracker and for Keyboard add-on.
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
@@ -93,4 +94,4 @@ ____________________________________________________
 - https://github.com/dl9sau/TTGO-T-Beam-LoRa-APRS : Thomas - DL9SAU for the Kiss <> TNC2 lib
 ____________________________________________________
 
-# Hope You Enjoy this, 73 !!  CD2RXU , Valparaiso, Chile
+# Hope You Enjoy this, 73 !!  CA2RXU , Valparaiso, Chile

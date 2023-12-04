@@ -85,8 +85,9 @@ public:
   int     standingUpdateTime;
   bool    sendAltitude;
   bool    sendBatteryInfo;
-  bool    bluetooth;
-  bool    disableGps;
+  int     bluetoothType;
+  bool    bluetoothActive;
+  bool    disableGPS;
 
   Configuration();
   void validateConfigFile(String currentBeaconCallsign);
