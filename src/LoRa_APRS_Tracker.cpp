@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <LoRa.h>
 #include <vector>
+#include "APRSPacketLib.h"
 #include "notification_utils.h"
 #include "bluetooth_utils.h"
 #include "keyboard_utils.h"
@@ -19,21 +20,21 @@
 #include "msg_utils.h"
 #include "gps_utils.h"
 #include "bme_utils.h"
+#include "ble_utils.h"
 #include "display.h"
 #include "SPIFFS.h"
 #include "utils.h"
-
-#include "APRSPacketLib.h"
-
 
 Configuration                 Config;
 PowerManagement               powerManagement;
 HardwareSerial                neo6m_gps(1);
 TinyGPSPlus                   gps;
 BluetoothSerial               SerialBT;
+#if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268)
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
+#endif
 
-String    versionDate         = "2023.11.11";
+String    versionDate         = "2023.12.07";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -55,7 +56,9 @@ bool	    sendStandingUpdate  = false;
 bool      statusState         = true;
 uint32_t  statusTime          = millis();
 bool      bluetoothConnected  = false;
-bool      bluetoothActive     = Config.bluetooth;
+bool      bluetoothActive     = Config.bluetoothActive;
+bool      sendBleToLoRa       = false;
+String    BLEToLoRaPacket     = "";
 
 bool      messageLed          = false;
 uint32_t  messageLedTime      = millis();
@@ -85,6 +88,7 @@ String    messageText         = "";
 
 bool      digirepeaterActive  = false;
 bool      sosActive           = false;
+bool      disableGPS;
 
 logging::Logger               logger;
 
@@ -109,8 +113,8 @@ void setup() {
   if (Config.notification.ledMessage){
     pinMode(Config.notification.ledMessagePin, OUTPUT);
   }
-  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CD2RXU) --> LoRa APRS Tracker/Station");
+  show_display(" LoRa APRS", "", "      (TRACKER)", "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
 
   if (Config.ptt.active) {
@@ -126,19 +130,25 @@ void setup() {
 
   WiFi.mode(WIFI_OFF);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
-  BLUETOOTH_Utils::setup();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::setup();
+  } else {
+    BLUETOOTH_Utils::setup();
+  }
 
   if (!Config.simplifiedTrackerMode) {
+    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268)
     userButton.attachClick(BUTTON_Utils::singlePress);
     userButton.attachLongPressStart(BUTTON_Utils::longPress);
     userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+    #endif
     KEYBOARD_Utils::setup();
   }
 
   powerManagement.lowerCpuFrequency();
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
-  menuDisplay = BUTTON_PIN == -1 ? 20 : 0;
+  menuDisplay = 0;
 }
 
 void loop() {
@@ -149,7 +159,9 @@ void loop() {
 
   powerManagement.batteryManager();
   if (!Config.simplifiedTrackerMode) {
+    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268)
     userButton.tick();
+    #endif
   }
   utils::checkDisplayEcoMode();
 
@@ -165,7 +177,11 @@ void loop() {
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
   MSG_Utils::ledNotification();
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
-  BLUETOOTH_Utils::sendToLoRa();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::sendToLoRa();
+  } else {
+    BLUETOOTH_Utils::sendToLoRa();
+  }
 
   int currentSpeed = (int) gps.speed.kmph();
 

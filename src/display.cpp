@@ -7,7 +7,7 @@
 #include "display.h"
 #include "TimeLib.h"
 
-#define ssd1306 //uncomment this line when using SH1106 screen instead of SSD1306
+#define ssd1306 //comment this line with "//" when using SH1106 screen instead of SSD1306
 
 #ifdef ssd1306
 #include <Adafruit_SSD1306.h>
@@ -25,11 +25,11 @@ extern bool             symbolAvailable;
 extern bool             bluetoothConnected;
 extern int              screenBrightness; //from 1 to 255 to regulate brightness of oled scren
 
-const char* symbolArray[]        = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k", "C"};
+const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k", "C", "a", "Y", "O"};
 int   symbolArraySize         = sizeof(symbolArray)/sizeof(symbolArray[0]);
 const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, 
                                 truck18Symbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol,
-                                houseSymbol, truckSymbol, canoeSymbol};
+                                houseSymbol, truckSymbol, canoeSymbol, ambulanceSymbol, yatchSymbol, baloonSymbol};
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
