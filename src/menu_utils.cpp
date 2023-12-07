@@ -30,10 +30,18 @@ extern bool                 sosActive;
 extern bool                 bluetoothActive;
 extern bool                 displayEcoMode;
 extern bool                 screenBrightness;
-
-//String digi, sos, bt;
+extern bool                 disableGPS;
 
 namespace MENU_Utils {
+
+    String checkBTType() {
+        if (Config.bluetoothType == 0) {
+            return "BLE iPhone";
+        } else {
+            return "BT Android";
+        }
+    }
+
 
     String checkProcessActive(bool process) {
         if (process) {
@@ -127,16 +135,16 @@ namespace MENU_Utils {
 
             
             case 20:    // 2.Configuration ---> Callsign
-                show_display("_CONFIG___", "  Power Off", "> Callsign Change","  Display", "  Bluetooth  (" +  checkProcessActive(bluetoothActive) + ")",lastLine);
+                show_display("_CONFIG___", "  Power Off", "> Callsign Change","  Display", "  " + checkBTType() + " (" + checkProcessActive(bluetoothActive) + ")",lastLine);
                 break;
             case 21:    // 2.Configuration ---> Display
-                show_display("_CONFIG___", "  Callsign Change", "> Display", "  Bluetooth  (" +  checkProcessActive(bluetoothActive) + ")", "  Status",lastLine);
+                show_display("_CONFIG___", "  Callsign Change", "> Display", "  " + checkBTType() + " ("+ checkProcessActive(bluetoothActive) + ")", "  Status",lastLine);
                 break;
             case 22:    // 2.Configuration ---> Bluetooth
-                show_display("_CONFIG___", "  Display",  "> Bluetooth  (" +  checkProcessActive(bluetoothActive) + ")", "  Status", "  Notifications", lastLine);
+                show_display("_CONFIG___", "  Display",  "> " + checkBTType() + " (" + checkProcessActive(bluetoothActive) + ")", "  Status", "  Notifications", lastLine);
                 break;
             case 23:    // 2.Configuration ---> Status
-                show_display("_CONFIG___", "  Bluetooth  (" +  checkProcessActive(bluetoothActive) + ")", "> Status","  Notifications", "  Reboot",lastLine);
+                show_display("_CONFIG___", "  " + checkBTType() + " (" + checkProcessActive(bluetoothActive) + ")", "> Status","  Notifications", "  Reboot",lastLine);
                 break;
             case 24:    // 2.Configuration ---> Notifications
                 show_display("_CONFIG___", "  Status", "> Notifications", "  Reboot", "  Power Off",lastLine);
@@ -207,29 +215,9 @@ namespace MENU_Utils {
                 break;
 
             case 60:    // 6. Emergency ---> Digirepeater
-                /*if (digirepeaterActive) {
-                    digi = "ON";
-                } else {
-                    digi = "OFF";
-                }
-                if (sosActive) {
-                    sos = "ON";
-                } else {
-                    sos = "OFF";
-                }*/
                 show_display("EMERGENCY_", "", "> DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","",lastLine);
                 break;
             case 61:    // 6. Emergency ---> S.O.S.
-                /*if (digirepeaterActive) {
-                    digi = "ON";
-                } else {
-                    digi = "OFF";
-                }
-                if (sosActive) {
-                    sos = "ON";
-                } else {
-                    sos = "OFF";
-                }*/
                 show_display("EMERGENCY_", "", "  DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "> S.O.S.        (" + checkProcessActive(sosActive) + ")","",lastLine);
                 break;
 
@@ -246,74 +234,85 @@ namespace MENU_Utils {
                     }
                 }
 
-                const auto time_now = now();
-                secondRowMainMenu = utils::createDateString(time_now) + "   " + utils::createTimeString(time_now);
-
-                if (time_now % 10 < 5) {
-                    thirdRowMainMenu = String(gps.location.lat(), 4) + " " + String(gps.location.lng(), 4);
+                #ifdef TTGO_T_LORA_V2_1_TNC
+                secondRowMainMenu = "";
+                thirdRowMainMenu = "    LoRa APRS TNC";
+                fourthRowMainMenu = "";
+                #else
+                if (disableGPS) {
+                    secondRowMainMenu = "";
+                    thirdRowMainMenu = "    LoRa APRS TNC";
+                    fourthRowMainMenu = "";
                 } else {
-                    thirdRowMainMenu = String(utils::getMaidenheadLocator(gps.location.lat(), gps.location.lng(), 8));
-                }
-
-                for(int i = thirdRowMainMenu.length(); i < 18; i++) {
-                    thirdRowMainMenu += " ";
-                }
-
-                if (gps.hdop.hdop() > 5) {
-                    hdopState = "X";
-                } else if (gps.hdop.hdop() > 2 && gps.hdop.hdop() < 5) {
-                    hdopState = "-";
-                } else if (gps.hdop.hdop() <= 2) {
-                    hdopState = "+";
-                }
-
-                if (gps.satellites.value() > 9) {
-                    thirdRowMainMenu += String(gps.satellites.value()) + hdopState;
-                } else {
-                    thirdRowMainMenu += " " + String(gps.satellites.value()) + hdopState;
-                }
-
-                String fourthRowAlt = String(gps.altitude.meters(),0);
-                fourthRowAlt.trim();
-                for (int a=fourthRowAlt.length();a<4;a++) {
-                    fourthRowAlt = "0" + fourthRowAlt;
-                }
-                String fourthRowSpeed = String(gps.speed.kmph(),0);
-                fourthRowSpeed.trim();
-                for (int b=fourthRowSpeed.length(); b<3;b++) {
-                    fourthRowSpeed = " " + fourthRowSpeed;
-                }
-                String fourthRowCourse = String(gps.course.deg(),0);
-                if (fourthRowSpeed == "  0") {
-                    fourthRowCourse = "---";
-                } else {
-                    fourthRowCourse.trim();
-                    for(int c=fourthRowCourse.length();c<3;c++) {
-                        fourthRowCourse = "0" + fourthRowCourse;
-                    }
-                }
-                if (Config.bme.active) {
+                    const auto time_now = now();
+                    secondRowMainMenu = utils::createDateString(time_now) + "   " + utils::createTimeString(time_now);
                     if (time_now % 10 < 5) {
-                        fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
+                        thirdRowMainMenu = String(gps.location.lat(), 4) + " " + String(gps.location.lng(), 4);
                     } else {
-                        fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
+                        thirdRowMainMenu = String(utils::getMaidenheadLocator(gps.location.lat(), gps.location.lng(), 8));
                     }
-                } else {
-                    fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
-                }               
-                if (MSG_Utils::getNumAPRSMessages() > 0){
-                    fourthRowMainMenu = "*** MESSAGES: " + String(MSG_Utils::getNumAPRSMessages()) + " ***";
+
+                    for(int i = thirdRowMainMenu.length(); i < 18; i++) {
+                        thirdRowMainMenu += " ";
+                    }
+
+                    if (gps.hdop.hdop() > 5) {
+                        hdopState = "X";
+                    } else if (gps.hdop.hdop() > 2 && gps.hdop.hdop() < 5) {
+                        hdopState = "-";
+                    } else if (gps.hdop.hdop() <= 2) {
+                        hdopState = "+";
+                    }
+
+                    if (gps.satellites.value() > 9) {
+                        thirdRowMainMenu += String(gps.satellites.value()) + hdopState;
+                    } else {
+                        thirdRowMainMenu += " " + String(gps.satellites.value()) + hdopState;
+                    }
+
+                    String fourthRowAlt = String(gps.altitude.meters(),0);
+                    fourthRowAlt.trim();
+                    for (int a=fourthRowAlt.length();a<4;a++) {
+                        fourthRowAlt = "0" + fourthRowAlt;
+                    }
+                    String fourthRowSpeed = String(gps.speed.kmph(),0);
+                    fourthRowSpeed.trim();
+                    for (int b=fourthRowSpeed.length(); b<3;b++) {
+                        fourthRowSpeed = " " + fourthRowSpeed;
+                    }
+                    String fourthRowCourse = String(gps.course.deg(),0);
+                    if (fourthRowSpeed == "  0") {
+                        fourthRowCourse = "---";
+                    } else {
+                        fourthRowCourse.trim();
+                        for(int c=fourthRowCourse.length();c<3;c++) {
+                            fourthRowCourse = "0" + fourthRowCourse;
+                        }
+                    }
+                    if (Config.bme.active) {
+                        if (time_now % 10 < 5) {
+                            fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
+                        } else {
+                            fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
+                        }
+                    } else {
+                        fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
+                    }               
+                    if (MSG_Utils::getNumAPRSMessages() > 0){
+                        fourthRowMainMenu = "*** MESSAGES: " + String(MSG_Utils::getNumAPRSMessages()) + " ***";
+                    }
                 }
+                #endif
 
                 fifthRowMainMenu  = "LAST Rx = " + MSG_Utils::getLastHeardTracker();
 
                 if (powerManagement.getBatteryInfoIsConnected()) {
                     String batteryVoltage = powerManagement.getBatteryInfoVoltage();
                     String batteryCharge = powerManagement.getBatteryInfoCurrent();
-                    #ifdef TTGO_T_Beam_V0_7
+                    #if defined(TTGO_T_Beam_V0_7) || defined(ESP32_DIY_LoRa_GPS) || defined(TTGO_T_LORA_V2_1_GPS) || defined(TTGO_T_LORA_V2_1_TNC)
 					    sixthRowMainMenu = "Bat: " + batteryVoltage + "V";
                     #endif
-                    #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_LORA_V2_1) || defined(TTGO_T_Beam_V1_0_SX1268)
+                    #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
                     if (batteryCharge.toInt() == 0) {
                         sixthRowMainMenu = "Battery Charged " + batteryVoltage + "V";
                     } else if (batteryCharge.toInt() > 0) {

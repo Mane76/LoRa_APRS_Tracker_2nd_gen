@@ -1,4 +1,4 @@
-# Richonguzman / CD2RXU LoRa APRS Tracker/Station
+# Richonguzman / CA2RXU LoRa APRS Tracker/Station
 
 ### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
 
@@ -53,6 +53,11 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2023.12.07 Added TTGO Lilygo LoRa32 v2.1 board as Bluetooth TNC(Android/Apple) and as a Tracker (with external GPS module).
+- 2023.12.07 Added ESP32 as DIY Tracker (with external GPS Module).
+- 2023.12.06 T-Beam V1.2 as default board.
+- 2023.12.05 Updated packets recognition (+Objects + Mic-E).
+- 2023.11.28 Adding BLE connection to use it as TNC with APRS.fi app for iOS.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
 - 2023.10.23 COMPLETE New Menu for Keyboard add-on.
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
@@ -95,4 +100,4 @@ ____________________________________________________
 - https://github.com/dl9sau/TTGO-T-Beam-LoRa-APRS : Thomas - DL9SAU for the Kiss <> TNC2 lib
 ____________________________________________________
 
-# Hope You Enjoy this, 73 !!  CD2RXU , Valparaiso, Chile
+# Hope You Enjoy this, 73 !!  CA2RXU , Valparaiso, Chile

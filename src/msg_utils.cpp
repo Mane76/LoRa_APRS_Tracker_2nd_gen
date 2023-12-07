@@ -10,6 +10,7 @@
 #include "logger.h"
 
 #include "APRSPacketLib.h"
+#include "ble_utils.h"
 
 extern Beacon               *currentBeacon;
 extern logging::Logger      logger;
@@ -146,23 +147,15 @@ namespace MSG_Utils {
   }
 
   void sendMessage(String station, String textMessage) {
-    String messageToSend;
-    for(int i = station.length(); i < 9; i++) {
-      station += ' ';
-    }
-    messageToSend = currentBeacon->callsign + ">APLRT1";
-    if (Config.path != "") {
-      messageToSend += "," + Config.path;
-    }
-    messageToSend += "::" + station + ":" + textMessage;
+    String newPacket = APRSPacketLib::generateMessagePacket(currentBeacon->callsign,"APLRT1",Config.path,station,textMessage);  
     if (textMessage.indexOf("ack")== 0) {
       show_display("<<ACK Tx>>", 500);
     } else if (station.indexOf("CD2RXU-15") == 0 && textMessage.indexOf("wrl")==0) {
       show_display("<WEATHER>","", "--- Sending Query ---",  1000);
     } else {
-      show_display("MSG Tx >>", "", messageToSend, 1000);
+      show_display("MSG Tx >>", "", newPacket, 1000);
     }
-    LoRa_Utils::sendNewPacket(messageToSend);
+    LoRa_Utils::sendNewPacket(newPacket);
   }
 
   void checkReceivedMessage(String packetReceived) {
@@ -173,9 +166,13 @@ namespace MSG_Utils {
       //Serial.println(packetReceived); // only for debug
       aprsPacket = APRSPacketLib::processReceivedPacket(packetReceived.substring(3));
       if (aprsPacket.sender!=currentBeacon->callsign) {
-        BLUETOOTH_Utils::sendPacket(packetReceived.substring(3));
+        if (Config.bluetoothType==0) {
+          BLE_Utils::sendToPhone(packetReceived.substring(3));
+        } else {
+          BLUETOOTH_Utils::sendPacket(packetReceived.substring(3));
+        }        
 
-        if (digirepeaterActive) {
+        if (digirepeaterActive && aprsPacket.addressee!=currentBeacon->callsign) {
           String digiRepeatedPacket = APRSPacketLib::generateDigiRepeatedPacket(aprsPacket, currentBeacon->callsign);
           if (digiRepeatedPacket == "X") {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Packet won't be Repeated (Missing WIDE1-X)");
@@ -184,17 +181,9 @@ namespace MSG_Utils {
             LoRa_Utils::sendNewPacket(digiRepeatedPacket);
           }
         }
-
-        if (aprsPacket.type==0) {
-          lastHeardTracker = aprsPacket.sender;
-          if (!Config.simplifiedTrackerMode) {
-            GPS_Utils::calculateDistanceCourse(aprsPacket.sender, aprsPacket.latitude, aprsPacket.longitude);
-            if (Config.notification.buzzerActive && Config.notification.stationBeep && !digirepeaterActive) {
-              NOTIFICATION_Utils::stationHeardBeep();
-            }
-          }
-        } else if (aprsPacket.type==1 && aprsPacket.addressee==currentBeacon->callsign) {
-          if (aprsPacket.message.indexOf("{")>0) {
+        lastHeardTracker = aprsPacket.sender;
+        if (aprsPacket.type==1 && aprsPacket.addressee==currentBeacon->callsign) {
+          if (aprsPacket.message.indexOf("{")>=0) {
             String ackMessage = "ack" + aprsPacket.message.substring(aprsPacket.message.indexOf("{")+1);
             ackMessage.trim();
             delay(4000);
@@ -238,6 +227,13 @@ namespace MSG_Utils {
               saveNewMessage("APRS", aprsPacket.sender, aprsPacket.message);
             }
           } 
+        } else {
+          if (aprsPacket.type==0 && !Config.simplifiedTrackerMode) {
+            GPS_Utils::calculateDistanceCourse(aprsPacket.sender, aprsPacket.latitude, aprsPacket.longitude);
+          }
+          if (Config.notification.buzzerActive && Config.notification.stationBeep && !digirepeaterActive) {
+            NOTIFICATION_Utils::stationHeardBeep();
+          }
         }
       }
     }
