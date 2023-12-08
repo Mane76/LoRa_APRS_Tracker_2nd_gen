@@ -39,7 +39,7 @@ ____________________________________________________
 # BASIC INSTRUCTIONS:
 - (1). Change _Callsign_, _Symbol_ and _Comment_ and adopt _frequency_ (to omit the offset of TTGOs) and _path_ (empty for byte-saving, WIDE1-1 for safe usage of Digipeater) to your needs on /data/tracker_config.json. Parameters are optimized for -4 Bike, -7 Walk and -9 Car. The tracker will remember the last chosen SSID at startup.
 - (2). Upload this changes via Platformio --> Upload Filesystem Image (to your TTGO Board)
-- (3). Build and Upload the Firmware with Platformio in VSCODE
+- (3). Build and Upload the Firmware with Platformio in VSCODE for your board. Default is T-Beam V1
 
 If you encounter any problem choose in Platformio "erase flash" and repeat step (2) and (3).
 
@@ -81,6 +81,7 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2023.12.08 T-Beam V1 as default board
 - 2023.12.07 Added TTGO Lilygo LoRa32 v2.1 board as Bluetooth TNC(Android/Apple) and as a Tracker (with external GPS module).
 - 2023.12.07 Added ESP32 as DIY Tracker (with external GPS Module).
 - 2023.12.06 T-Beam V1.2 as default board.
