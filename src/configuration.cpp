@@ -30,17 +30,18 @@ void Configuration::readFile(fs::FS &fs, const char *fileName) {
         bcn.callsign          = BeaconsArray[i]["callsign"].as<String>();
         bcn.symbol            = BeaconsArray[i]["symbol"].as<String>();
         bcn.overlay           = BeaconsArray[i]["overlay"].as<String>();
+        bcn.micE              = BeaconsArray[i]["micE"].as<String>();
         bcn.comment           = BeaconsArray[i]["comment"].as<String>();
 
-        bcn.smartBeaconState  = BeaconsArray[i]["smart_beacon"]["active"].as<bool>();
-        bcn.slowRate          = BeaconsArray[i]["smart_beacon"]["slowRate"].as<int>();
-        bcn.slowSpeed         = BeaconsArray[i]["smart_beacon"]["slowSpeed"].as<int>();
-        bcn.fastRate          = BeaconsArray[i]["smart_beacon"]["fastRate"].as<int>();
-        bcn.fastSpeed         = BeaconsArray[i]["smart_beacon"]["fastSpeed"].as<int>();
-        bcn.minTxDist         = BeaconsArray[i]["smart_beacon"]["minTxDist"].as<int>();
-        bcn.minDeltaBeacon    = BeaconsArray[i]["smart_beacon"]["minDeltaBeacon"].as<int>();
-        bcn.turnMinDeg        = BeaconsArray[i]["smart_beacon"]["turnMinDeg"].as<int>();
-        bcn.turnSlope         = BeaconsArray[i]["smart_beacon"]["turnSlope"].as<int>();
+        bcn.smartBeaconState  = BeaconsArray[i]["smartBeacon"]["active"].as<bool>();
+        bcn.slowRate          = BeaconsArray[i]["smartBeacon"]["slowRate"].as<int>();
+        bcn.slowSpeed         = BeaconsArray[i]["smartBeacon"]["slowSpeed"].as<int>();
+        bcn.fastRate          = BeaconsArray[i]["smartBeacon"]["fastRate"].as<int>();
+        bcn.fastSpeed         = BeaconsArray[i]["smartBeacon"]["fastSpeed"].as<int>();
+        bcn.minTxDist         = BeaconsArray[i]["smartBeacon"]["minTxDist"].as<int>();
+        bcn.minDeltaBeacon    = BeaconsArray[i]["smartBeacon"]["minDeltaBeacon"].as<int>();
+        bcn.turnMinDeg        = BeaconsArray[i]["smartBeacon"]["turnMinDeg"].as<int>();
+        bcn.turnSlope         = BeaconsArray[i]["smartBeacon"]["turnSlope"].as<int>();      
 
         beacons.push_back(bcn);
     }
@@ -101,4 +102,16 @@ void Configuration::validateConfigFile(String currentBeaconCallsign) {
         delay(1000);
     }
   }
+}
+
+bool Configuration::validateMicE(String currentBeaconMicE) {
+  String miceMessageTypes[] = {"111", "110", "101", "100", "011", "010", "001" , "000"};
+  int arraySize = sizeof(miceMessageTypes) / sizeof(miceMessageTypes[0]);
+  bool validType = false;
+  for (int i=0; i<arraySize;i++) {
+    if (currentBeaconMicE == miceMessageTypes[i]) {
+      validType = true;
+    }
+  }
+  return validType;
 }

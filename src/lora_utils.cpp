@@ -16,23 +16,29 @@ SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 bool transmissionFlag = true;
 bool enableInterrupt = true;
 #endif
+#if defined(TTGO_T_Beam_V1_2_SX1262)
+SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+bool transmissionFlag = true;
+bool enableInterrupt = true;
+#endif
+
+
 
 namespace LoRa_Utils {
 
   void setFlag(void) {
-    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS)
+    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262)
     transmissionFlag = true;
     #endif
   }
 
   void setup() {
-    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS)
+    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262)
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Set SPI pins!");
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
     float freq = (float)Config.loramodule.frequency/1000000;
     int state = radio.begin(freq);
-    if (state == RADIOLIB_ERR_NONE)
-    {
+    if (state == RADIOLIB_ERR_NONE) {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Initializing SX1268");
     } else {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
@@ -54,11 +60,10 @@ namespace LoRa_Utils {
     #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_LORA_V2_1_TNC) || defined(TTGO_T_Beam_V1_2) || defined(ESP32_DIY_LoRa_GPS) || defined(TTGO_T_LORA_V2_1_GPS)
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Set SPI pins!");
     SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Set LoRa pins!");
     LoRa.setPins(LORA_CS, LORA_RST, LORA_IRQ);
 
     long freq = Config.loramodule.frequency;
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "frequency: %d", freq);
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Frequency: %d", freq);
     if (!LoRa.begin(freq)) {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
       show_display("ERROR", "Starting LoRa failed!");
@@ -77,7 +82,7 @@ namespace LoRa_Utils {
   }
 
   void sendNewPacket(const String &newPacket) {
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa","Send data: %s", newPacket.c_str());
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa Tx","---> %s", newPacket.c_str());
     /*logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "LoRa","Send data: %s", newPacket.c_str());
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa","Send data: %s", newPacket.c_str());
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa","Send data: %s", newPacket.c_str());*/
@@ -92,7 +97,7 @@ namespace LoRa_Utils {
     if (Config.notification.buzzerActive && Config.notification.txBeep) {
       NOTIFICATION_Utils::beaconTxBeep();
     }
-    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS)
+    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262)
     int state = radio.transmit("\x3c\xff\x01" + newPacket);
     if (state == RADIOLIB_ERR_NONE) {
       //Serial.println(F("success!"));
@@ -131,16 +136,16 @@ namespace LoRa_Utils {
         int inChar = LoRa.read();
         loraPacket += (char)inChar;
       }
-      logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa","Receive data: %s", loraPacket.c_str());
+      logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa Rx", "---> %s", loraPacket.c_str());
     }
     #endif
-    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS)
+    #if defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262)
     if (transmissionFlag) {
       transmissionFlag = false;
       radio.startReceive();
       int state = radio.readData(loraPacket);
       if (state == RADIOLIB_ERR_NONE) {
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa","Receive data: %s", loraPacket.c_str());
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa Rx","---> %s", loraPacket.c_str());
       } else if (state == RADIOLIB_ERR_RX_TIMEOUT) {
         // timeout occurred while waiting for a packet
       } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
