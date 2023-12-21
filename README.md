@@ -15,7 +15,7 @@ ____________________________________________________
 ____________________________________________________
 
 - Tracker with complete MENU !!! (see Wiki to know how to access it)
-    - Read, Write and Delete Messages with I2C Keyboard.
+    - Read, Write and Delete Messages (with I2C Keyboard or Phone).
     - Asking Weather Report.
     - Listening to other Trackers arround.
     - Changing Display Eco Mode (turn off after 4 seg) and Screen Brightness.
@@ -23,34 +23,39 @@ ____________________________________________________
 - All GPS beacons/packet are encoded for less time on RF/LoRa Tx.
 - Oled Screen shows Altitude+Speed+Course or BME280 Wx Data or Number of New Messages Received.
 - Oled Screen shows Recent Heard Trackers/Station/iGates Tx.
-- Bluetooth capabilities to connect Android + APRSDroid and use it as TNC.
+- Bluetooth capabilities to connect (Android + APRSDroid) or (iPhone + APRS.fi app) and use it as TNC.
 - Led Notifications for Tx and Messages Received.
 - Sound Notifications with YL44 Buzzer Module.
 - Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
 
 ____________________________________________________
 
-# WIKI
+# WIKI (English / Español en camino...)
 
-### 1. Installation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/1.-Installation-Guide" target="_blank">here</a>
+### 0. FAQ: Frequently Asked Question --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/00.-FAQ:-frequently-asked-question-%E2%80%90-preguntas-frecuentes-respondidas" target="_blank">here</a>
 
-### 2. Tracker Configuration and Explanation for each setting --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/2.-Tracker-Configuration" target="_blank">here</a>
+### 1. Installation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/01.-Installation-Guide-%23-Guia-de-Instalacion" target="_blank">here</a>
 
-### 3. Supported Boards and Environment Selection --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/3.-Supported-Boards-and-Environment-Selection" target="_blank">here</a>
+### 2. Tracker Configuration and Explanation for each setting --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/02.-Tracker-Configuration--%23--Configuracion-del-Tracker" target="_blank">here</a>
 
-### 4. Upload Firmware and Filesystem --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/4.-Upload-Firmware-and-Filesystem" target="_blank">here</a>
+### 3. Supported Boards and Environment Selection --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/03.-Supported-Boards-and-Environment-Selection-%23-Placas-soportadas-y-seleccion-del-entorno" target="_blank">here</a>
 
-### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/5.-Menu-Guide" target="_blank">here</a>
+### 4. Upload Firmware and Filesystem --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/04.-Upload-Firmware-and-Filesystem-%23-Subir-Firmware-y-sistema-de-archivos" target="_blank">here</a>
 
-### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/6.-Bluetooth-Connection" target="_blank">here</a>
+### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/05.-Menu-Guide" target="_blank">here</a>
 
-### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/7.-First-Time-Boot-and-GPS" target="_blank">here</a>
+### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/06.-Bluetooth-Connection" target="_blank">here</a>
 
-### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/8.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules" target="_blank">here</a>
+### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/07.-First-Time-Boot-and-GPS" target="_blank">here</a>
+
+### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/08.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules" target="_blank">here</a>
 
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2023.12.19 Added support for T-Beam V1.2 with Neo8M GPS and SX1262 LoRa Modules.
+- 2023.12.18 Added Mic-E encoding and decoding.
+- 2023.12.12 Added BMP280 (to the already BME280) support for Wx Telemetry Tx.
 - 2023.12.11 Added support for EByte 400M30S 1Watt LoRa module for DIY ESP32 Tracker.
 - 2023.12.07 Added TTGO Lilygo LoRa32 v2.1 board as Bluetooth TNC(Android/Apple) and as a Tracker (with external GPS module).
 - 2023.12.07 Added ESP32 as DIY Tracker (with external GPS Module) with LoRa SX1278 module.
@@ -62,7 +67,7 @@ ____________________________________________________
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
 - 2023.10.07 Screen Brightness control added.
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
-- 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module
+- 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module.
 - 2023.09.25 Wiki added.
 - 2023.09.16 Adding Led notification for Beacon Tx and for Message Received.
 - 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more.
