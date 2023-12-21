@@ -1,6 +1,7 @@
 #include <TinyGPS++.h>
 #include <SPIFFS.h>
 #include <vector>
+#include "APRSPacketLib.h"
 #include "station_utils.h"
 #include "configuration.h"
 #include "power_utils.h"
@@ -10,8 +11,6 @@
 #include "display.h"
 #include "logger.h"
 #include "utils.h"
-
-#include "APRSPacketLib.h"
 
 extern Configuration        Config;
 extern Beacon               *currentBeacon;
@@ -47,6 +46,8 @@ extern double               previousHeading;
 extern double               lastTxLat;
 extern double               lastTxLng;
 extern double               lastTxDistance;
+
+extern bool                 miceActive;
 
 
 namespace STATION_Utils {
@@ -389,10 +390,18 @@ namespace STATION_Utils {
   void sendBeacon(String type) {
     String packet;
     if (Config.bme.sendTelemetry && type == "Wx") {
-      packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
+      if (miceActive) {
+        packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign,"_", currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
+      } else {
+        packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
+      }
       packet += BME_Utils::readDataSensor("APRS");
     } else {
-      packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+      if (miceActive) {
+        packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign, currentBeacon->symbol, currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
+      } else {
+        packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+      }
     }
     if (currentBeacon->comment != "") {
       updateCounter++;
@@ -407,7 +416,7 @@ namespace STATION_Utils {
       #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
       packet += " Bat=" + batteryVoltage + "V (" + batteryChargeCurrent + "mA)";
       #endif
-      #ifdef TTGO_T_Beam_V1_2
+      #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262)
       packet += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
       #endif
     }

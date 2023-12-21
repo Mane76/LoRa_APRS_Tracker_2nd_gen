@@ -1,8 +1,8 @@
+#include "APRSPacketLib.h"
 #include "configuration.h"
 #include "lora_utils.h"
 #include "display.h"
 #include "utils.h"
-#include "APRSPacketLib.h"
 
 extern Beacon           *currentBeacon;
 extern Configuration    Config;
@@ -18,12 +18,9 @@ extern int              menuDisplay;
 extern String           versionDate;
 
 namespace utils {
-
   
   static char locator[11];
-  // The letterize and getMaidenheadLocator functions are
-  // Copyright (c) 2021 Mateusz Salwach
-  // MIT License
+  // The letterize and getMaidenheadLocator functions are Copyright (c) 2021 Mateusz Salwach - MIT License
 
   static char letterize(int x) {
       return (char) x + 65;
@@ -79,7 +76,7 @@ namespace utils {
     if (statusState) {
       lastTx = millis() - lastTxTime;
       uint32_t statusTx = millis() - statusTime;
-      if (statusTx > 15*60*1000 && lastTx > 10*1000) {
+      if (statusTx > 10*60*1000 && lastTx > 10*1000) {
         LoRa_Utils::sendNewPacket(APRSPacketLib::generateStatusPacket(currentBeacon->callsign, "APLRT1", Config.path, "https://github.com/richonguzman/LoRa_APRS_Tracker " + versionDate));
         statusState = false;
         lastTx = millis();
