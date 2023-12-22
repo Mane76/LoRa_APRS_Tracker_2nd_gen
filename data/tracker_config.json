@@ -6,7 +6,7 @@
 			"overlay": "/",
 			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 5,
@@ -24,7 +24,7 @@
 			"overlay": "/",
 			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 3,
@@ -42,7 +42,7 @@
 			"overlay": "/",
 			"micE":"101",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 10,
