@@ -16,8 +16,9 @@ extern uint32_t         displayTime;
 extern bool             displayState;
 extern int              menuDisplay;
 extern String           versionDate;
+extern bool             flashlight;
 
-namespace utils {
+namespace Utils {
   
   static char locator[11];
   // The letterize and getMaidenheadLocator functions are Copyright (c) 2021 Mateusz Salwach - MIT License
@@ -77,7 +78,7 @@ namespace utils {
       lastTx = millis() - lastTxTime;
       uint32_t statusTx = millis() - statusTime;
       if (statusTx > 15*60*1000 && lastTx > 10*1000) {
-        LoRa_Utils::sendNewPacket(APRSPacketLib::generateStatusPacket(currentBeacon->callsign, "APLRT1", Config.path, "https://github.com/richonguzman/LoRa_APRS_Tracker " + versionDate));
+        LoRa_Utils::sendNewPacket(APRSPacketLib::generateStatusPacket(currentBeacon->callsign, "APLRT1", Config.path, "github.com/mane76/LoRa_APRS_Tracker_2nd_gen " + versionDate));
         statusState = false;
         lastTx = millis();
       }
@@ -99,4 +100,12 @@ namespace utils {
     return "Off";
   }
 
+  void checkFlashlight() {
+    if (flashlight && !digitalRead(Config.notification.ledFlashlightPin)) {
+      digitalWrite(Config.notification.ledFlashlightPin, HIGH);
+    } else if (!flashlight && digitalRead(Config.notification.ledFlashlightPin)) {
+      digitalWrite(Config.notification.ledFlashlightPin, LOW);
+    }       
+  }
+  
 }
