@@ -396,7 +396,7 @@ namespace MENU_Utils {
                     if (batteryCharge.toInt() == 0) {
                         sixthRowMainMenu = "Battery Charged " + batteryVoltage + "V";
                     } else if (batteryCharge.toInt() > 0) {
-                        sixthRowMainMenu = "Bat: " + batteryVoltage + "V (charging)";
+                        sixthRowMainMenu = "Bat: " + batteryVoltage + "V " + batteryCharge + "mA";
                     } else {
                         sixthRowMainMenu = "Battery " + batteryVoltage + "V " + batteryCharge + "mA";
                     }
