@@ -33,7 +33,7 @@ BluetoothSerial               SerialBT;
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String    versionDate         = "2023.12.24";
+String    versionDate         = "2023.12.27";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -85,11 +85,14 @@ uint32_t  keyboardTime        = millis();
 String    messageCallsign     = "";
 String    messageText         = "";
 
+bool      flashlight          = false;
 bool      digirepeaterActive  = false;
 bool      sosActive           = false;
 bool      disableGPS;
 
 bool      miceActive          = false;
+
+APRSPacket                    lastReceivedPacket;
 
 logging::Logger               logger;
 
@@ -107,13 +110,17 @@ void setup() {
     pinMode(Config.notification.buzzerPinTone, OUTPUT);
     pinMode(Config.notification.buzzerPinVcc, OUTPUT);
     NOTIFICATION_Utils::start();
-  } 
+  }
   if (Config.notification.ledTx){
     pinMode(Config.notification.ledTxPin, OUTPUT);
   }
   if (Config.notification.ledMessage){
     pinMode(Config.notification.ledMessagePin, OUTPUT);
   }
+  if (Config.notification.ledFlashlight) {
+    pinMode(Config.notification.ledFlashlightPin, OUTPUT);
+  }
+
   show_display(" LoRa APRS", "", "      (TRACKER)", "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
@@ -147,7 +154,7 @@ void setup() {
   }
 
   powerManagement.lowerCpuFrequency();
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
   menuDisplay = 0;
 }
@@ -165,7 +172,7 @@ void loop() {
     userButton.tick();
     #endif
   }
-  utils::checkDisplayEcoMode();
+  Utils::checkDisplayEcoMode();
 
   if (keyboardConnected) {
     KEYBOARD_Utils::read();
@@ -178,6 +185,7 @@ void loop() {
 
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
   MSG_Utils::ledNotification();
+  Utils::checkFlashlight();
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
   if (Config.bluetoothType==0) {
     BLE_Utils::sendToLoRa();
@@ -188,7 +196,7 @@ void loop() {
   int currentSpeed = (int) gps.speed.kmph();
 
   if (gps_loc_update) {
-    utils::checkStatus();
+    Utils::checkStatus();
     STATION_Utils::checkTelemetryTx();
   }
   lastTx = millis() - lastTxTime;
