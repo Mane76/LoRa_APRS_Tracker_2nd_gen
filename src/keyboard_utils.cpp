@@ -8,11 +8,10 @@
 #include "msg_utils.h"
 #include "display.h"
 
-#define CARDKB_ADDR 0x5F    // yes , this is for CARDKB from m5stack.com
+#define CARDKB_ADDR 0x5F    // CARDKB from m5stack.com
 
 extern Configuration    Config;
 extern logging::Logger  logger;
-extern PowerManagement  powerManagement;
 extern bool             sendUpdate;
 extern int              menuDisplay;
 extern uint32_t         menuTime;
@@ -212,10 +211,10 @@ namespace KEYBOARD_Utils {
         MSG_Utils::sendMessage("ANSRVR","CQ HOTG Happy #APRSThursday from LoRa Tracker 73!");
       }
     } else if (menuDisplay == 131) {
-      show_display(" APRS Thu.", "", "     Unsubscribe", " from APRS Thursday", 2000);
+      show_display(" APRS Thu.", "", "   Unsubscribe", "   from APRS Thursday", 2000);
       MSG_Utils::sendMessage("ANSRVR","U HOTG");
     } else if (menuDisplay == 132) {
-      show_display(" APRS Thu.", "", "    Keep Subscribed" ,"  for 12hours more", 2000);
+      show_display(" APRS Thu.", "", "  Keep Subscribed" ,"  for 12hours more", 2000);
       MSG_Utils::sendMessage("ANSRVR","K HOTG");
     } 
     
@@ -245,7 +244,7 @@ namespace KEYBOARD_Utils {
 
     else if (menuDisplay == 4) {
       logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Loop", "%s", "wrl");
-      MSG_Utils::sendMessage("CD2RXU-15","wrl");
+      MSG_Utils::sendMessage("CA2RXU-15","wrl");
     }
     else if (menuDisplay == 5) {
       show_display("_WINLINK_", "still on", "development..", 2000); /////////////////////////
@@ -364,7 +363,7 @@ namespace KEYBOARD_Utils {
         ESP.restart();
       } else if (menuDisplay==260) {
         show_display("", "", "    POWER OFF ...", 2000);
-        powerManagement.shutdown();
+        POWER_Utils::shutdown();
       }
     }
     else if (key == 181) {  // Arrow Up
