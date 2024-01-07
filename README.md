@@ -83,7 +83,8 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
-- 2024.01.04 Added TTGO Lilygo T-Beam S3 Supreme v3 support. Thanks Johannes OE2JPO.
+- 2024.01.05 Added HELTEC V3 with NEO8M GPS. Thanks Asbjørn LA1HSA.
+- 2024.01.04 Added TTGO Lilygo T-Beam S3 Supreme V3 support. Thanks Johannes OE2JPO.
 - 2023.12.31 PowerManagment Library AXP192/AXP2101 updated.
 - 2023.12.27 Added Led-Flashlight like Baofeng UV5R Led.
 - 2023.12.27 Added LoRa APRS Packet Decoder to Stations Menu.
@@ -98,7 +99,7 @@ ____________________________________________________
 - 2023.12.05 Updated packets recognition (+Objects + Mic-E).
 - 2023.11.28 Adding BLE connection to use it as TNC with APRS.fi app for iOS.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
-- 2023.10.23 COMPLETE New Menu for Keyboard add-on.
+- 2023.10.23 COMPLETE New Menu on tracker and for Keyboard add-on.
 - 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
 - 2023.10.07 Screen Brightness control added.
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
