@@ -1,23 +1,23 @@
 #include <TinyGPS++.h>
+#include <SPIFFS.h>
 #include <vector>
+#include "APRSPacketLib.h"
 #include "station_utils.h"
 #include "configuration.h"
 #include "power_utils.h"
 #include "lora_utils.h"
-#include "msg_utils.h"
+#include "bme_utils.h"
 #include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
-#include "utils.h"
 
 extern Configuration        Config;
 extern Beacon               *currentBeacon;
 extern logging::Logger      logger;
 extern TinyGPSPlus          gps;
-extern PowerManagement      powerManagement;
 extern std::vector<String>  lastHeardStation;
 extern std::vector<String>  lastHeardStation_temp;
-extern String               fourthLine;
+extern int                  myBeaconsIndex;
 
 extern String               firstNearTracker;
 extern String               secondNearTracker;
@@ -25,12 +25,15 @@ extern String               thirdNearTracker;
 extern String               fourthNearTracker;
 
 extern uint32_t             lastDeleteListenedTracker;
+extern uint32_t             lastTx;
 extern uint32_t             lastTxTime;
+
+extern uint32_t             telemetryTx;
+extern uint32_t             lastTelemetryTx;
 
 extern bool                 sendUpdate;
 extern int                  updateCounter;
 extern bool                 sendStandingUpdate;
-extern bool                 statusState;
 
 extern uint32_t             txInterval;
 extern uint32_t             lastTx;
@@ -41,6 +44,8 @@ extern double               previousHeading;
 extern double               lastTxLat;
 extern double               lastTxLng;
 extern double               lastTxDistance;
+
+extern bool                 miceActive;
 
 
 namespace STATION_Utils {
@@ -60,7 +65,6 @@ namespace STATION_Utils {
   String getFourthNearTracker() {
     return String(fourthNearTracker.substring(0,fourthNearTracker.indexOf(",")));
   }
-
 
   void deleteListenedTrackersbyTime() {
     String firstNearTrackermillis, secondNearTrackermillis, thirdNearTrackermillis, fourthNearTrackermillis;
@@ -176,7 +180,7 @@ namespace STATION_Utils {
       } else {  
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > secondDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = newTrackerInfo;
@@ -186,7 +190,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance < firstDistance) {
               secondNearTracker = firstNearTracker;
               firstNearTracker  = newTrackerInfo;
@@ -216,7 +220,7 @@ namespace STATION_Utils {
       } else {  
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = thirdNearTracker;
@@ -230,7 +234,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               secondNearTracker = thirdNearTracker;
               thirdNearTracker  = newTrackerInfo;
@@ -243,7 +247,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == thirdNearTrackerCallsign) {
           if (distance != thirdDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance <= firstDistance) {
               thirdNearTracker  = secondNearTracker;
               secondNearTracker = firstNearTracker;
@@ -278,7 +282,7 @@ namespace STATION_Utils {
       } else {
         if (callsign == firstNearTrackerCallsign) {
           if (distance != firstDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               firstNearTracker  = secondNearTracker;
               secondNearTracker = thirdNearTracker;
@@ -297,7 +301,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == secondNearTrackerCallsign) {
           if (distance != secondDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               secondNearTracker = thirdNearTracker;
               thirdNearTracker  = fourthNearTracker;
@@ -314,7 +318,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == thirdNearTrackerCallsign) {
           if (distance != thirdDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > fourthDistance) {
               thirdNearTracker  = fourthNearTracker;
               fourthNearTracker = newTrackerInfo;
@@ -331,7 +335,7 @@ namespace STATION_Utils {
           }
         } else if (callsign == fourthNearTrackerCallsign) {
           if (distance != fourthDistance) {
-            Serial.print("Distance Updated for : "); Serial.println(callsign);
+            //Serial.print("Distance Updated for : "); Serial.println(callsign);
             if (distance > thirdDistance) {
               fourthNearTracker = newTrackerInfo;
             } else if (distance > secondDistance && distance <= thirdDistance) {
@@ -381,14 +385,22 @@ namespace STATION_Utils {
     }
   }
 
-  void sendBeacon() {
-    String packet = currentBeacon->callsign + ">APLRT1";
-    if (Config.path != "") {
-      packet += "," + Config.path;
+  void sendBeacon(String type) {
+    String packet;
+    if (Config.bme.sendTelemetry && type == "Wx") {
+      if (miceActive) {
+        packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign,"_", currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
+      } else {
+        packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
+      }
+      packet += BME_Utils::readDataSensor("APRS");
+    } else {
+      if (miceActive) {
+        packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign, currentBeacon->symbol, currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
+      } else {
+        packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encondeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+      }
     }
-    packet += ":!" + currentBeacon->overlay;
-    packet += GPS_Utils::encondeGPS();
-
     if (currentBeacon->comment != "") {
       updateCounter++;
       if (updateCounter >= Config.sendCommentAfterXBeacons) {
@@ -396,22 +408,19 @@ namespace STATION_Utils {
         updateCounter = 0;
       } 
     }
-
     if (Config.sendBatteryInfo) {
-      String batteryVoltage = powerManagement.getBatteryInfoVoltage();
-      String batteryChargeCurrent = powerManagement.getBatteryInfoCurrent();
-      #ifdef TTGO_T_Beam_V1_0
+      String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
+      String batteryChargeCurrent = POWER_Utils::getBatteryInfoCurrent();
+      #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
       packet += " Bat=" + batteryVoltage + "V (" + batteryChargeCurrent + "mA)";
       #endif
-      #ifdef TTGO_T_Beam_V1_2
+      #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262)
       packet += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
       #endif
     }
-
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Loop", "%s", packet.c_str());
     show_display("<<< TX >>>", "", packet,100);
     LoRa_Utils::sendNewPacket(packet);
-
+    
     if (currentBeacon->smartBeaconState) {
       lastTxLat       = gps.location.lat();
       lastTxLng       = gps.location.lng();
@@ -420,9 +429,43 @@ namespace STATION_Utils {
     }
     lastTxTime = millis();
     sendUpdate = false;
+  }
 
-    if (statusState) {
-      utils::startingStatus();
+  void checkTelemetryTx() {
+    if (Config.bme.active && Config.bme.sendTelemetry) {
+      lastTx = millis() - lastTxTime;
+      telemetryTx = millis() - lastTelemetryTx;
+      if (telemetryTx > 10*60*1000 && lastTx > 10*1000) {
+        sendBeacon("Wx");
+        lastTelemetryTx = millis();
+      } 
+    }
+  }
+
+  void saveCallsingIndex(int index) {
+    File fileCallsignIndex = SPIFFS.open("/callsignIndex.txt", "w");
+    if(!fileCallsignIndex){
+      return;
+    } 
+    String dataToSave = String(index);
+
+    if (fileCallsignIndex.println(dataToSave)) {
+      logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "New Callsign Index saved to SPIFFS");
+    } 
+    fileCallsignIndex.close();
+  }
+
+  void loadCallsignIndex() {
+    File fileCallsignIndex = SPIFFS.open("/callsignIndex.txt");
+    if(!fileCallsignIndex){
+      return;
+    } else {
+      while (fileCallsignIndex.available()) {
+        String firstLine = fileCallsignIndex.readStringUntil('\n');
+        myBeaconsIndex = firstLine.toInt();
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Callsign Index: %s", firstLine);
+      }
+      fileCallsignIndex.close();
     }
   }
 

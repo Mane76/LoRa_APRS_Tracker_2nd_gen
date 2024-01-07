@@ -4,9 +4,11 @@
 #include <Arduino.h>
 #include <logger.h>
 #include <WiFi.h>
-#include <LoRa.h>
 #include <vector>
+#include "APRSPacketLib.h"
+#include "notification_utils.h"
 #include "bluetooth_utils.h"
+#include "keyboard_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
 #include "button_utils.h"
@@ -16,19 +18,23 @@
 #include "lora_utils.h"
 #include "msg_utils.h"
 #include "gps_utils.h"
+#include "bme_utils.h"
+#include "ble_utils.h"
 #include "display.h"
 #include "SPIFFS.h"
 #include "utils.h"
 
-
 Configuration                 Config;
-PowerManagement               powerManagement;
 HardwareSerial                neo6m_gps(1);
 TinyGPSPlus                   gps;
+#if !defined(TTGO_T_Beam_S3_SUPREME_V3) && !defined(HELTEC_V3_GPS)
 BluetoothSerial               SerialBT;
+#endif
+#if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
+#endif
 
-String    versionDate         = "2023.08.08";
+String    versionDate         = "2024.01.06m";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -46,8 +52,20 @@ uint32_t  refreshDisplayTime  = millis();
 
 bool      sendUpdate          = true;
 int       updateCounter       = Config.sendCommentAfterXBeacons;
-bool		  sendStandingUpdate  = false;
+bool	    sendStandingUpdate  = false;
 bool      statusState         = true;
+uint32_t  statusTime          = millis();
+bool      bluetoothConnected  = false;
+bool      bluetoothActive     = Config.bluetoothActive;
+bool      sendBleToLoRa       = false;
+String    BLEToLoRaPacket     = "";
+
+bool      messageLed          = false;
+uint32_t  messageLedTime      = millis();
+int       lowBatteryPercent   = 21;
+
+uint32_t  lastTelemetryTx     = millis();
+uint32_t  telemetryTx         = millis();
 
 uint32_t  lastTx              = 0.0;
 uint32_t  txInterval          = 60000L;
@@ -61,19 +79,51 @@ double    previousHeading     = 0;
 uint32_t  menuTime            = millis();
 bool      symbolAvailable     = true;
 
-bool      bluetoothConnected  = false;
+int       screenBrightness    = 1;
+bool      keyboardConnected   = false;
+bool      keyDetected         = false;
+uint32_t  keyboardTime        = millis();
+String    messageCallsign     = "";
+String    messageText         = "";
+
+bool      flashlight          = false;
+bool      digirepeaterActive  = false;
+bool      sosActive           = false;
+bool      disableGPS;
+
+bool      miceActive          = false;
+
+APRSPacket                    lastReceivedPacket;
 
 logging::Logger               logger;
-
 
 void setup() {
   Serial.begin(115200);
 
-  powerManagement.setup();
-  
+  #ifndef DEBUG
+  logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
+  #endif
+
+  POWER_Utils::setup();
+
   setup_display();
-  show_display(" LoRa APRS", "", "     Richonguzman", "     -- CD2RXU --", "", "      " + versionDate, 4000);
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman -> CD2RXU --> LoRa APRS Tracker/Station");
+  if (Config.notification.buzzerActive) {
+    pinMode(Config.notification.buzzerPinTone, OUTPUT);
+    pinMode(Config.notification.buzzerPinVcc, OUTPUT);
+    NOTIFICATION_Utils::start();
+  }
+  if (Config.notification.ledTx){
+    pinMode(Config.notification.ledTxPin, OUTPUT);
+  }
+  if (Config.notification.ledMessage){
+    pinMode(Config.notification.ledMessagePin, OUTPUT);
+  }
+  if (Config.notification.ledFlashlight) {
+    pinMode(Config.notification.ledFlashlightPin, OUTPUT);
+  }
+
+  show_display(" LoRa APRS", "", "      (TRACKER)", "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
 
   if (Config.ptt.active) {
@@ -84,30 +134,52 @@ void setup() {
   MSG_Utils::loadNumMessages();
   GPS_Utils::setup();
   LoRa_Utils::setup();
+  BME_Utils::setup();
+  STATION_Utils::loadCallsignIndex();
 
   WiFi.mode(WIFI_OFF);
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
-  BLUETOOTH_Utils::setup();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::setup();
+  } else {
+    #if !defined(TTGO_T_Beam_S3_SUPREME_V3) && !defined(HELTEC_V3_GPS)
+    BLUETOOTH_Utils::setup();
+    #endif
+  }
 
-  userButton.attachClick(BUTTON_Utils::singlePress);
-  userButton.attachLongPressStart(BUTTON_Utils::longPress);
-  userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+  if (!Config.simplifiedTrackerMode) {
+    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
+    userButton.attachClick(BUTTON_Utils::singlePress);
+    userButton.attachLongPressStart(BUTTON_Utils::longPress);
+    userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+    #endif
+    KEYBOARD_Utils::setup();
+  }
 
-  powerManagement.lowerCpuFrequency();
-  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", utils::getSmartBeaconState());
+  POWER_Utils::lowerCpuFrequency();
+  logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
   logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
-  menuDisplay = BUTTON_PIN == -1 ? 20 : 0;
+  menuDisplay = 0;
 }
 
 void loop() {
   currentBeacon = &Config.beacons[myBeaconsIndex];
   if (statusState) {
     Config.validateConfigFile(currentBeacon->callsign);
+    miceActive = Config.validateMicE(currentBeacon->micE);
   }
 
-  powerManagement.batteryManager();
-  userButton.tick();
-  utils::checkDisplayEcoMode();
+  POWER_Utils::batteryManager();
+  if (!Config.simplifiedTrackerMode) {
+    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
+    userButton.tick();
+    #endif
+  }
+  Utils::checkDisplayEcoMode();
+
+  if (keyboardConnected) {
+    KEYBOARD_Utils::read();
+  }
 
   GPS_Utils::getData();
   bool gps_time_update = gps.time.isUpdated();
@@ -115,11 +187,23 @@ void loop() {
   GPS_Utils::setDateFromData();
 
   MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
+  MSG_Utils::ledNotification();
+  Utils::checkFlashlight();
   STATION_Utils::checkListenedTrackersByTimeAndDelete();
-  BLUETOOTH_Utils::sendToLoRa();
+  if (Config.bluetoothType==0) {
+    BLE_Utils::sendToLoRa();
+  } else {
+    #if !defined(TTGO_T_Beam_S3_SUPREME_V3) && !defined(HELTEC_V3_GPS)
+    BLUETOOTH_Utils::sendToLoRa();
+    #endif
+  }
 
   int currentSpeed = (int) gps.speed.kmph();
 
+  if (gps_loc_update) {
+    Utils::checkStatus();
+    STATION_Utils::checkTelemetryTx();
+  }
   lastTx = millis() - lastTxTime;
   if (!sendUpdate && gps_loc_update && currentBeacon->smartBeaconState) {
     GPS_Utils::calculateDistanceTraveled();
@@ -128,14 +212,13 @@ void loop() {
     }
     STATION_Utils::checkStandingUpdateTime();
   }
-
   STATION_Utils::checkSmartBeaconState();
-
   if (sendUpdate && gps_loc_update) {
-    STATION_Utils::sendBeacon();
+    STATION_Utils::sendBeacon("GPS");
   }
-
-  STATION_Utils::checkSmartBeaconInterval(currentSpeed);
+  if (gps_time_update) {
+    STATION_Utils::checkSmartBeaconInterval(currentSpeed);
+  }
   
   if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {
     GPS_Utils::checkStartUpFrames();

@@ -53,13 +53,14 @@
 		}
 	],
 	"lora": {
-		"frequency": 433775000,
+		"frequency": 433774500,
 		"spreadingFactor": 12,
 		"signalBandwidth": 125000,
 		"codingRate4": 5,
 		"power": 20
 	},
 	"other": {
+		"simplifiedTrackerMode": false,
 		"showSymbolOnScreen": true,
 		"sendCommentAfterXBeacons": 20,
 		"displayEcoMode": true,
@@ -71,14 +72,36 @@
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
 		"sendBatteryInfo": false,
-		"bluetooth": true,
+		"bluetoothType": 1,
+		"bluetoothActive": true,
 		"disableGPS": false
 	},
-	"ptt_trigger": {
+	"pttTrigger": {
 		"active": false,
 		"io_pin": 4,
 		"preDelay": 0,
 		"postDelay": 0,
 		"reverse": false
+	},
+	"bme": {
+		"active": false,
+		"sendTelemetry": false,
+		"heightCorrection": 0
+	},
+	"notification": {
+		"ledTx": false,
+		"ledTxPin": 13,
+		"ledMessage": false,
+		"ledMessagePin": 2,
+		"ledFlashlight": false,
+		"ledFlashlightPin": 14,
+		"buzzerActive": false,
+		"buzzerPinTone": 33,
+		"buzzerPinVcc": 25,
+		"bootUpBeep": false,
+		"txBeep": false,
+		"messageRxBeep": false,
+		"stationBeep": false,
+		"lowBatteryBeep": false
 	}
 }

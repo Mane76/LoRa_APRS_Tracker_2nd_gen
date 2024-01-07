@@ -1,3 +1,4 @@
+#include "APRSPacketLib.h"
 #include "configuration.h"
 #include "lora_utils.h"
 #include "display.h"
@@ -6,19 +7,20 @@
 extern Beacon           *currentBeacon;
 extern Configuration    Config;
 extern bool             statusState;
+extern uint32_t         statusTime;
+extern uint32_t         lastTx;
+extern uint32_t         lastTxTime;
+
 extern bool             displayEcoMode; 
 extern uint32_t         displayTime;
 extern bool             displayState;
 extern int              menuDisplay;
 extern String           versionDate;
+extern bool             flashlight;
 
-namespace utils {
-
+namespace Utils {
   
-  static char locator[11];
-  // The letterize and getMaidenheadLocator functions are
-  // Copyright (c) 2021 Mateusz Salwach
-  // MIT License
+  static char locator[11];    // letterize and getMaidenheadLocator functions are Copyright (c) 2021 Mateusz Salwach - MIT License
 
   static char letterize(int x) {
       return (char) x + 65;
@@ -49,16 +51,6 @@ namespace utils {
     return locator;
   }
 
-  char *ax25_base91enc(char *s, uint8_t n, uint32_t v) {
-    /* Creates a Base-91 representation of the value in v in the string */
-    /* pointed to by s, n-characters long. String length should be n+1. */
-    for(s += n, *s = '\0'; n; n--) {
-      *(--s) = v % 91 + 33;
-      v /= 91;
-    }
-    return(s);
-  }
-
   static String padding(unsigned int number, unsigned int width) {
       String result;
       String num(number);
@@ -80,15 +72,16 @@ namespace utils {
       return String(padding(hour(t), 2) + ":" + padding(minute(t), 2) + ":" + padding(second(t), 2));
   }
 
-  void startingStatus() {
-    delay(3000);
-    String packet = currentBeacon->callsign + ">APLRT1";
-    if (Config.path != "") {
-      packet += "," + Config.path;
+  void checkStatus() {
+    if (statusState) {
+      lastTx = millis() - lastTxTime;
+      uint32_t statusTx = millis() - statusTime;
+      if (statusTx > 15*60*1000 && lastTx > 10*1000) {
+        LoRa_Utils::sendNewPacket(APRSPacketLib::generateStatusPacket(currentBeacon->callsign, "APLRT1", Config.path, "https://github.com/mane76/LoRa_APRS_Tracker_2nd_gen " + versionDate));
+        statusState = false;
+        lastTx = millis();
+      }
     }
-    packet += ":>https://github.com/richonguzman/LoRa_APRS_Tracker " + versionDate;
-    LoRa_Utils::sendNewPacket(packet);
-    statusState = false;
   }
 
   void checkDisplayEcoMode() {
@@ -106,4 +99,12 @@ namespace utils {
     return "Off";
   }
 
+  void checkFlashlight() {
+    if (flashlight && !digitalRead(Config.notification.ledFlashlightPin)) {
+      digitalWrite(Config.notification.ledFlashlightPin, HIGH);
+    } else if (!flashlight && digitalRead(Config.notification.ledFlashlightPin)) {
+      digitalWrite(Config.notification.ledFlashlightPin, LOW);
+    }       
+  }
+  
 }

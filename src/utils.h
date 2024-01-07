@@ -4,15 +4,16 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
-namespace utils {
+namespace Utils {
 
-char *getMaidenheadLocator(double lat, double lon, int size);
-char *ax25_base91enc(char *s, uint8_t n, uint32_t v);
-String createDateString(time_t t);
-String createTimeString(time_t t);
-void startingStatus();
-void checkDisplayEcoMode();
-String getSmartBeaconState();
+    char *getMaidenheadLocator(double lat, double lon, int size);
+    String createDateString(time_t t);
+    String createTimeString(time_t t);
+    void checkStatus();
+    void checkDisplayEcoMode();
+    String getSmartBeaconState();
+    void checkFlashlight();
 
 }
+
 #endif

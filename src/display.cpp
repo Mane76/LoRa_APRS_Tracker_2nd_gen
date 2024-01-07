@@ -5,8 +5,16 @@
 #include "configuration.h"
 #include "pins_config.h"
 #include "display.h"
+#include "TimeLib.h"
 
-#define ssd1306 //uncomment this line when using SH1106 screen instead of SSD1306
+#define ssd1306 //comment this line with "//" when using SH1106 screen instead of SSD1306
+
+#if defined(TTGO_T_Beam_S3_SUPREME_V3)
+#undef ssd1306
+#endif
+#if defined(HELTEC_V3_GPS)
+#define OLED_DISPLAY_HAS_RST_PIN
+#endif
 
 #ifdef ssd1306
 #include <Adafruit_SSD1306.h>
@@ -22,11 +30,13 @@ extern Beacon           *currentBeacon;
 extern int              menuDisplay;
 extern bool             symbolAvailable;
 extern bool             bluetoothConnected;
+extern int              screenBrightness; //from 1 to 255 to regulate brightness of oled scren
 
-String symbolArray[13]        = {"BT", "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";"};
+const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k", "C", "a", "Y", "O"};
 int   symbolArraySize         = sizeof(symbolArray)/sizeof(symbolArray[0]);
-const uint8_t *symbolsAPRS[]  = {bluetoothSymbol, runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, truckSymbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol};
-uint32_t  symbolTime          = millis();
+const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, 
+                                truck18Symbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol,
+                                houseSymbol, truckSymbol, canoeSymbol, ambulanceSymbol, yatchSymbol, baloonSymbol};
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
@@ -74,7 +84,7 @@ void setup_display() {
   display.setCursor(0, 0);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
 }
@@ -99,13 +109,13 @@ void show_display(String header, int wait) {
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
   delay(wait);
@@ -118,7 +128,7 @@ void show_display(String header, String line1, int wait) {
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
@@ -127,7 +137,7 @@ void show_display(String header, String line1, int wait) {
   display.println(line1);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
   delay(wait);
@@ -140,7 +150,7 @@ void show_display(String header, String line1, String line2, int wait) {
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
@@ -151,7 +161,7 @@ void show_display(String header, String line1, String line2, int wait) {
   display.println(line2);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
   delay(wait);
@@ -164,7 +174,7 @@ void show_display(String header, String line1, String line2, String line3, int w
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
@@ -177,7 +187,7 @@ void show_display(String header, String line1, String line2, String line3, int w
   display.println(line3);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
   delay(wait);
@@ -190,7 +200,7 @@ void show_display(String header, String line1, String line2, String line3, Strin
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
@@ -205,7 +215,7 @@ void show_display(String header, String line1, String line2, String line3, Strin
   display.println(line4);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
   display.display();
   delay(wait);
@@ -218,7 +228,7 @@ void show_display(String header, String line1, String line2, String line3, Strin
   display.setTextColor(WHITE);
   #else
   display.setTextColor(SH110X_WHITE);
-  #endif  
+  #endif
   display.setTextSize(2);
   display.setCursor(0, 0);
   display.println(header);
@@ -235,7 +245,7 @@ void show_display(String header, String line1, String line2, String line3, Strin
   display.println(line5);
   #ifdef ssd1306
   display.ssd1306_command(SSD1306_SETCONTRAST);
-  display.ssd1306_command(1);
+  display.ssd1306_command(screenBrightness);
   #endif
 
   if (menuDisplay==0 && Config.showSymbolOnScreen) {
@@ -246,26 +256,25 @@ void show_display(String header, String line1, String line2, String line3, Strin
         break;
       }
     }
+
+    symbolAvailable = symbol != 100;
+
     /*
-     * Symbol alternate every 2.5s (+/- 500ms due to 1s tick of display refresh)
+     * Symbol alternate every 5s
      * If bluetooth is disconnected or if we are in the first part of the clock, then we show the APRS symbol
      * Otherwise, we are in the second part of the clock, then we show BT connected
      */
-    if (!bluetoothConnected || millis() - symbolTime <= 2500) {
-      if (symbol != 100) {
-        symbolAvailable = true;
+    const auto time_now = now();
+    if (!bluetoothConnected || time_now % 10 < 5) {
+      if (symbolAvailable) {
         display.drawBitmap((display.width() - SYM_WIDTH), 0, symbolsAPRS[symbol], SYM_WIDTH, SYM_HEIGHT, 1);
-      } else {
-        symbolAvailable = false;
       }
     } else if (bluetoothConnected) {
+      // TODO In this case, the text symbol stay displayed due to symbolAvailable false in menu_utils
       display.drawBitmap((display.width() - SYM_WIDTH), 0, bluetoothSymbol, SYM_WIDTH, SYM_HEIGHT, 1);
     }
-
-    if (millis() - symbolTime >= 5000) {
-      symbolTime = millis();
-    }
-  }  
+  }
+  
   display.display();
   delay(wait);
 }
