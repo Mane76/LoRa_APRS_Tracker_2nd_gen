@@ -289,9 +289,9 @@ namespace POWER_Utils {
     }
     activateMeasurement();
     PMU.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
-    PMU.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V1);
+    PMU.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V2);
     PMU.setChargerConstantCurr(XPOWERS_AXP192_CHG_CUR_780MA);
-    PMU.setSysPowerDownVoltage(2800);
+    PMU.setSysPowerDownVoltage(2600);
     #endif
 
     #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262)
