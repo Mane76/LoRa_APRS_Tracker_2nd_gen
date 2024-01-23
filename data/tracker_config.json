@@ -55,19 +55,15 @@
 			}
 		}
 	],
-	"lora": {
-		"frequency": 433774500,
-		"spreadingFactor": 12,
-		"signalBandwidth": 125000,
-		"codingRate4": 5,
-		"power": 20
-	},
+	"display": {
+		"showSymbol": true,
+		"ecoMode": false,
+		"timeout": 45,
+		"turn180" : false
+    },
 	"other": {
 		"simplifiedTrackerMode": false,
-		"showSymbolOnScreen": true,
 		"sendCommentAfterXBeacons": 20,
-		"displayEcoMode": true,
-		"displayTimeout": 30,
 		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
@@ -76,15 +72,11 @@
 		"sendAltitude": true,
 		"sendBatteryInfo": false,
 		"bluetoothType": 1,
-		"bluetoothActive": true,
+		"bluetoothActive": false,
 		"disableGPS": false
 	},
-	"pttTrigger": {
-		"active": false,
-		"io_pin": 4,
-		"preDelay": 0,
-		"postDelay": 0,
-		"reverse": false
+	"winlink": {
+		"password": "ChangeMe"
 	},
 	"bme": {
 		"active": false,
@@ -106,5 +98,19 @@
 		"messageRxBeep": false,
 		"stationBeep": false,
 		"lowBatteryBeep": false
+	},
+	"lora": {
+		"frequency": 433774500,
+		"spreadingFactor": 12,
+		"signalBandwidth": 125000,
+		"codingRate4": 5,
+		"power": 20
+	},
+	"pttTrigger": {
+		"active": false,
+		"io_pin": 4,
+		"preDelay": 0,
+		"postDelay": 0,
+		"reverse": false
 	}
 }
