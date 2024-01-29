@@ -72,27 +72,29 @@ ____________________________________________________
 
 ### 4. Upload Firmware and Filesystem --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/04.-Upload-Firmware-and-Filesystem-%23-Subir-Firmware-y-sistema-de-archivos" target="_blank">here</a>
 
-### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/05.-Menu-Guide" target="_blank">here</a>
+### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/05.-Menu-Guide-%23-Guía-del-menú" target="_blank">here</a>
 
-### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/06.-Bluetooth-Connection" target="_blank">here</a>
+### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/06.-Bluetooth-Connection-%23-Conexión-Bluetooth" target="_blank">here</a>
 
-### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/07.-First-Time-Boot-and-GPS" target="_blank">here</a>
+### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/07.-First-Time-Boot-and-GPS.-Primer-arranque-y-GPS" target="_blank">here</a>
 
-### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/08.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules" target="_blank">here</a>
+### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/08.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules.-Añadir-teclado,-BME280,-LED-y-alarma-sonora." target="_blank">here</a>
+
 
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.01.26 Added Helmut OE5HWN MeshCom PCB support. **)
 - 2024.01.18 BME modules have now a single reading per minute.
 - 2024.01.05 Added HELTEC V3 with NEO8M GPS. Thanks Asbjørn LA1HSA.
 - 2024.01.04 Added TTGO Lilygo T-Beam S3 Supreme V3 support. Thanks Johannes OE2JPO.
 - 2023.12.31 PowerManagment Library AXP192/AXP2101 updated.
-- 2023.12.27 Added Led-Flashlight like Baofeng UV5R Led.
+- 2023.12.27 Added Led-Flashlight like Baofeng UV5R Led. *)
 - 2023.12.27 Added LoRa APRS Packet Decoder to Stations Menu.
 - 2023.12.26 Added BME680 (to the already BME/BMP280) support for Wx Telemetry Tx.
 - 2023.12.22 Added APRSThrusday on Messages Menu to parcitipate from this exercise (https://aprsph.net/aprsthursday/)
 - 2023.12.19 Added support for T-Beam V1.2 with Neo8M GPS and SX1262 LoRa Modules.
-- 2023.12.18 Added Mic-E encoding and decoding.
+- 2023.12.18 Added Mic-E encoding and decoding. *)
 - 2023.12.12 Added BMP280 (to the already BME280) support for Wx Telemetry Tx.
 - 2023.12.11 Added support for EByte 400M30S 1Watt LoRa module for DIY ESP32 Tracker.
 - 2023.12.07 Added TTGO Lilygo LoRa32 v2.1 board as Bluetooth TNC(Android/Apple) and as a Tracker (with external GPS module).
@@ -106,34 +108,35 @@ ____________________________________________________
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
 - 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module.
 - 2023.09.25 Wiki added.
-- 2023.09.16 Adding Led notification for Beacon Tx and for Message Received.
-- 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more.
+- 2023.09.16 Adding Led notification for Beacon Tx and for Message Received. *)
+- 2023.09.14 Adding buzzer sounds for BootUp, BeaconTx, MessageRx and more. *)
 - 2023.09.11 Saving last used Callsign into internal Memory to remember it at next boot.
-- 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx.
-- 2023.08.27 Adding support to connect BME280 and see Temperature, Humidity, Pressure.
+- 2023.09.05 Adding "simplified Tracker Mode": only GPS beacons Tx. *)
+- 2023.08.27 Adding support to connect BME280 and see Temperature, Humidity, Pressure. *)
 - 2023.08.12 Adding also support for old V0_7 board. Thanks Béla Török.
 - 2023.08.09 Adding Bluetooth capabilities with Kiss and TNC2, TTGO Lora 32. Thanks Thomas DL9SAU.
 - 2023.08.08 Added Maidenhead info on Screen. Thanks Mathias "mpbraendli".
-- 2023.08.06 Added Bluetooth Support for TNC in Android/APRSDroid. Thanks Valentin F4HVV.
+- 2023.08.06 Added Bluetooth Support for TNC in Android/APRSDroid. Thanks Valentin F4HVV. *)
 - 2023.08.05 New Support for SH1106 Oled Screen (0,96" and 1.3")
 - 2023.07.24 New Validation for Callsings, Overlay change and New Icons (Bike, Motorcycle).
-- 2023.07.18 Add Support for triggering PTT to external amplifier.
+- 2023.07.18 Add Support for triggering PTT to external amplifier. *)
 - 2023.07.16 New Icons for Oled Screen (Runner, Car, Jeep)
 - 2023.07.01 Added Support for new T-Beam AXP2101 v1.2 Board.
 - 2023.06.26 Weather Report now stays until button pressed, to avoid missing it.
-- 2023.06.25 Sends comment after X count of beacons.
+- 2023.06.25 Sends comment after X count of beacons. *)
 - 2023.06.24 displayEcoMode=true doesn't turn the screen off at boot.
 - 2023.06.23 Return to from any Menu number to Main Menu (Tracker) after 30 segs.
-- 2023.06.20 Major Code Repacking.
+- 2023.06.20 Major Code Repacking. **)
 - 2023.06.01 Adding Turn Slope calculations for Smart Beacon and Display Eco Mode.
-- 2023.05.29 New Config file for adding more new ideas to the Tracker.
-- 2023.05.27 Adding Altitude + Speed or Course + Speed in the encoded GPS info.
+- 2023.05.29 New Config file for adding more new ideas to the Tracker. **)
+- 2023.05.27 Adding Altitude + Speed or Course + Speed in the encoded GPS info. *)
 - 2023.05.21 Adding Last-Heard LoRa Stations/Trackers.
 - 2023.05.14 Adding Menu.
 - 2023.05.12 Saving Messages to Internal Memory.
 - 2023.04.16 Sending and Receiving LoRa Packets.
 
-
+*) if you want to use this new feature an update of the config is neccessary. Otherwise just update the firmware. 
+**) MAJOR UPDATE - config has to be adopted to new values/parameters
 
 ____________________________________________________
 ## This code was based on the work of :
