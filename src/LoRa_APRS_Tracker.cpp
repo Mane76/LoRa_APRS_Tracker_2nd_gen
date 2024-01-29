@@ -30,11 +30,11 @@ TinyGPSPlus                   gps;
 #if !defined(TTGO_T_Beam_S3_SUPREME_V3) && !defined(HELTEC_V3_GPS)
 BluetoothSerial               SerialBT;
 #endif
-#if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3) || defined(HELTEC_V3_GPS)
+#ifdef HAS_BUTTON
 OneButton userButton          = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String    versionDate         = "2024.01.18m";
+String    versionDate         = "2024.01.26m";
 
 int       myBeaconsIndex      = 0;
 int       myBeaconsSize       = Config.beacons.size();
@@ -45,7 +45,7 @@ int       menuDisplay         = 100;
 int       messagesIterator    = 0;
 std::vector<String>           loadedAPRSMessages;
 
-bool      displayEcoMode      = Config.displayEcoMode;
+bool      displayEcoMode      = Config.display.ecoMode;
 bool      displayState        = true;
 uint32_t  displayTime         = millis();
 uint32_t  refreshDisplayTime  = millis();
@@ -150,7 +150,7 @@ void setup() {
   }
 
   if (!Config.simplifiedTrackerMode) {
-    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3) || defined(HELTEC_V3_GPS)
+    #ifdef HAS_BUTTON
     userButton.attachClick(BUTTON_Utils::singlePress);
     userButton.attachLongPressStart(BUTTON_Utils::longPress);
     userButton.attachDoubleClick(BUTTON_Utils::doublePress);
@@ -173,7 +173,7 @@ void loop() {
 
   POWER_Utils::batteryManager();
   if (!Config.simplifiedTrackerMode) {
-    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
+    #ifdef HAS_BUTTON
     userButton.tick();
     #endif
   }
