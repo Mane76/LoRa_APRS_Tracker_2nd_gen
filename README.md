@@ -3,9 +3,9 @@
 ### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
 
 NOTE: To take advantage of Tx/Rx capabilities you should have an Tx/Rx LoRa iGate (near you) like:
-
 https://github.com/richonguzman/LoRa_APRS_iGate or the fork https://github.com/Mane76/LoRa_APRS_iGate_2nd_gen
 
+![Screenshot](https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/OledScreen2.jpeg)
 ____________________________________________________
 
 ## You can support this project to continue to grow:
@@ -27,6 +27,7 @@ ____________________________________________________
 - Led Notifications for Tx and Messages Received.
 - Sound Notifications with YL44 Buzzer Module.
 - Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
+- Winlink Mails through APRSLink.
 
 If you encounter any problem choose in Platformio "erase flash" and repeat step (2) and (3).
 
@@ -56,6 +57,8 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.02.24 New Partitions: more memory for new code/firmware (still > 500 Rx messages available)
+- 2024.02.21 Winlink Mails through APRSLink ( https://www.winlink.org/APRSLink/ )
 - 2024.01.26 Added Helmut OE5HWN MeshCom PCB support.
 - 2024.01.18 BME modules have now a single reading per minute.
 - 2024.01.05 Added HELTEC V3 with NEO8M GPS. Thanks Asbjørn LA1HSA.
@@ -64,7 +67,7 @@ ____________________________________________________
 - 2023.12.27 Added Led-Flashlight like Baofeng UV5R Led.
 - 2023.12.27 Added LoRa APRS Packet Decoder to Stations Menu.
 - 2023.12.26 Added BME680 (to the already BME/BMP280) support for Wx Telemetry Tx.
-- 2023.12.22 Added APRSThrusday on Messages Menu to parcitipate from this exercise (https://aprsph.net/aprsthursday/)
+- 2023.12.22 Added APRSThrusday on Messages Menu to parcitipate from this exercise ( https://aprsph.net/aprsthursday/ )
 - 2023.12.19 Added support for T-Beam V1.2 with Neo8M GPS and SX1262 LoRa Modules.
 - 2023.12.18 Added Mic-E encoding and decoding.
 - 2023.12.12 Added BMP280 (to the already BME280) support for Wx Telemetry Tx.
@@ -75,8 +78,8 @@ ____________________________________________________
 - 2023.12.05 Updated packets recognition (+Objects + Mic-E).
 - 2023.11.28 Adding BLE connection to use it as TNC with APRS.fi app for iOS.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
-- 2023.10.23 COMPLETE New Menu on tracker and for Keyboard add-on.
-- 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
+- 2023.10.23 COMPLETE New Menu for Keyboard add-on.
+- 2023.10.22 Added Keyboard Support over I2C ( CARDKB from https://m5stack.com )
 - 2023.10.07 Screen Brightness control added.
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
 - 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module.
