@@ -2,6 +2,8 @@
 
 This firmware is for using ESP32 based boards with LoRa Modules and GPS to live in the APRS world.
 
+### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config.
+
 ![Screenshot](https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/OledScreen2.jpeg)
 
 __(NOTE: To use Tx/Rx capabilities of this tracker you should have also an Tx/Rx <a href="https://github.com/richonguzman/LoRa_APRS_iGate" target="_blank">LoRa iGate</a> near you)__
