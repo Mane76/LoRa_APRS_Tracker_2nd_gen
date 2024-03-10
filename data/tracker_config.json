@@ -1,7 +1,7 @@
 {
 	"beacons": [
 		{
-			"callsign": "NOCALL-7",
+			"callsign": "NOCALL-4",
 			"symbol": "[",
 			"overlay": "/",
 			"micE": "",
@@ -9,13 +9,13 @@
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
-				"slowSpeed": 3,
+				"slowSpeed": 5,
 				"fastRate": 60,
-				"fastSpeed": 15,
-				"minTxDist": 50,
+				"fastSpeed": 20,
+				"minTxDist": 100,
 				"minDeltaBeacon": 20,
-				"turnMinDeg": 12,
-				"turnSlope": 60
+				"turnMinDeg": 20,
+				"turnSlope": 50
 			}			
 		},
 		{
@@ -27,17 +27,17 @@
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
-				"slowSpeed": 10,
+				"slowSpeed": 3,
 				"fastRate": 60,
-				"fastSpeed": 70,
+				"fastSpeed": 10,
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
-				"turnMinDeg": 10,
-				"turnSlope": 80
+				"turnMinDeg": 20,
+				"turnSlope": 30
 			}
 		},
 		{
-			"callsign": "NOCALL-7",
+			"callsign": "NOCALL-9",
 			"symbol": "b",
 			"overlay": "/",
 			"micE": "",
@@ -45,38 +45,38 @@
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
-				"slowSpeed": 5,
+				"slowSpeed": 10,
 				"fastRate": 60,
-				"fastSpeed": 40,
+				"fastSpeed": 70,
 				"minTxDist": 100,
 				"minDeltaBeacon": 12,
-				"turnMinDeg": 12,
-				"turnSlope": 60
+				"turnMinDeg": 20,
+				"turnSlope": 80
 			}
 		}
 	],
 	"display": {
 		"showSymbol": true,
 		"ecoMode": false,
-		"timeout": 4,
+		"timeout": 45,
 		"turn180" : false
     },
 	"other": {
 		"simplifiedTrackerMode": false,
-		"sendCommentAfterXBeacons": 10,
+		"sendCommentAfterXBeacons": 20,
 		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
-		"rememberStationTime": 30,
-		"maxDistanceToTracker": 30, 
+		"rememberStationTime": 300,
+		"maxDistanceToTracker": 300, 
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
 		"sendBatteryInfo": false,
 		"bluetoothType": 1,
-		"bluetoothActive": true,
+		"bluetoothActive": false,
 		"disableGPS": false
 	},
 	"winlink": {
-		"password": "ABCDEF"
+		"password": "ChangeMe"
 	},
 	"bme": {
 		"active": false,
