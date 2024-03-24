@@ -6,7 +6,7 @@
 			"overlay": "/",
 			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 5,
@@ -24,7 +24,7 @@
 			"overlay": "/",
 			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 3,
@@ -42,7 +42,7 @@
 			"overlay": "/",
 			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smart_beacon": {
+			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
 				"slowSpeed": 10,
@@ -55,19 +55,15 @@
 			}
 		}		
 	],
-	"lora": {
-		"frequency": 433775000,
-		"spreadingFactor": 12,
-		"signalBandwidth": 125000,
-		"codingRate4": 5,
-		"power": 20
-	},
+	"display": {
+		"showSymbol": true,
+		"ecoMode": false,
+		"timeout": 4,
+		"turn180" : false
+    },
 	"other": {
 		"simplifiedTrackerMode": false,
-		"showSymbolOnScreen": true,
 		"sendCommentAfterXBeacons": 20,
-		"displayEcoMode": true,
-		"displayTimeout": 30,
 		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
 		"rememberStationTime": 300,
@@ -79,12 +75,8 @@
 		"bluetoothActive": true,
 		"disableGPS": false
 	},
-	"pttTrigger": {
-		"active": false,
-		"io_pin": 4,
-		"preDelay": 0,
-		"postDelay": 0,
-		"reverse": false
+	"winlink": {
+		"password": "ABCDEF"
 	},
 	"bme": {
 		"active": false,
@@ -105,6 +97,37 @@
 		"txBeep": false,
 		"messageRxBeep": false,
 		"stationBeep": false,
-		"lowBatteryBeep": false
+		"lowBatteryBeep": false,
+		"shutDownBeep": false
+	},
+	"lora": [
+		{
+			"frequency": 433775000,
+			"spreadingFactor": 12,
+			"signalBandwidth": 125000,
+			"codingRate4": 5,
+			"power": 20
+		},
+		{
+			"frequency": 434855000,
+			"spreadingFactor": 9,
+			"signalBandwidth": 125000,
+			"codingRate4": 7,
+			"power": 20
+		},
+		{
+			"frequency": 439912500,
+			"spreadingFactor": 12,
+			"signalBandwidth": 125000,
+			"codingRate4": 5,
+			"power": 20
+		}
+	],
+	"pttTrigger": {
+		"active": false,
+		"io_pin": 4,
+		"preDelay": 0,
+		"postDelay": 0,
+		"reverse": false
 	}
 }

@@ -4,7 +4,7 @@
 
 This firmware is for using ESP32 based boards with LoRa Modules and GPS to live in the APRS world.
 
-![Screenshot](https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/OledScreen.jpeg)
+![Screenshot](https://github.com/richonguzman/LoRa_APRS_Tracker/blob/main/images/OledScreen2.jpeg)
 
 __(NOTE: To use Tx/Rx capabilities of this tracker you should have also an Tx/Rx <a href="https://github.com/richonguzman/LoRa_APRS_iGate" target="_blank">LoRa iGate</a> near you)__
 
@@ -29,6 +29,8 @@ ____________________________________________________
 - Led Notifications for Tx and Messages Received.
 - Sound Notifications with YL44 Buzzer Module.
 - Wx data with BME280 Module showed on Screen and transmited as Wx Telemetry.
+- Winlink Mails through APRSLink.
+- Posibility to change between 3 mayor Frequencies used by LoRa APRS Worldwide.
 
 ____________________________________________________
 
@@ -44,24 +46,35 @@ ____________________________________________________
 
 ### 4. Upload Firmware and Filesystem --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/04.-Upload-Firmware-and-Filesystem-%23-Subir-Firmware-y-sistema-de-archivos" target="_blank">here</a>
 
-### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/05.-Menu-Guide" target="_blank">here</a>
+### 5. Tracker Menu Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/05.-Menu-Guide-%23-Guía-del-menú" target="_blank">here</a>
 
-### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/06.-Bluetooth-Connection" target="_blank">here</a>
+### 6. Bluetooth Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/06.-Bluetooth-Connection-%23-Conexión-Bluetooth" target="_blank">here</a>
 
-### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/07.-First-Time-Boot-and-GPS" target="_blank">here</a>
+### 7. First Time Boot and GPS --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/07.-First-Time-Boot-and-GPS.-Primer-arranque-y-GPS" target="_blank">here</a>
 
-### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/08.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules" target="_blank">here</a>
+### 8. Adding Keyboard, BME280, Leds and Buzzer Modules --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/08.-Adding-Keyboard,-BME280,-Leds-and-Buzzer--Modules.-Añadir-teclado,-BME280,-LED-y-alarma-sonora." target="_blank">here</a>
+
+### 9. Winlink (over APRSlink) --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/09.-Winlink-(connecting-and-use--conexion-y-uso)." target="_blank">here</a>
+
+### 10. Frequencies for different Countries  --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/10.-Frequencies-for-different-Countries.--Frecuencias-para-distintos-paises." target="_blank">here</a>
 
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.03.22 3 times pressing middle button for T-Beams turns the Tracker off.
+- 2024.03.08 ESP32_C3 DIY LoRa + GPS board added. Thanks Julian OE1JLN.
+- 2024.02.29 Now you can change between (EU,PL,UK) LoRa APRS frequencies used worldwide.
+- 2024.02.24 New Partitions: more memory for new code/firmware (still > 500 Rx messages available)
+- 2024.02.21 Winlink Mails through APRSLink ( https://www.winlink.org/APRSLink/ )
+- 2024.01.26 Added Helmut OE5HWN MeshCom PCB support.
+- 2024.01.18 BME modules have now a single reading per minute.
 - 2024.01.05 Added HELTEC V3 with NEO8M GPS. Thanks Asbjørn LA1HSA.
 - 2024.01.04 Added TTGO Lilygo T-Beam S3 Supreme V3 support. Thanks Johannes OE2JPO.
 - 2023.12.31 PowerManagment Library AXP192/AXP2101 updated.
 - 2023.12.27 Added Led-Flashlight like Baofeng UV5R Led.
 - 2023.12.27 Added LoRa APRS Packet Decoder to Stations Menu.
 - 2023.12.26 Added BME680 (to the already BME/BMP280) support for Wx Telemetry Tx.
-- 2023.12.22 Added APRSThrusday on Messages Menu to parcitipate from this exercise (https://aprsph.net/aprsthursday/)
+- 2023.12.22 Added APRSThrusday on Messages Menu to parcitipate from this exercise ( https://aprsph.net/aprsthursday/ )
 - 2023.12.19 Added support for T-Beam V1.2 with Neo8M GPS and SX1262 LoRa Modules.
 - 2023.12.18 Added Mic-E encoding and decoding.
 - 2023.12.12 Added BMP280 (to the already BME280) support for Wx Telemetry Tx.
@@ -73,7 +86,7 @@ ____________________________________________________
 - 2023.11.28 Adding BLE connection to use it as TNC with APRS.fi app for iOS.
 - 2023.11.07 DigiRepeater Mode added in Emergency Menu.
 - 2023.10.23 COMPLETE New Menu for Keyboard add-on.
-- 2023.10.22 Added Keyboard Support over I2C (CARDKB from https://m5stack.com)
+- 2023.10.22 Added Keyboard Support over I2C ( CARDKB from https://m5stack.com )
 - 2023.10.07 Screen Brightness control added.
 - 2023.10.01 Added Wx Telemetry Tx with BME280 Module attached to Tracker.
 - 2023.09.28 Added Support for V.1 board with SX1268 LoRa Module.
