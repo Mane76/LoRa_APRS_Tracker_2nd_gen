@@ -4,7 +4,7 @@
 			"callsign": "NOCALL-4",
 			"symbol": "b",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smartBeacon": {
 				"active": true,
@@ -16,13 +16,13 @@
 				"minDeltaBeacon": 20,
 				"turnMinDeg": 20,
 				"turnSlope": 50
-			}			
+			}
 		},
 		{
 			"callsign": "NOCALL-7",
 			"symbol": "[",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smartBeacon": {
 				"active": true,
@@ -40,7 +40,7 @@
 			"callsign": "NOCALL-9",
 			"symbol": ">",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
 			"smartBeacon": {
 				"active": true,
@@ -53,7 +53,7 @@
 				"turnMinDeg": 20,
 				"turnSlope": 80
 			}
-		}
+		}		
 	],
 	"display": {
 		"showSymbol": true,
@@ -97,7 +97,8 @@
 		"txBeep": false,
 		"messageRxBeep": false,
 		"stationBeep": false,
-		"lowBatteryBeep": false
+		"lowBatteryBeep": false,
+		"shutDownBeep": false
 	},
 	"lora": [
 		{

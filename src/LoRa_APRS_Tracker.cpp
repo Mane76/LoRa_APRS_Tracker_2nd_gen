@@ -49,7 +49,7 @@ BluetoothSerial                     SerialBT;
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.03.08m";
+String      versionDate             = "2024.03.22m";
 
 int         myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -155,7 +155,7 @@ void setup() {
     STATION_Utils::loadIndex(1);
     String workingFreq = "    LoRa Freq [";
     if (loraIndex == 0) {
-        workingFreq += "EU]";
+        workingFreq += "Eu]";
     } else if (loraIndex == 1) {
         workingFreq += "PL]";
     } else if (loraIndex == 2) {
@@ -194,6 +194,7 @@ void setup() {
         userButton.attachClick(BUTTON_Utils::singlePress);
         userButton.attachLongPressStart(BUTTON_Utils::longPress);
         userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+        userButton.attachMultiClick(BUTTON_Utils::multiPress);
         #endif
         KEYBOARD_Utils::setup();
     }

@@ -1,5 +1,7 @@
 # Richonguzman / CA2RXU LoRa APRS Tracker/Station
 
+### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config. If you like the work of Ricardo - support him. Either as <a href="https://github.com/sponsors/richonguzman" target="_blank">sponsor on github</a> or directly via <a href="http://paypal.me/richonguzman" target="_blank">paypal</a>.
+
 This firmware is for using ESP32 based boards with LoRa Modules and GPS to live in the APRS world.
 
 ### This repo is a fork of Richonguzman's Tracker with adjusted parameters in config and defaults to ttgo-t-beam-v1 as default board
@@ -61,6 +63,7 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.03.22 3 times pressing middle button for T-Beams turns the Tracker off.
 - 2024.03.08 ESP32_C3 DIY LoRa + GPS board added. Thanks Julian OE1JLN.
 - 2024.02.29 Now you can change between (EU,PL,UK) LoRa APRS frequencies used worldwide.
 - 2024.02.24 New Partitions: more memory for new code/firmware (still > 500 Rx messages available)
