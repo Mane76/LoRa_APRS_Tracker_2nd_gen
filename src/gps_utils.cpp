@@ -17,7 +17,7 @@ extern Beacon           *currentBeacon;
 extern logging::Logger  logger;
 extern bool             disableGPS;
 extern bool             sendUpdate;
-extern bool		          sendStandingUpdate;
+extern bool		        sendStandingUpdate;
 
 extern double           currentHeading;
 extern double           previousHeading;
@@ -74,11 +74,11 @@ namespace GPS_Utils {
     }
 
     void calculateHeadingDelta(int speed) {
-        int TurnMinAngle;
+        uint8_t TurnMinAngle;
         double headingDelta = abs(previousHeading - currentHeading);
         if (lastTx > currentBeacon->minDeltaBeacon * 1000) {
             if (speed == 0) {
-                TurnMinAngle = currentBeacon->turnMinDeg + (currentBeacon->turnSlope/(speed+1));
+                TurnMinAngle = currentBeacon->turnMinDeg + (currentBeacon->turnSlope/(speed + 1));
             } else {
                 TurnMinAngle = currentBeacon->turnMinDeg + (currentBeacon->turnSlope/speed);
             }
