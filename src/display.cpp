@@ -30,7 +30,7 @@ extern Beacon           *currentBeacon;
 extern int              menuDisplay;
 extern bool             symbolAvailable;
 extern bool             bluetoothConnected;
-extern int              screenBrightness; //from 1 to 255 to regulate brightness of oled scren
+extern uint8_t          screenBrightness; //from 1 to 255 to regulate brightness of oled scren
 
 const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k",
                                 "C", "a", "Y", "O", "'", "=", "y"};
@@ -253,9 +253,9 @@ void show_display(String header, String line1, String line2, String line3, Strin
     display.ssd1306_command(screenBrightness);
     #endif
 
-    if (menuDisplay==0 && Config.display.showSymbol) {
+    if (menuDisplay == 0 && Config.display.showSymbol) {
         int symbol = 100;
-        for (int i=0; i<symbolArraySize; i++) {
+        for (int i = 0; i < symbolArraySize; i++) {
             if (currentBeacon->symbol == symbolArray[i]) {
                 symbol = i;
                 break;
