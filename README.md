@@ -36,7 +36,7 @@ ____________________________________________________
 
 # WIKI (English / Español en camino...)
 
-### 0. FAQ: Frequently Asked Question --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/00.-FAQ:-frequently-asked-question-%E2%80%90-preguntas-frecuentes-respondidas" target="_blank">here</a>
+### Supported Boards and buying links --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/Z.-------Supported-Boards-and-Buying-Links" target="_blank">here</a>
 
 ### 1. Installation Guide --> <a href="https://github.com/richonguzman/LoRa_APRS_Tracker/wiki/01.-Installation-Guide-%23-Guia-de-Instalacion" target="_blank">here</a>
 
@@ -61,6 +61,7 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.04.12 Added HELTEC Wireless Tracker support.
 - 2024.03.22 3 times pressing middle button for T-Beams turns the Tracker off.
 - 2024.03.08 ESP32_C3 DIY LoRa + GPS board added. Thanks Julian OE1JLN.
 - 2024.02.29 Now you can change between (EU,PL,UK) LoRa APRS frequencies used worldwide.
