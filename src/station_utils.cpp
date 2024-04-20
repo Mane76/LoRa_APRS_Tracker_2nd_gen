@@ -421,6 +421,9 @@ namespace STATION_Utils {
             packet += " Bat=" + String(batteryVoltage.toFloat(),2) + "V";
             #endif
         }
+        #ifdef HAS_TFT
+        cleanTFT();
+        #endif
         show_display("<<< TX >>>", "", packet,100);
         LoRa_Utils::sendNewPacket(packet);
         

@@ -12,7 +12,12 @@
 #include "msg_utils.h"
 #include "display.h"
 
-#define CARDKB_ADDR 0x5F    // CARDKB from m5stack.com
+#ifdef TTGO_T_DECK_GPS
+#define KB_ADDR     0x55    // T-Deck internal keyboard (Keyboard Backlight On = ALT + B)
+#else
+#define KB_ADDR     0x5F    // CARDKB from m5stack.com (YEL - SDA / WTH SCL)
+#endif
+
 
 extern Configuration    Config;
 extern Beacon           *currentBeacon;
@@ -48,6 +53,19 @@ extern String           winlinkSubject;
 extern String           winlinkBody;
 extern String           winlinkAlias;
 extern String           winlinkAliasComplete;
+
+bool mouseUpState           = 0;
+bool mouseDownState         = 0;
+bool mouseLeftState         = 0;
+bool mouseRightState        = 0;
+int debounceInterval        = 50;
+uint32_t lastDebounceTime   = millis();
+int upCounter               = 0;
+int downCounter             = 0;
+int leftCounter             = 0;
+int rightCounter            = 0;
+int trackBallSensitivity    = 5;
+
 
 namespace KEYBOARD_Utils {
 
@@ -739,13 +757,70 @@ namespace KEYBOARD_Utils {
             rightArrow();
         }
     }
-      
+
+    void clearTrackballCounter() {
+        upCounter       = 0;
+        downCounter     = 0;
+        leftCounter     = 0;
+        rightCounter    = 0;
+    }
+
+    void mouseRead() {
+        #ifdef TTGO_T_DECK_GPS
+        int ballUp      = digitalRead(TrackBallUp);
+        int ballDown    = digitalRead(TrackBallDown);
+        int ballLeft    = digitalRead(TrackBallLeft);
+        int ballRight   = digitalRead(TrackBallRight);
+
+        if (!digitalRead(TrackBallCenter)) {
+            processPressedKey(13);
+        } else if (ballUp != mouseUpState && ballDown == mouseDownState && ballLeft == mouseLeftState && ballRight == mouseRightState) {
+            if (millis() - lastDebounceTime > debounceInterval) {
+                lastDebounceTime = millis();
+                mouseUpState = ballUp;
+                upCounter++;
+            }
+        } else if (ballDown != mouseDownState && ballUp == mouseUpState && ballLeft == mouseLeftState && ballRight == mouseRightState) {
+            if (millis() - lastDebounceTime > debounceInterval) {
+                lastDebounceTime = millis();
+                mouseDownState = ballDown;
+                downCounter++;
+            }
+        } else if (ballLeft != mouseLeftState && ballUp == mouseUpState && ballDown == mouseDownState && ballRight == mouseRightState) {
+            if (millis() - lastDebounceTime > debounceInterval) {
+                lastDebounceTime = millis();
+                mouseLeftState = ballLeft;
+                leftCounter++;
+            }
+        } else if (ballRight != mouseRightState && ballUp == mouseUpState && ballDown == mouseDownState && ballLeft == mouseLeftState) {
+            if (millis() - lastDebounceTime > debounceInterval) {
+                lastDebounceTime = millis();
+                mouseRightState = ballRight;
+                rightCounter++;
+            }
+        }
+        if (upCounter == trackBallSensitivity) {
+            clearTrackballCounter();
+            upArrow();
+        } else if (downCounter == trackBallSensitivity) {
+            clearTrackballCounter();
+            downArrow();
+        } else if (leftCounter == trackBallSensitivity) {
+            clearTrackballCounter();
+            leftArrow();
+        } else if (rightCounter == trackBallSensitivity) {
+            clearTrackballCounter();
+            rightArrow();
+        }
+        #endif
+    }
+
     void read() {
         uint32_t lastKey = millis() - keyboardTime;
         if (lastKey > 30*1000) {
             keyDetected = false;
         }
-        Wire.requestFrom(CARDKB_ADDR, 1);
+        Wire.requestFrom(KB_ADDR, 1);
         while(Wire.available()) {
             char c = Wire.read();
             if (c != 0) {
@@ -760,15 +835,13 @@ namespace KEYBOARD_Utils {
     }
 
     void setup() {
-        #ifndef HELTEC_WIRELESS_TRACKER 
-        Wire.beginTransmission(CARDKB_ADDR);
+        Wire.beginTransmission(KB_ADDR);
         if (Wire.endTransmission() == 0) {
             keyboardConnected = true;
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Keyboard Connected to I2C");
         } else {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "No Keyboard Connected to I2C");
         }
-        #endif
     }
 
 }

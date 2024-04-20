@@ -45,11 +45,11 @@ TinyGPSPlus                         gps;
 #ifdef HAS_BT_CLASSIC
 BluetoothSerial                     SerialBT;
 #endif
-#ifdef HAS_BUTTON
+#ifdef BUTTON_PIN
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.04.12m";
+String      versionDate             = "2024.04.18m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -134,15 +134,12 @@ logging::Logger                     logger;
 
 void setup() {
     Serial.begin(115200);
+
     #ifndef DEBUG
     logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
     #endif
 
     POWER_Utils::setup();
-    
-    /* para HELTEC WIRELESS TRACKER!
-    pinMode(internalLedPin ,OUTPUT);
-	digitalWrite(internalLedPin, LOW);*/
 
     setup_display();
 
@@ -167,9 +164,9 @@ void setup() {
     }
 
     show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
-    /*#ifdef HAS_TFT
+    #ifdef HAS_TFT
     cleanTFT();
-    #endif*/
+    #endif
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
 
@@ -177,7 +174,6 @@ void setup() {
         pinMode(Config.ptt.io_pin, OUTPUT);
         digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
     }
-
     MSG_Utils::loadNumMessages();
     GPS_Utils::setup();
     currentLoRaType = &Config.loraTypes[loraIndex];
@@ -198,7 +194,7 @@ void setup() {
     }
 
     if (!Config.simplifiedTrackerMode) {
-        #ifdef HAS_BUTTON
+        #ifdef BUTTON_PIN
         userButton.attachClick(BUTTON_Utils::singlePress);
         userButton.attachLongPressStart(BUTTON_Utils::longPress);
         userButton.attachDoubleClick(BUTTON_Utils::doublePress);
@@ -226,7 +222,7 @@ void loop() {
     POWER_Utils::batteryManager();
 
     if (!Config.simplifiedTrackerMode) {
-        #ifdef HAS_BUTTON
+        #ifdef BUTTON_PIN
         userButton.tick();
         #endif
     }
@@ -234,6 +230,9 @@ void loop() {
     Utils::checkDisplayEcoMode();
 
     if (keyboardConnected) KEYBOARD_Utils::read();
+    #ifdef TTGO_T_DECK_GPS
+    KEYBOARD_Utils::mouseRead();
+    #endif
 
     GPS_Utils::getData();
     bool gps_time_update = gps.time.isUpdated();
