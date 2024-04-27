@@ -49,7 +49,7 @@ BluetoothSerial                     SerialBT;
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.04.18m";
+String      versionDate             = "2024.04.26m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -127,6 +127,7 @@ String      winlinkSubject          = "";
 String      winlinkBody             = "";
 String      winlinkAlias            = "";
 String      winlinkAliasComplete    = "";
+bool        winlinkCommentState     = false;
 
 APRSPacket                          lastReceivedPacket;
 
