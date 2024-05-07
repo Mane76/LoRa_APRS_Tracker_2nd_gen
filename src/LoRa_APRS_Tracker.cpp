@@ -19,7 +19,6 @@ ________________________________________________________________________________
 #include <logger.h>
 #include <WiFi.h>
 #include <vector>
-#include <deque>
 #include "APRSPacketLib.h"
 #include "notification_utils.h"
 #include "bluetooth_utils.h"
@@ -49,7 +48,7 @@ BluetoothSerial                     SerialBT;
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.04.26m";
+String      versionDate             = "2024.05.06m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -63,7 +62,8 @@ int         menuDisplay             = 100;
 int         messagesIterator        = 0;
 std::vector<String>                 loadedAPRSMessages;
 std::vector<String>                 loadedWLNKMails;
-std::deque<String>                  outputBufferPackets;
+std::vector<String>                 outputMessagesBuffer;
+std::vector<String>                 outputAckRequestBuffer;
 
 bool        displayEcoMode          = Config.display.ecoMode;
 bool        displayState            = true;
@@ -117,8 +117,16 @@ bool        miceActive              = false;
 
 bool        smartBeaconValue        = true;
 
-int         ackNumberSend;
-uint32_t    ackTime                 = millis();
+int         ackRequestNumber;                       // numero generado para los request que se pediran
+uint32_t    lastMsgRxTime           = millis();     // tiempo que se actualiza de cada mensaje recibido
+bool        ackRequestState         = false;        // activa proceso escucha/espera de ack enviado.
+String      ackCallsignRequest      = "";           // de quien espero ack
+String      ackNumberRequest        = "";           // cual ack espero
+
+//
+String      ackDataExpected         = "";
+uint32_t    lastRetryTime           = millis();
+//
 
 uint8_t     winlinkStatus           = 0;
 String      winlinkMailNumber       = "_?";
@@ -181,7 +189,7 @@ void setup() {
     LoRa_Utils::setup();
     BME_Utils::setup();
     
-    ackNumberSend = random(1,999);
+    ackRequestNumber = random(1,999);
 
     WiFi.mode(WIFI_OFF);
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
@@ -217,8 +225,6 @@ void loop() {
         miceActive = Config.validateMicE(currentBeacon->micE);
     }
     STATION_Utils::checkSmartBeaconValue();
-    
-    if (ackNumberSend >= 999) ackNumberSend = 1;
 
     POWER_Utils::batteryManager();
 
