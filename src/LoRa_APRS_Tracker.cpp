@@ -48,7 +48,7 @@ BluetoothSerial                     SerialBT;
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.06m";
+String      versionDate             = "2024.05.08m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -117,16 +117,12 @@ bool        miceActive              = false;
 
 bool        smartBeaconValue        = true;
 
-int         ackRequestNumber;                       // numero generado para los request que se pediran
-uint32_t    lastMsgRxTime           = millis();     // tiempo que se actualiza de cada mensaje recibido
-bool        ackRequestState         = false;        // activa proceso escucha/espera de ack enviado.
-String      ackCallsignRequest      = "";           // de quien espero ack
-String      ackNumberRequest        = "";           // cual ack espero
-
-//
-String      ackDataExpected         = "";
+int         ackRequestNumber;
+bool        ackRequestState         = false;
+String      ackCallsignRequest      = "";
+String      ackNumberRequest        = "";
+uint32_t    lastMsgRxTime           = millis();
 uint32_t    lastRetryTime           = millis();
-//
 
 uint8_t     winlinkStatus           = 0;
 String      winlinkMailNumber       = "_?";
@@ -136,6 +132,10 @@ String      winlinkBody             = "";
 String      winlinkAlias            = "";
 String      winlinkAliasComplete    = "";
 bool        winlinkCommentState     = false;
+
+bool        wxRequestStatus         = false;
+uint32_t    wxRequestTime           = 0;
+uint32_t    batteryMeasurmentTime   = 0;
 
 APRSPacket                          lastReceivedPacket;
 
@@ -149,40 +149,13 @@ void setup() {
     #endif
 
     POWER_Utils::setup();
-
     setup_display();
+    POWER_Utils::externalPinSetup();
 
-    if (Config.notification.buzzerActive) {
-        pinMode(Config.notification.buzzerPinTone, OUTPUT);
-        pinMode(Config.notification.buzzerPinVcc, OUTPUT);
-        if (Config.notification.bootUpBeep) NOTIFICATION_Utils::start();
-    }
-    if (Config.notification.ledTx) pinMode(Config.notification.ledTxPin, OUTPUT);
-    if (Config.notification.ledMessage) pinMode(Config.notification.ledMessagePin, OUTPUT);
-    if (Config.notification.ledFlashlight) pinMode(Config.notification.ledFlashlightPin, OUTPUT);
-    
     STATION_Utils::loadIndex(0);
     STATION_Utils::loadIndex(1);
-    String workingFreq = "    LoRa Freq [";
-    if (loraIndex == 0) {
-        workingFreq += "Eu]";
-    } else if (loraIndex == 1) {
-        workingFreq += "PL]";
-    } else if (loraIndex == 2) {
-        workingFreq += "UK]";
-    }
+    startupScreen(loraIndex, versionDate);
 
-    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
-    #ifdef HAS_TFT
-    cleanTFT();
-    #endif
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
-
-    if (Config.ptt.active) {
-        pinMode(Config.ptt.io_pin, OUTPUT);
-        digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
-    }
     MSG_Utils::loadNumMessages();
     GPS_Utils::setup();
     currentLoRaType = &Config.loraTypes[loraIndex];
@@ -221,7 +194,10 @@ void setup() {
 void loop() {
     currentBeacon = &Config.beacons[myBeaconsIndex];
     if (statusState) {
-        Config.validateConfigFile(currentBeacon->callsign);
+        if (Config.validateConfigFile(currentBeacon->callsign)) {
+            KEYBOARD_Utils::rightArrow();
+            currentBeacon = &Config.beacons[myBeaconsIndex];
+        }
         miceActive = Config.validateMicE(currentBeacon->micE);
     }
     STATION_Utils::checkSmartBeaconValue();

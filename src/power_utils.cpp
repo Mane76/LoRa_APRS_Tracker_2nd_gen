@@ -2,6 +2,7 @@
 #include "power_utils.h"
 #include "notification_utils.h"
 #include "pins_config.h"
+#include "ble_utils.h"
 #include "logger.h"
 
 #ifndef TTGO_T_Beam_S3_SUPREME_V3
@@ -31,6 +32,7 @@ XPowersAXP2101 PMU;
 extern Configuration    Config;
 extern logging::Logger  logger;
 extern bool             disableGPS;
+extern uint32_t         batteryMeasurmentTime;
 
 bool    pmuInterrupt;
 float   lora32BatReadingCorr = 6.5; // % of correction to higher value to reflect the real battery voltage (adjust this to your needs)
@@ -62,6 +64,7 @@ namespace POWER_Utils {
                 #ifdef HELTEC_V3_GPS
                 digitalWrite(ADC_CTRL, HIGH);
                 #endif
+                batteryMeasurmentTime = millis();
             #endif
                 double voltage = (adc_value * 3.3 ) / 4095.0;
             #if defined(TTGO_T_Beam_V0_7) || defined(ESP32_DIY_LoRa_GPS) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(OE5HWN_MeshCom)
@@ -162,7 +165,11 @@ namespace POWER_Utils {
     }
 
     void batteryManager() {
+        #ifdef ADC_CTRL
+        if(batteryMeasurmentTime == 0 || (millis() - batteryMeasurmentTime) > 30 * 1000) obtainBatteryInfo();
+        #else
         obtainBatteryInfo();
+        #endif
         #if defined(HAS_AXP192) || defined(HAS_AXP2101)
         handleChargingLed();
         #endif
@@ -230,6 +237,46 @@ namespace POWER_Utils {
         #if defined(TTGO_T_Beam_S3_SUPREME_V3)
         PMU.disableALDO3();
         #endif
+    }
+
+    void externalPinSetup() {
+        if (Config.notification.buzzerActive && Config.notification.buzzerPinTone >= 0 && Config.notification.buzzerPinVcc >= 0) {
+            pinMode(Config.notification.buzzerPinTone, OUTPUT);
+            pinMode(Config.notification.buzzerPinVcc, OUTPUT);
+            if (Config.notification.bootUpBeep) NOTIFICATION_Utils::start();
+        } else if (Config.notification.buzzerActive && (Config.notification.buzzerPinTone < 0 || Config.notification.buzzerPinVcc < 0)) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "PINOUT", "Buzzer Pins bad/not defined");
+            while (1);
+        }
+
+        if (Config.notification.ledTx && Config.notification.ledTxPin >= 0) {
+            pinMode(Config.notification.ledTxPin, OUTPUT);
+        } else if (Config.notification.ledTx && Config.notification.ledTxPin < 0) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "PINOUT", "Led Tx Pin bad/not defined");
+            while (1);
+        }
+
+        if (Config.notification.ledMessage && Config.notification.ledMessagePin >= 0) {
+            pinMode(Config.notification.ledMessagePin, OUTPUT);
+        } else if (Config.notification.ledMessage && Config.notification.ledMessagePin < 0) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "PINOUT", "Led Message Pin bad/not defined");
+            while (1);
+        }
+
+        if (Config.notification.ledFlashlight && Config.notification.ledFlashlightPin >= 0) {
+            pinMode(Config.notification.ledFlashlightPin, OUTPUT);
+        } else if (Config.notification.ledFlashlight && Config.notification.ledFlashlightPin < 0) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "PINOUT", "Led Flashlight Pin bad/not defined");
+            while (1);
+        }
+
+        if (Config.ptt.active && Config.ptt.io_pin >= 0) {
+            pinMode(Config.ptt.io_pin, OUTPUT);
+            digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
+        } else if (Config.ptt.active && Config.ptt.io_pin < 0) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "PINOUT", "PTT Pin bad/not defined");
+            while (1);
+        }
     }
 
     bool begin(TwoWire &port) {
@@ -404,6 +451,30 @@ namespace POWER_Utils {
         #if defined(HAS_AXP192) || defined(HAS_AXP2101)
         if (Config.notification.shutDownBeep) NOTIFICATION_Utils::shutDownBeep();
         PMU.shutdown();
+        #else
+
+        if (Config.bluetoothType==0) {
+            BLE_Utils::stop();
+        } else {
+            // turn off BT classic ???
+        }
+
+        #ifdef VEXT_CTRL
+        digitalWrite(VEXT_CTRL, LOW);
+        #endif
+
+        #ifdef ADC_CTRL
+        #ifdef HELTEC_WIRELESS_TRACKER
+        digitalWrite(ADC_CTRL, LOW);
+        #endif
+        #ifdef HELTEC_V3_GPS
+        digitalWrite(ADC_CTRL, HIGH);
+        #endif
+        #endif
+
+        long DEEP_SLEEP_TIME_SEC = 1296000; // 30 days
+        esp_sleep_enable_timer_wakeup(1000000ULL * DEEP_SLEEP_TIME_SEC);
+        esp_deep_sleep_start();
         #endif
     }
 
