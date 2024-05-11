@@ -48,6 +48,7 @@ namespace GPS_Utils {
             return;
         }
         neo6m_gps.begin(GPS_BAUD, SERIAL_8N1, GPS_TX, GPS_RX);
+        neo6m_gps.println("$CFGSYS,h35155*68");
     }
 
     void calculateDistanceCourse(String Callsign, double checkpointLatitude, double checkPointLongitude) {

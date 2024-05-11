@@ -74,7 +74,7 @@ namespace POWER_Utils {
             #endif
             #if defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(ESP32_C3_DIY_LoRa_GPS)
                 double inputDivider = (1.0 / (390.0 + 100.0)) * 100.0;  // The voltage divider is a 390k + 100k resistor in series, 100k on the low side. 
-                return (voltage / inputDivider) + 0.285; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
+                return (voltage / inputDivider) + 0.210; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
             #endif
         #else
             return 0.0;
@@ -168,7 +168,7 @@ namespace POWER_Utils {
 
     void batteryManager() {
         #ifdef ADC_CTRL
-        if(batteryMeasurmentTime == 0 || (millis() - batteryMeasurmentTime) > 30 * 1000) obtainBatteryInfo();
+        if(batteryMeasurmentTime == 0 || (millis() - batteryMeasurmentTime) > 15 * 1000) obtainBatteryInfo();
         #else
         obtainBatteryInfo();
         #endif
