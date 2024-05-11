@@ -10,9 +10,11 @@
 
 extern Configuration    Config;
 extern logging::Logger  logger;
-extern uint32_t         bmeLastReading;
 
 float newHum, newTemp, newPress, newGas;
+
+bool        bmeSensorFound      = false;
+uint32_t    bmeLastReading      = -60000;
 
 namespace BME_Utils {
 
@@ -29,11 +31,14 @@ namespace BME_Utils {
     void setup() {
         if (Config.bme.active) {
             bool status;
+            #ifdef HELTEC_V3_GPS
+            status = bme.begin(0x76, &Wire1);
+            #else
             status = bme.begin(0x76);
+            #endif
             if (!status) {
-                show_display("ERROR", "", "BME sensor active", "but no sensor found...");
+                show_display("ERROR", "", "BME/BMP sensor active", "but no sensor found...", "", 2000);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "BME", " BME/BMP sensor Active in config but not found! Check Wiring");
-                while (1);
             } else {
                 #ifdef BME280Sensor
                 bme.setSampling(Adafruit_BME280::MODE_FORCED,
@@ -59,6 +64,7 @@ namespace BME_Utils {
                 bme.setIIRFilterSize(BME680_FILTER_SIZE_0);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "BME", " BMP680 Module init done!");
                 #endif
+                bmeSensorFound = true;
             }
         } else {
             #ifdef BME280Sensor
