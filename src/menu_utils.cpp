@@ -22,7 +22,6 @@ extern int                  messagesIterator;
 extern uint8_t              loraIndex;
 extern uint32_t             menuTime;
 extern bool                 symbolAvailable;
-extern uint8_t              lowBatteryPercent;
 extern bool                 keyDetected;
 extern String               messageCallsign;
 extern String               messageText;
@@ -43,8 +42,10 @@ extern String               winlinkBody;
 extern String               winlinkAlias;
 extern String               winlinkAliasComplete;
 extern bool                 winlinkCommentState;
+extern bool                 bmeSensorFound;
 
-String freqChangeWarning;
+String      freqChangeWarning;
+uint8_t     lowBatteryPercent       = 21;
 
 namespace MENU_Utils {
 
@@ -571,7 +572,11 @@ namespace MENU_Utils {
                         if (time_now % 10 < 5) {
                             fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
                         } else {
-                            fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
+                            if (bmeSensorFound) {
+                                fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
+                            } else {
+                                fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
+                            }
                         }
                     } else {
                         fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;

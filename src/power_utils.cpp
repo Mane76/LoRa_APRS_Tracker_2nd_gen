@@ -1,3 +1,4 @@
+#include <SPI.h>
 #include "configuration.h"
 #include "power_utils.h"
 #include "notification_utils.h"
@@ -32,10 +33,11 @@ XPowersAXP2101 PMU;
 extern Configuration    Config;
 extern logging::Logger  logger;
 extern bool             disableGPS;
-extern uint32_t         batteryMeasurmentTime;
 
-bool    pmuInterrupt;
-float   lora32BatReadingCorr = 6.5; // % of correction to higher value to reflect the real battery voltage (adjust this to your needs)
+uint32_t    batteryMeasurmentTime   = 0;
+
+bool        pmuInterrupt;
+float       lora32BatReadingCorr    = 6.5; // % of correction to higher value to reflect the real battery voltage (adjust this to your needs)
 
 namespace POWER_Utils {
 
@@ -409,8 +411,12 @@ namespace POWER_Utils {
         pinMode(ADC_CTRL, OUTPUT);
         #endif
 
-        #if defined(HELTEC_WIRELESS_TRACKER)
+        #ifdef HELTEC_WIRELESS_TRACKER
         Wire.begin(BOARD_I2C_SDA, BOARD_I2C_SCL);
+        #endif
+
+        #ifdef HELTEC_V3_GPS
+        Wire1.begin(BOARD_I2C_SDA, BOARD_I2C_SCL);
         #endif
 
         #if defined(TTGO_T_DECK_GPS)
@@ -471,6 +477,24 @@ namespace POWER_Utils {
         digitalWrite(ADC_CTRL, HIGH);
         #endif
         #endif
+
+
+        #ifdef HELTEC_WIRELESS_TRACKER
+        /*Serial.flush();           // not working yet
+        SPI.endTransaction();           
+        SPI.end();
+        pinMode(RADIO_DIO1_PIN, ANALOG);
+        pinMode(RADIO_RST_PIN, ANALOG);
+        pinMode(RADIO_BUSY_PIN, ANALOG);
+        pinMode(RADIO_SCLK_PIN, ANALOG);
+        pinMode(RADIO_MISO_PIN, ANALOG);
+        pinMode(RADIO_MOSI_PIN, ANALOG);
+
+        pinMode(RADIO_CS_PIN, OUTPUT);
+        digitalWrite(RADIO_CS_PIN, HIGH);
+        gpio_hold_en((gpio_num_t)RADIO_CS_PIN);*/
+        #endif
+
 
         long DEEP_SLEEP_TIME_SEC = 1296000; // 30 days
         esp_sleep_enable_timer_wakeup(1000000ULL * DEEP_SLEEP_TIME_SEC);
