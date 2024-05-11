@@ -535,7 +535,9 @@ namespace MENU_Utils {
                         thirdRowMainMenu += " ";
                     }
 
-                    if (gps.hdop.hdop() > 5) {
+                    if (gps.hdop.hdop() > 10) {
+                        hdopState = "/";
+                    } else if (gps.hdop.hdop() > 5 && gps.hdop.hdop() < 10) {
                         hdopState = "X";
                     } else if (gps.hdop.hdop() > 2 && gps.hdop.hdop() < 5) {
                         hdopState = "-";
