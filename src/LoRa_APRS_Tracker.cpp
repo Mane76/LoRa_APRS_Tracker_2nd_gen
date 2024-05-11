@@ -48,7 +48,7 @@ BluetoothSerial                     SerialBT;
 OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.06";
+String      versionDate             = "2024.05.10";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -59,33 +59,18 @@ LoraType    *currentLoRaType        = &Config.loraTypes[loraIndex];
 
 int         menuDisplay             = 100;
 
-int         messagesIterator        = 0;
-std::vector<String>                 loadedAPRSMessages;
-std::vector<String>                 loadedWLNKMails;
-std::vector<String>                 outputMessagesBuffer;
-std::vector<String>                 outputAckRequestBuffer;
-
+bool        statusState             = true;
 bool        displayEcoMode          = Config.display.ecoMode;
 bool        displayState            = true;
 uint32_t    displayTime             = millis();
 uint32_t    refreshDisplayTime      = millis();
 
 bool        sendUpdate              = true;
-uint8_t     updateCounter           = Config.sendCommentAfterXBeacons;
-bool	    sendStandingUpdate      = false;
-bool        statusState             = true;
-uint32_t    statusTime              = millis();
+
 bool        bluetoothConnected      = false;
 bool        bluetoothActive         = Config.bluetoothActive;
 bool        sendBleToLoRa           = false;
 String      BLEToLoRaPacket         = "";
-
-bool        messageLed              = false;
-uint32_t    messageLedTime          = millis();
-uint8_t     lowBatteryPercent       = 21;
-
-uint32_t    lastTelemetryTx         = millis();
-uint32_t    telemetryTx             = millis();
 
 uint32_t    lastTx                  = 0.0;
 uint32_t    txInterval              = 60000L;
@@ -93,20 +78,8 @@ uint32_t    lastTxTime              = millis();
 double      lastTxLat               = 0.0;
 double      lastTxLng               = 0.0;
 double      lastTxDistance          = 0.0;
-double      currentHeading          = 0;
-double      previousHeading         = 0;
 
 uint32_t    menuTime                = millis();
-bool        symbolAvailable         = true;
-
-uint32_t    bmeLastReading          = -60000;
-
-uint8_t     screenBrightness        = 1;
-bool        keyboardConnected       = false;
-bool        keyDetected             = false;
-uint32_t    keyboardTime            = millis();
-String      messageCallsign         = "";
-String      messageText             = "";
 
 bool        flashlight              = false;
 bool        digirepeaterActive      = false;
@@ -117,25 +90,7 @@ bool        miceActive              = false;
 
 bool        smartBeaconValue        = true;
 
-int         ackRequestNumber;                       // numero generado para los request que se pediran
-uint32_t    lastMsgRxTime           = millis();     // tiempo que se actualiza de cada mensaje recibido
-bool        ackRequestState         = false;        // activa proceso escucha/espera de ack enviado.
-String      ackCallsignRequest      = "";           // de quien espero ack
-String      ackNumberRequest        = "";           // cual ack espero
-
-//
-String      ackDataExpected         = "";
-uint32_t    lastRetryTime           = millis();
-//
-
-uint8_t     winlinkStatus           = 0;
-String      winlinkMailNumber       = "_?";
-String      winlinkAddressee        = "";
-String      winlinkSubject          = "";
-String      winlinkBody             = "";
-String      winlinkAlias            = "";
-String      winlinkAliasComplete    = "";
-bool        winlinkCommentState     = false;
+int         ackRequestNumber;
 
 APRSPacket                          lastReceivedPacket;
 
@@ -149,40 +104,13 @@ void setup() {
     #endif
 
     POWER_Utils::setup();
-
     setup_display();
+    POWER_Utils::externalPinSetup();
 
-    if (Config.notification.buzzerActive) {
-        pinMode(Config.notification.buzzerPinTone, OUTPUT);
-        pinMode(Config.notification.buzzerPinVcc, OUTPUT);
-        if (Config.notification.bootUpBeep) NOTIFICATION_Utils::start();
-    }
-    if (Config.notification.ledTx) pinMode(Config.notification.ledTxPin, OUTPUT);
-    if (Config.notification.ledMessage) pinMode(Config.notification.ledMessagePin, OUTPUT);
-    if (Config.notification.ledFlashlight) pinMode(Config.notification.ledFlashlightPin, OUTPUT);
-    
     STATION_Utils::loadIndex(0);
     STATION_Utils::loadIndex(1);
-    String workingFreq = "    LoRa Freq [";
-    if (loraIndex == 0) {
-        workingFreq += "Eu]";
-    } else if (loraIndex == 1) {
-        workingFreq += "PL]";
-    } else if (loraIndex == 2) {
-        workingFreq += "UK]";
-    }
+    startupScreen(loraIndex, versionDate);
 
-    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + versionDate, 4000);
-    #ifdef HAS_TFT
-    cleanTFT();
-    #endif
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", versionDate);
-
-    if (Config.ptt.active) {
-        pinMode(Config.ptt.io_pin, OUTPUT);
-        digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
-    }
     MSG_Utils::loadNumMessages();
     GPS_Utils::setup();
     currentLoRaType = &Config.loraTypes[loraIndex];
@@ -194,7 +122,7 @@ void setup() {
     WiFi.mode(WIFI_OFF);
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
 
-    if (Config.bluetoothType==0) {
+    if (Config.bluetoothType == 0 || Config.bluetoothType == 3) {
         BLE_Utils::setup();
     } else {
         #ifdef HAS_BT_CLASSIC
@@ -221,7 +149,10 @@ void setup() {
 void loop() {
     currentBeacon = &Config.beacons[myBeaconsIndex];
     if (statusState) {
-        Config.validateConfigFile(currentBeacon->callsign);
+        if (Config.validateConfigFile(currentBeacon->callsign)) {
+            KEYBOARD_Utils::rightArrow();
+            currentBeacon = &Config.beacons[myBeaconsIndex];
+        }
         miceActive = Config.validateMicE(currentBeacon->micE);
     }
     STATION_Utils::checkSmartBeaconValue();
@@ -236,7 +167,7 @@ void loop() {
 
     Utils::checkDisplayEcoMode();
 
-    if (keyboardConnected) KEYBOARD_Utils::read();
+    KEYBOARD_Utils::read();
     #ifdef TTGO_T_DECK_GPS
     KEYBOARD_Utils::mouseRead();
     #endif
@@ -248,10 +179,11 @@ void loop() {
 
     MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
     MSG_Utils::processOutputBuffer();
+    MSG_Utils::clean25SegBuffer();
     MSG_Utils::ledNotification();
     Utils::checkFlashlight();
     STATION_Utils::checkListenedTrackersByTimeAndDelete();
-    if (Config.bluetoothType == 0) {
+    if (Config.bluetoothType == 0 || Config.bluetoothType == 3) {
         BLE_Utils::sendToLoRa();
     } else {
         #ifdef HAS_BT_CLASSIC

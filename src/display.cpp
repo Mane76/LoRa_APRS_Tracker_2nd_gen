@@ -49,9 +49,7 @@ Adafruit_SH1106G display(128, 64, &Wire, OLED_RST);
 extern Configuration    Config;
 extern Beacon           *currentBeacon;
 extern int              menuDisplay;
-extern bool             symbolAvailable;
 extern bool             bluetoothConnected;
-extern uint8_t          screenBrightness; //from 1 to 255 to regulate brightness of oled scren
 
 const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k",
                                 "C", "a", "Y", "O", "'", "=", "y"};
@@ -64,7 +62,10 @@ const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
 //#define OLED_DISPLAY_HAS_RST_PIN
-int lastMenuDisplay = 0;
+
+int         lastMenuDisplay         = 0;
+uint8_t     screenBrightness        = 1;    //from 1 to 255 to regulate brightness of oled scren
+bool        symbolAvailable         = true;
 
 extern logging::Logger logger;
 
@@ -434,4 +435,21 @@ void show_display(String header, String line1, String line2, String line3, Strin
     display.display();
     #endif
     delay(wait);
+}
+
+void startupScreen(uint8_t index, String version) {
+    String workingFreq = "    LoRa Freq [";
+    if (index == 0) {
+        workingFreq += "Eu]";
+    } else if (index == 1) {
+        workingFreq += "PL]";
+    } else if (index == 2) {
+        workingFreq += "UK]";
+    }
+    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + version, 4000);
+    #ifdef HAS_TFT
+    cleanTFT();
+    #endif
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", version);
 }

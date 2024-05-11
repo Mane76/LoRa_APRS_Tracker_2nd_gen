@@ -143,6 +143,8 @@
 #define OLED_SDA            17
 #define OLED_SCL            18
 #define OLED_RST            21
+#define BOARD_I2C_SDA       45
+#define BOARD_I2C_SCL       46
 #define GPS_RX              47
 #define GPS_TX              48
 #define BUTTON_PIN          0
@@ -195,19 +197,14 @@
 #define RADIO_RST_PIN       17
 #define RADIO_DIO1_PIN      45
 #define RADIO_BUSY_PIN      13
-
-/*#define BOARD_I2S_WS    5     // esto es para el audio!
-#define BOARD_I2S_BCK   7
-#define BOARD_I2S_DOUT  6*/
-
-// trackbal
 #define TrackBallCenter     0
 #define TrackBallUp         3   // G S1
 #define TrackBallDown       15  // G S3
 #define TrackBallLeft       1   // G S4
 #define TrackBallRight      2   // G S2
+/*#define BOARD_I2S_WS    5     // esto es para el audio!
+#define BOARD_I2S_BCK   7
+#define BOARD_I2S_DOUT  6*/
 #endif
-
-
 
 #endif
