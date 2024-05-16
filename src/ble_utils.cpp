@@ -91,14 +91,14 @@ namespace BLE_Utils {
 
         pAdvertising->start();
 
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "BLE", "%s", "Waiting for BLE central to connect...");
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BLE", "%s", "Waiting for BLE central to connect...");
     }
 
     void sendToLoRa() {
         if (!sendBleToLoRa) {
             return;
         }
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "BLE Tx", "%s", BLEToLoRaPacket.c_str());
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BLE Tx", "%s", BLEToLoRaPacket.c_str());
         show_display("BLE Tx >>", "", BLEToLoRaPacket, 1000);
         LoRa_Utils::sendNewPacket(BLEToLoRaPacket);
         BLEToLoRaPacket = "";
@@ -111,7 +111,7 @@ namespace BLE_Utils {
         delay(3);
     }
 
-    void txToPhoneOverBLE(String frame) {
+    void txToPhoneOverBLE(const String& frame) {
         txBLE((byte)KissChar::Fend);
         txBLE((byte)KissCmd::Data);
         for(int n = 0; n < frame.length(); n++) {
@@ -130,8 +130,8 @@ namespace BLE_Utils {
     }
 
     void sendToPhone(const String& packet) {
-        if (!packet.isEmpty()) {
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "BLE Rx", "%s", packet.c_str());
+        if (!packet.isEmpty() && bluetoothConnected) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BLE Rx", "%s", packet.c_str());
             String receivedPacketString = "";
             for (int i = 0; i < packet.length(); i++) {
                 receivedPacketString += packet[i];
