@@ -47,7 +47,6 @@ std::vector<String>             loadedWLNKMails;
 std::vector<String>             outputMessagesBuffer;
 std::vector<String>             outputAckRequestBuffer;
 std::vector<String>             packet25SegBuffer;
-std::vector<uint32_t>           packet25SegTimeBuffer;
 
 bool        ackRequestState     = false;
 String      ackCallsignRequest  = "";
@@ -103,7 +102,7 @@ namespace MSG_Utils {
         for (String s1 : v1) {
             numAPRSMessages++;
         }
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Number of APRS Messages : %s", String(numAPRSMessages));
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Number of APRS Messages : %s", String(numAPRSMessages));
     
         File fileToReadWLNK = SPIFFS.open("/winlinkMails.txt");
         if(!fileToReadWLNK) {
@@ -121,12 +120,12 @@ namespace MSG_Utils {
         for (String s2 : v2) {
             numWLNKMessages++;
         }
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Number of Winlink Mails : %s", String(numWLNKMessages));
+        logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Number of Winlink Mails : %s", String(numWLNKMessages));
     }
 
-    void loadMessagesFromMemory(String typeOfMessage) {
+    void loadMessagesFromMemory(uint8_t typeOfMessage) {
         File fileToRead;
-        if (typeOfMessage == "APRS") {
+        if (typeOfMessage == 0) {  // APRS
             noAPRSMsgWarning = false;
             if (numAPRSMessages == 0) {
                 noAPRSMsgWarning = true;
@@ -146,7 +145,7 @@ namespace MSG_Utils {
                 }
                 fileToRead.close();
             }
-        } else if (typeOfMessage == "WLNK") {
+        } else if (typeOfMessage == 1) { // WLNK
             noWLNKMsgWarning = false;
             if (numWLNKMessages == 0) {
                 noWLNKMsgWarning = true;
@@ -184,14 +183,14 @@ namespace MSG_Utils {
         }
     }
 
-    void deleteFile(String typeOfFile) {
+    void deleteFile(uint8_t typeOfFile) {
         if(!SPIFFS.begin(true)) {
             Serial.println("An Error has occurred while mounting SPIFFS");
             return;
         }
-        if (typeOfFile == "APRS") {
+        if (typeOfFile == 0) {  //APRS
             SPIFFS.remove("/aprsMessages.txt");
-        } else if (typeOfFile == "WLNK") {
+        } else if (typeOfFile == 1) {   //WLNK
             SPIFFS.remove("/winlinkMails.txt");
         }    
         if (Config.notification.ledMessage) {
@@ -199,34 +198,35 @@ namespace MSG_Utils {
         }
     }
 
-    void saveNewMessage(String typeMessage, String station, String newMessage) {
-        if (typeMessage == "APRS" && lastMessageSaved != newMessage) {
+    void saveNewMessage(uint8_t typeMessage, const String& station, const String& newMessage) {
+        String message = newMessage;
+        if (typeMessage == 0 && lastMessageSaved != message) {   //APRS
             File fileToAppendAPRS = SPIFFS.open("/aprsMessages.txt", FILE_APPEND);
             if(!fileToAppendAPRS) {
                 Serial.println("There was an error opening the file for appending");
                 return;
             }
-            newMessage.trim();
-            if(!fileToAppendAPRS.println(station + "," + newMessage)) {
+            message.trim();
+            if(!fileToAppendAPRS.println(station + "," + message)) {
                 Serial.println("File append failed");
             }
-            lastMessageSaved = newMessage;
+            lastMessageSaved = message;
             numAPRSMessages++;
             fileToAppendAPRS.close();
             if (Config.notification.ledMessage) {
                 messageLed = true;
             }
-        } else if (typeMessage == "WLNK" && lastMessageSaved != newMessage) {
+        } else if (typeMessage == 1 && lastMessageSaved != message) {    //WLNK
             File fileToAppendWLNK = SPIFFS.open("/winlinkMails.txt", FILE_APPEND);
             if(!fileToAppendWLNK) {
                 Serial.println("There was an error opening the file for appending");
                 return;
             }
-            newMessage.trim();
-            if(!fileToAppendWLNK.println(newMessage)) {
+            message.trim();
+            if(!fileToAppendWLNK.println(message)) {
                 Serial.println("File append failed");
             }
-            lastMessageSaved = newMessage;
+            lastMessageSaved = message;
             numWLNKMessages++;
             fileToAppendWLNK.close();
             if (Config.notification.ledMessage) {
@@ -235,13 +235,13 @@ namespace MSG_Utils {
         }
     }
 
-    void sendMessage(String station, String textMessage) {
+    void sendMessage(const String& station, const String& textMessage) {
         String newPacket = APRSPacketLib::generateMessagePacket(currentBeacon->callsign, "APLRT1", Config.path, station, textMessage);
         #if HAS_TFT
         cleanTFT();
         #endif
         if (textMessage.indexOf("ack") == 0 && station != "WLNK-1") {  // don't show Winlink ACK
-            show_display("<<ACK Tx>>", 500);
+            show_display("<<ACK Tx>>", "", "", 500);
         } else if (station.indexOf("CA2RXU-15") == 0 && textMessage.indexOf("wrl") == 0) {
             show_display("<WEATHER>","", "--- Sending Query ---",  1000);
             wxRequestTime = millis();
@@ -264,7 +264,7 @@ namespace MSG_Utils {
         return String(ackRequestNumber);
     }
 
-    void addToOutputBuffer(uint8_t typeOfMessage, String station, String textMessage) {
+    void addToOutputBuffer(uint8_t typeOfMessage, const String& station, const String& textMessage) {
         bool alreadyInBuffer;
         if (typeOfMessage == 1) {
             alreadyInBuffer = false;
@@ -362,32 +362,34 @@ namespace MSG_Utils {
     }
 
     void clean25SegBuffer() {
-        if (!packet25SegTimeBuffer.empty()) {
-            if (millis() - packet25SegTimeBuffer[0] > 25 * 1000) {
-                packet25SegTimeBuffer.erase(packet25SegTimeBuffer.begin());
+        if (!packet25SegBuffer.empty()) {
+            String deltaTimeString = packet25SegBuffer[0].substring(0, packet25SegBuffer[0].indexOf(","));
+            uint32_t deltaTime = deltaTimeString.toInt();
+            if ((millis() - deltaTime) >  25 * 1000) {
                 packet25SegBuffer.erase(packet25SegBuffer.begin());
             }
         }
     }
 
-    bool check25SegBuffer(String station, String textMessage) {
+    bool check25SegBuffer(const String& station, const String& textMessage) {
         if (!packet25SegBuffer.empty()) {
             bool shouldBeIgnored = false;
             for (int i = 0; i < packet25SegBuffer.size(); i++) {
-                if (packet25SegBuffer[i].substring(0, packet25SegBuffer[i].indexOf(",")) == station && packet25SegBuffer[i].substring(packet25SegBuffer[i].indexOf(",") + 1) == textMessage) {
+                String temp = packet25SegBuffer[i].substring(packet25SegBuffer[i].indexOf(",") + 1);
+                String bufferStation = temp.substring(0, temp.indexOf(","));
+                String bufferMessage = temp.substring(temp.indexOf(",") + 1);
+                if (bufferStation == station && bufferMessage == textMessage) {
                     shouldBeIgnored = true;
                 }
             }
             if (shouldBeIgnored) {
                 return false;
             } else {
-                packet25SegBuffer.push_back(station + "," + textMessage);
-                packet25SegTimeBuffer.push_back(millis());
+                packet25SegBuffer.push_back(String(millis()) + "," + station + "," + textMessage);
                 return true;
             }
         } else {
-            packet25SegBuffer.push_back(station + "," + textMessage);
-            packet25SegTimeBuffer.push_back(millis());
+            packet25SegBuffer.push_back(String(millis()) + "," + station + "," + textMessage);
             return true;
         }    
     }
@@ -402,7 +404,6 @@ namespace MSG_Utils {
             if (lastReceivedPacket.sender!=currentBeacon->callsign) {
 
                 if (check25SegBuffer(lastReceivedPacket.sender, lastReceivedPacket.message)) {
-
                     if (Config.bluetoothType == 0 || Config.bluetoothType == 3) { // agregar validador si cliente BLE esta conectado?
                         BLE_Utils::sendToPhone(packet.text.substring(3));
                     } else {
@@ -472,10 +473,10 @@ namespace MSG_Utils {
                             if (winlinkStatus == 0 && !Config.simplifiedTrackerMode) {
                                 lastMsgRxTime = millis();
                                 if (lastReceivedPacket.message.indexOf("ack") != 0) {
-                                    saveNewMessage("APRS", lastReceivedPacket.sender, lastReceivedPacket.message);
+                                    saveNewMessage(0, lastReceivedPacket.sender, lastReceivedPacket.message);
                                 }                                    
                             } else if (winlinkStatus == 1 && ackNumberRequest == lastReceivedPacket.message.substring(lastReceivedPacket.message.indexOf("ack") + 3)) {
-                                logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Winlink","---> Waiting Challenge");
+                                logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Winlink","---> Waiting Challenge");
                                 lastMsgRxTime = millis();
                                 winlinkStatus = 2;
                                 menuDisplay = 500;
@@ -486,7 +487,7 @@ namespace MSG_Utils {
                                 winlinkStatus = 3;
                                 menuDisplay = 501;
                             } else if (winlinkStatus == 3 && ackNumberRequest == lastReceivedPacket.message.substring(lastReceivedPacket.message.indexOf("ack") + 3)) {
-                                logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Winlink","---> Challenge Ack Received");
+                                logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Winlink","---> Challenge Ack Received");
                                 lastMsgRxTime = millis();
                                 winlinkStatus = 4;
                                 menuDisplay = 502;
@@ -497,20 +498,21 @@ namespace MSG_Utils {
                                 show_display("_WINLINK_>", "", " LOGGED !!!!", 2000);
                                 menuDisplay = 5000;
                             } else if (winlinkStatus == 5 && lastReceivedPacket.message.indexOf("Log off successful") == 0 ) {
+                                logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Winlink","---> Log Out");
                                 lastMsgRxTime = millis();
                                 show_display("_WINLINK_>", "", "    LOG OUT !!!", 2000);
                                 winlinkStatus = 0;
                             } else if ((winlinkStatus == 5) && (lastReceivedPacket.message.indexOf("Log off successful") == -1) && (lastReceivedPacket.message.indexOf("Login valid") == -1) && (lastReceivedPacket.message.indexOf("Login [") == -1) && (lastReceivedPacket.message.indexOf("ack") == -1)) {
                                 lastMsgRxTime = millis();
-                                show_display("<WLNK Rx >", "", lastReceivedPacket.message , "", 3000);
-                                saveNewMessage("WLNK", lastReceivedPacket.sender, lastReceivedPacket.message);
+                                show_display("<WLNK Rx >", "", lastReceivedPacket.message, 3000);
+                                saveNewMessage(1, lastReceivedPacket.sender, lastReceivedPacket.message);
                             } 
                         } else {
                             if (!Config.simplifiedTrackerMode) {
                                 lastMsgRxTime = millis();
-                                show_display("< MSG Rx >", "From --> " + lastReceivedPacket.sender, "", lastReceivedPacket.message , 3000);
+                                show_display("< MSG Rx >", "From --> " + lastReceivedPacket.sender, "", lastReceivedPacket.message , "", "", 3000);
                                 if (lastReceivedPacket.message.indexOf("ack") != 0) {
-                                    saveNewMessage("APRS", lastReceivedPacket.sender, lastReceivedPacket.message);
+                                    saveNewMessage(0, lastReceivedPacket.sender, lastReceivedPacket.message);
                                 }                            
                             }
                         }

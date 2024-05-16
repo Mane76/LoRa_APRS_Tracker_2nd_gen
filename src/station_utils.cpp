@@ -1,13 +1,11 @@
 #include <TinyGPS++.h>
 #include <SPIFFS.h>
-#include <vector>
 #include "APRSPacketLib.h"
 #include "station_utils.h"
 #include "configuration.h"
 #include "power_utils.h"
 #include "lora_utils.h"
 #include "bme_utils.h"
-#include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
 
@@ -38,7 +36,7 @@ extern bool                 smartBeaconValue;
 extern uint8_t              winlinkStatus;
 extern bool                 winlinkCommentState;
 
-extern bool                 bmeSensorFound;
+extern int                  wxModuleType;//                 bmeSensorFound;
 
 bool	    sendStandingUpdate      = false;
 uint8_t     updateCounter           = Config.sendCommentAfterXBeacons;
@@ -131,7 +129,7 @@ namespace STATION_Utils {
         }
     }
 
-    void orderListenedTrackersByDistance(String callsign, float distance, float course) {
+    void orderListenedTrackersByDistance(const String& callsign, float distance, float course) {
         String firstNearTrackerDistance, secondNearTrackerDistance, thirdNearTrackerDistance, fourthNearTrackerDistance, newTrackerInfo, firstNearTrackerCallsign, secondNearTrackerCallsign,thirdNearTrackerCallsign, fourthNearTrackerCallsign;
         newTrackerInfo = callsign + "> " + String(distance,2) + "km " + String(int(course)) + "," + String(millis());
         float firstDistance   = 0.0;
@@ -395,19 +393,19 @@ namespace STATION_Utils {
         }
     }
 
-    void sendBeacon(String type) {
+    void sendBeacon(uint8_t type) {
         String packet, comment;
         int sendCommentAfterXBeacons;
-        if (Config.bme.sendTelemetry && type == "Wx") {
+        if (Config.bme.sendTelemetry && type == 1) { // WX
             if (miceActive) {
                 packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign,"_", currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
             } else {
                 packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
             }
-            if (bmeSensorFound) {
-                packet += BME_Utils::readDataSensor("APRS");
+            if (wxModuleType != 0) {
+                packet += BME_Utils::readDataSensor(0);
             } else {
-                packet += ".../...g...t...r...p...P...h..b.....BME MODULE NOT FOUND! ";
+                packet += ".../...g...t...r...p...P...h..b.....";
             }            
         } else {
             if (miceActive) {
@@ -427,13 +425,13 @@ namespace STATION_Utils {
             String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
             String batteryChargeCurrent = POWER_Utils::getBatteryInfoCurrent();
             #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
-            comment += " Bat=" + batteryVoltage + "V (" + batteryChargeCurrent + "mA)";
+                comment += " Bat=" + batteryVoltage + "V (" + batteryChargeCurrent + "mA)";
             #endif
             #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262)
-            comment += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
+                comment += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
             #endif
             #if defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER)
-            comment += " Bat=" + String(batteryVoltage.toFloat(),2) + "V";
+                comment += " Bat=" + String(batteryVoltage.toFloat(),2) + "V";
             #endif
         }
         if (comment != "") {
@@ -444,7 +442,7 @@ namespace STATION_Utils {
             } 
         }        
         #ifdef HAS_TFT
-        cleanTFT();
+            cleanTFT();
         #endif
         show_display("<<< TX >>>", "", packet,100);
         LoRa_Utils::sendNewPacket(packet);
@@ -464,7 +462,7 @@ namespace STATION_Utils {
             lastTx = millis() - lastTxTime;
             telemetryTx = millis() - lastTelemetryTx;
             if (telemetryTx > 10 * 60 * 1000 && lastTx > 10 * 1000) {
-                sendBeacon("Wx");
+                sendBeacon(1);
                 lastTelemetryTx = millis();
             }
         }
@@ -484,9 +482,9 @@ namespace STATION_Utils {
         String dataToSave = String(index);
         if (fileIndex.println(dataToSave)) {
             if (type == 0) {
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "New Callsign Index saved to SPIFFS");
+                logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "New Callsign Index saved to SPIFFS");
             } else {
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "New Frequency Index saved to SPIFFS");
+                logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "New Frequency Index saved to SPIFFS");
             }
         } 
         fileIndex.close();
@@ -507,10 +505,10 @@ namespace STATION_Utils {
                 String firstLine = fileIndex.readStringUntil('\n');
                 if (type == 0) {
                     myBeaconsIndex = firstLine.toInt();
-                    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Callsign Index: %s", firstLine);
+                    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Callsign Index: %s", firstLine);
                 } else {
                     loraIndex = firstLine.toInt();
-                    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "LoRa Freq Index: %s", firstLine);
+                    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", "LoRa Freq Index: %s", firstLine);
                 }
             }
             fileIndex.close();
