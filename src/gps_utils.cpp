@@ -2,18 +2,17 @@
 #include "TimeLib.h"
 #include "configuration.h"
 #include "station_utils.h"
-#include "pins_config.h"
+#include "boards_pinout.h"
 #include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
-#include "utils.h"
 
 #include "APRSPacketLib.h"
 
 #ifdef HIGH_GPS_BAUDRATE
-#define GPS_BAUD  115200
+    #define GPS_BAUD  115200
 #else
-#define GPS_BAUD  9600
+    #define GPS_BAUD  9600
 #endif
 
 extern Configuration    Config;
@@ -39,22 +38,22 @@ namespace GPS_Utils {
 
     void setup() {
         #ifdef TTGO_T_LORA32_V2_1_TNC
-        disableGPS = true;
+            disableGPS = true;
         #else
-        disableGPS = Config.disableGPS;
+            disableGPS = Config.disableGPS;
         #endif
         if (disableGPS) {
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "GPS disabled");
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "GPS disabled");
             return;
         }
         neo6m_gps.begin(GPS_BAUD, SERIAL_8N1, GPS_TX, GPS_RX);
     }
 
-    void calculateDistanceCourse(String Callsign, double checkpointLatitude, double checkPointLongitude) {
+    void calculateDistanceCourse(const String& callsign, double checkpointLatitude, double checkPointLongitude) {
         double distanceKm = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), checkpointLatitude, checkPointLongitude) / 1000.0;
         double courseTo   = TinyGPSPlus::courseTo(gps.location.lat(), gps.location.lng(), checkpointLatitude, checkPointLongitude);
         STATION_Utils::deleteListenedTrackersbyTime();
-        STATION_Utils::orderListenedTrackersByDistance(Callsign, distanceKm, courseTo);
+        STATION_Utils::orderListenedTrackersByDistance(callsign, distanceKm, courseTo);
     }
 
     void getData() {
@@ -97,11 +96,11 @@ namespace GPS_Utils {
 
     void checkStartUpFrames() {
         if (disableGPS) return;
-        if ((millis() > 8000 && gps.charsProcessed() < 10)) {
+        if ((millis() > 10000 && gps.charsProcessed() < 10)) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "GPS",
                         "No GPS frames detected! Try to reset the GPS Chip with this "
-                        "firmware: https://github.com/lora-aprs/TTGO-T-Beam_GPS-reset");
-            show_display("ERROR", "No GPS frames!", "Reset the GPS Chip", "https://github.com/lora-aprs/TTGO-T-Beam_GPS-reset", 2000);
+                        "firmware: https://github.com/richonguzman/TTGO_T_BEAM_GPS_RESET");
+            show_display("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
         }
     }
 

@@ -29,7 +29,7 @@ namespace Utils {
         return (char) x + 65;
     }
 
-    char *getMaidenheadLocator(double lat, double lon, int size) {
+    char *getMaidenheadLocator(double lat, double lon, uint8_t size) {
         double LON_F[]={20,2.0,0.083333,0.008333,0.0003472083333333333};
         double LAT_F[]={10,1.0,0.0416665,0.004166,0.0001735833333333333};
         int i;
@@ -40,15 +40,15 @@ namespace Utils {
         size/=2; size*=2;
 
         for (i = 0; i < size/2; i++) {
-        if (i % 2 == 1) {
-            locator[i*2] = (char) (lon/LON_F[i] + '0');
-            locator[i*2+1] = (char) (lat/LAT_F[i] + '0');
-        } else {
-            locator[i*2] = letterize((int) (lon/LON_F[i]));
-            locator[i*2+1] = letterize((int) (lat/LAT_F[i]));
-        }
-        lon = fmod(lon, LON_F[i]);
-        lat = fmod(lat, LAT_F[i]);
+            if (i % 2 == 1) {
+                locator[i*2] = (char) (lon/LON_F[i] + '0');
+                locator[i*2+1] = (char) (lat/LAT_F[i] + '0');
+            } else {
+                locator[i*2] = letterize((int) (lon/LON_F[i]));
+                locator[i*2+1] = letterize((int) (lat/LAT_F[i]));
+            }
+            lon = fmod(lon, LON_F[i]);
+            lat = fmod(lat, LAT_F[i]);
         }
         locator[i*2]=0;
         return locator;
@@ -57,9 +57,7 @@ namespace Utils {
     static String padding(unsigned int number, unsigned int width) {
         String result;
         String num(number);
-        if (num.length() > width) {
-            width = num.length();
-        }
+        if (num.length() > width) width = num.length();
         for (unsigned int i = 0; i < width - num.length(); i++) {
             result.concat('0');
         }
@@ -96,9 +94,7 @@ namespace Utils {
     }
 
     String getSmartBeaconState() {
-        if (currentBeacon->smartBeaconState) {
-            return "On";
-        }
+        if (currentBeacon->smartBeaconState) return "On";
         return "Off";
     }
 

@@ -18,15 +18,13 @@ ________________________________________________________________________________
 #include <Arduino.h>
 #include <logger.h>
 #include <WiFi.h>
-#include <vector>
 #include "APRSPacketLib.h"
-#include "notification_utils.h"
 #include "bluetooth_utils.h"
 #include "keyboard_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
+#include "boards_pinout.h"
 #include "button_utils.h"
-#include "pins_config.h"
 #include "power_utils.h"
 #include "menu_utils.h"
 #include "lora_utils.h"
@@ -35,20 +33,19 @@ ________________________________________________________________________________
 #include "bme_utils.h"
 #include "ble_utils.h"
 #include "display.h"
-#include "SPIFFS.h"
 #include "utils.h"
 
 Configuration                       Config;
 HardwareSerial                      neo6m_gps(1);
 TinyGPSPlus                         gps;
 #ifdef HAS_BT_CLASSIC
-BluetoothSerial                     SerialBT;
+    BluetoothSerial                     SerialBT;
 #endif
 #ifdef BUTTON_PIN
-OneButton userButton                = OneButton(BUTTON_PIN, true, true);
+    OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.10";
+String      versionDate             = "2024.05.16";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -68,7 +65,6 @@ uint32_t    refreshDisplayTime      = millis();
 bool        sendUpdate              = true;
 
 bool        bluetoothConnected      = false;
-bool        bluetoothActive         = Config.bluetoothActive;
 bool        sendBleToLoRa           = false;
 String      BLEToLoRaPacket         = "";
 
@@ -95,12 +91,13 @@ int         ackRequestNumber;
 APRSPacket                          lastReceivedPacket;
 
 logging::Logger                     logger;
+#define DEBUG
 
 void setup() {
     Serial.begin(115200);
-
+    
     #ifndef DEBUG
-    logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
+        logger.setDebugLevel(logging::LoggerLevel::LOGGER_LEVEL_INFO);
     #endif
 
     POWER_Utils::setup();
@@ -120,28 +117,28 @@ void setup() {
     ackRequestNumber = random(1,999);
 
     WiFi.mode(WIFI_OFF);
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "WiFi controller stopped");
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "WiFi controller stopped");
 
     if (Config.bluetoothType == 0 || Config.bluetoothType == 3) {
         BLE_Utils::setup();
     } else {
         #ifdef HAS_BT_CLASSIC
-        BLUETOOTH_Utils::setup();
+            BLUETOOTH_Utils::setup();
         #endif
     }
 
     if (!Config.simplifiedTrackerMode) {
         #ifdef BUTTON_PIN
-        userButton.attachClick(BUTTON_Utils::singlePress);
-        userButton.attachLongPressStart(BUTTON_Utils::longPress);
-        userButton.attachDoubleClick(BUTTON_Utils::doublePress);
-        userButton.attachMultiClick(BUTTON_Utils::multiPress);
+            userButton.attachClick(BUTTON_Utils::singlePress);
+            userButton.attachLongPressStart(BUTTON_Utils::longPress);
+            userButton.attachDoubleClick(BUTTON_Utils::doublePress);
+            userButton.attachMultiClick(BUTTON_Utils::multiPress);
         #endif
         KEYBOARD_Utils::setup();
     }
 
     POWER_Utils::lowerCpuFrequency();
-    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
+    logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Setup Done!");
     menuDisplay = 0;
 }
@@ -161,7 +158,7 @@ void loop() {
 
     if (!Config.simplifiedTrackerMode) {
         #ifdef BUTTON_PIN
-        userButton.tick();
+            userButton.tick();
         #endif
     }
 
@@ -169,7 +166,7 @@ void loop() {
 
     KEYBOARD_Utils::read();
     #ifdef TTGO_T_DECK_GPS
-    KEYBOARD_Utils::mouseRead();
+        KEYBOARD_Utils::mouseRead();
     #endif
 
     GPS_Utils::getData();
@@ -187,7 +184,7 @@ void loop() {
         BLE_Utils::sendToLoRa();
     } else {
         #ifdef HAS_BT_CLASSIC
-        BLUETOOTH_Utils::sendToLoRa();
+            BLUETOOTH_Utils::sendToLoRa();
         #endif
     }
 
@@ -206,7 +203,7 @@ void loop() {
         STATION_Utils::checkStandingUpdateTime();
     }
     STATION_Utils::checkSmartBeaconState();
-    if (sendUpdate && gps_loc_update) STATION_Utils::sendBeacon("GPS");
+    if (sendUpdate && gps_loc_update) STATION_Utils::sendBeacon(0);
     if (gps_time_update) STATION_Utils::checkSmartBeaconInterval(currentSpeed);
   
     if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {

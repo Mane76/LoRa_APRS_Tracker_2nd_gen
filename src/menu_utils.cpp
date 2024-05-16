@@ -42,7 +42,8 @@ extern String               winlinkBody;
 extern String               winlinkAlias;
 extern String               winlinkAliasComplete;
 extern bool                 winlinkCommentState;
-extern bool                 bmeSensorFound;
+extern int                  wxModuleType;
+//extern bool                 bmeSensorFound;
 
 String      freqChangeWarning;
 uint8_t     lowBatteryPercent       = 21;
@@ -214,14 +215,12 @@ namespace MENU_Utils {
                 break;
 
             case 210:   // 2.Configuration ---> Change Frequency
-                if (loraIndex == 0) {
-                    freqChangeWarning = "      Eu --> PL";
-                } else if (loraIndex == 1) {
-                    freqChangeWarning = "      PL --> UK";
-                } else if (loraIndex == 2) {
-                    freqChangeWarning = "      UK --> Eu";
+                switch (loraIndex) {
+                    case 0: freqChangeWarning = "      Eu --> PL"; break;
+                    case 1: freqChangeWarning = "      PL --> UK"; break;
+                    case 2: freqChangeWarning = "      UK --> Eu"; break;
                 }
-                show_display("LORA__FREQ", "","   Confirm Change?",freqChangeWarning,"","<Back         Select>");
+                show_display("LORA__FREQ", "","   Confirm Change?", freqChangeWarning, "", "<Back         Select>");
                 break;
 
             case 220:   // 2.Configuration ---> Display ---> ECO Mode
@@ -411,7 +410,7 @@ namespace MENU_Utils {
                 show_display("WLNK__MENU", "  Forward Mail (F#)", "> Delete Mail  (K#)", "  Alias Menu", "  Log Out", lastLine);
                 break;
             case 5051:    // WINLINK: Delete Mail //
-                show_display("WLNK___DEL", "", "   DELETE MAIL N."  + winlinkMailNumber, "", "<Back          Enter>");
+                show_display("WLNK___DEL", "", "   DELETE MAIL N."  + winlinkMailNumber, "", "", "<Back          Enter>");
                 break;
             
             case 5060:    // WINLINK: Alias Menu //
@@ -522,12 +521,10 @@ namespace MENU_Utils {
                     } else {
                         thirdRowMainMenu = String(Utils::getMaidenheadLocator(gps.location.lat(), gps.location.lng(), 8));
                         thirdRowMainMenu += " LoRa[";
-                        if (loraIndex == 0) {
-                            thirdRowMainMenu += "Eu]";
-                        } else if (loraIndex == 1) {
-                            thirdRowMainMenu += "PL]";
-                        } else if (loraIndex == 2) {
-                            thirdRowMainMenu += "UK]";
+                        switch (loraIndex) {
+                            case 0: thirdRowMainMenu += "Eu]"; break;
+                            case 1: thirdRowMainMenu += "PL]"; break;
+                            case 2: thirdRowMainMenu += "UK]"; break;
                         }
                     }
                     
@@ -572,8 +569,8 @@ namespace MENU_Utils {
                         if (time_now % 10 < 5) {
                             fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
                         } else {
-                            if (bmeSensorFound) {
-                                fourthRowMainMenu = BME_Utils::readDataSensor("OLED");
+                            if (wxModuleType != 0) {
+                                fourthRowMainMenu = BME_Utils::readDataSensor(1);
                             } else {
                                 fourthRowMainMenu = "A=" + fourthRowAlt + "m  " + fourthRowSpeed + "km/h  " + fourthRowCourse;
                             }
@@ -595,17 +592,17 @@ namespace MENU_Utils {
                 if (POWER_Utils::getBatteryInfoIsConnected()) {
                     String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
                     String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
-                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) 
+                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS)
 					    sixthRowMainMenu = "Bat: " + batteryVoltage + "V";
                     #endif
                     #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
-                    if (batteryCharge.toInt() == 0) {
-                        sixthRowMainMenu = "Battery Charged " + batteryVoltage + "V";
-                    } else if (batteryCharge.toInt() > 0) {
-                        sixthRowMainMenu = "Bat: " + batteryVoltage + "V (charging)";
-                    } else {
-                        sixthRowMainMenu = "Battery " + batteryVoltage + "V " + batteryCharge + "mA";
-                    }
+                        if (batteryCharge.toInt() == 0) {
+                            sixthRowMainMenu = "Battery Charged " + batteryVoltage + "V";
+                        } else if (batteryCharge.toInt() > 0) {
+                            sixthRowMainMenu = "Bat: " + batteryVoltage + "V (charging)";
+                        } else {
+                            sixthRowMainMenu = "Battery " + batteryVoltage + "V " + batteryCharge + "mA";
+                        }
                     #endif
                     #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
                         if (Config.notification.lowBatteryBeep && !POWER_Utils::isCharging() && batteryCharge.toInt() < lowBatteryPercent) {
@@ -630,12 +627,12 @@ namespace MENU_Utils {
                 } else {
                     sixthRowMainMenu = "No Battery Connected" ;
                 }
-                show_display(String(firstRowMainMenu),
-                            String(secondRowMainMenu),
-                            String(thirdRowMainMenu),
-                            String(fourthRowMainMenu),
-                            String(fifthRowMainMenu),
-                            String(sixthRowMainMenu));
+                show_display(firstRowMainMenu,
+                            secondRowMainMenu,
+                            thirdRowMainMenu,
+                            fourthRowMainMenu,
+                            fifthRowMainMenu,
+                            sixthRowMainMenu);
                 break;
         }
     }
