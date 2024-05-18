@@ -13,8 +13,8 @@ extern LoraType         *currentLoRaType;
 extern uint8_t          loraIndex;
 extern int              loraIndexSize;
 
-bool transmissionFlag = true;
-bool enableInterrupt = true;
+bool operationDone   = true;
+bool transmitFlag    = true;
 
 #if defined(HAS_SX1262)
     SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
@@ -25,15 +25,14 @@ bool enableInterrupt = true;
 #if defined(HAS_SX1278)
     SX1278 radio = new Module(RADIO_CS_PIN, RADIO_BUSY_PIN, RADIO_RST_PIN);
 #endif
-
+#if defined(HAS_SX1276)
+    SX1276 radio = new Module(RADIO_CS_PIN, RADIO_BUSY_PIN, RADIO_RST_PIN);
+#endif
 
 namespace LoRa_Utils {
 
     void setFlag(void) {
-        if(!enableInterrupt) {
-            return;
-        }
-        transmissionFlag = true;
+        operationDone = true;
     }
 
     void changeFreq() {
@@ -94,27 +93,29 @@ namespace LoRa_Utils {
         radio.setBandwidth(signalBandwidth);
         radio.setCodingRate(currentLoRaType->codingRate4);
         radio.setCRC(true);
+
         #if defined(ESP32_DIY_1W_LoRa_GPS) || defined(OE5HWN_MeshCom)
             radio.setRfSwitchPins(RADIO_RXEN, RADIO_TXEN);
+            state = radio.setOutputPower(currentLoRaType->power); // max value 20 (when 20dB in setup 30dB in output as 400M30S has Low Noise Amp)
+            radio.setCurrentLimit(140); // to be validated (100 , 120, 140)?
         #endif
+
         #if defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_Beam_S3_SUPREME_V3) || defined(TTGO_T_DECK_GPS)
             state = radio.setOutputPower(currentLoRaType->power + 2); // values available: 10, 17, 22 --> if 20 in tracker_conf.json it will be updated to 22.
             radio.setCurrentLimit(140);
         #endif
-        #if defined(ESP32_DIY_1W_LoRa_GPS) || defined(OE5HWN_MeshCom)
-            state = radio.setOutputPower(currentLoRaType->power); // max value 20 (when 20dB in setup 30dB in output as 400M30S has Low Noise Amp)
-            radio.setCurrentLimit(140); // check correct value for 1W !!!!
-        #endif
+        
         #if defined(HAS_SX1278)
             state = radio.setOutputPower(currentLoRaType->power);
             radio.setCurrentLimit(100); // to be validated (80 , 100)?
         #endif
+
         #if defined(HAS_SX1262) || defined(HAS_SX1268)
         radio.setRxBoostedGainMode(true);
         #endif
+
         if (state == RADIOLIB_ERR_NONE) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "LoRa init done!");
-            radio.startReceive();
         } else {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
             while (true);
@@ -134,17 +135,15 @@ namespace LoRa_Utils {
         if (Config.notification.ledTx) digitalWrite(Config.notification.ledTxPin, HIGH);
         if (Config.notification.buzzerActive && Config.notification.txBeep) NOTIFICATION_Utils::beaconTxBeep();
         
-        enableInterrupt = false;
         int state = radio.transmit("\x3c\xff\x01" + newPacket);
+        transmitFlag = true;
         if (state == RADIOLIB_ERR_NONE) {
             //Serial.println(F("success!"));
         } else {
             Serial.print(F("failed, code "));
             Serial.println(state);
         }
-        enableInterrupt = true;
-        radio.startReceive();
-
+        
         if (Config.notification.ledTx) digitalWrite(Config.notification.ledTxPin, LOW);
         if (Config.ptt.active) {
             delay(Config.ptt.postDelay);
@@ -158,20 +157,25 @@ namespace LoRa_Utils {
     ReceivedLoRaPacket receivePacket() {
         ReceivedLoRaPacket receivedLoraPacket;
         String packet = "";
-        if (transmissionFlag) {
-            transmissionFlag = false;
-            int state = radio.readData(packet);
-            if (state == RADIOLIB_ERR_NONE) {
-                if(!packet.isEmpty()) {
-                    logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa Rx","---> %s", packet.substring(3).c_str());
-                }
-                receivedLoraPacket.text       = packet;
-                receivedLoraPacket.rssi       = radio.getRSSI();
-                receivedLoraPacket.snr        = radio.getSNR();
-                receivedLoraPacket.freqError  = radio.getFrequencyError();
+        if (operationDone) {
+            operationDone = false;
+            if (transmitFlag) {
+                radio.startReceive();
+                transmitFlag = false;
             } else {
-                Serial.print(F("failed, code "));   // 7 = CRC mismatch
-                Serial.println(state);
+                int state = radio.readData(packet);
+                if (state == RADIOLIB_ERR_NONE) {
+                    if(!packet.isEmpty()) {
+                        logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa Rx","---> %s", packet.substring(3).c_str());
+                        receivedLoraPacket.text       = packet;
+                        receivedLoraPacket.rssi       = radio.getRSSI();
+                        receivedLoraPacket.snr        = radio.getSNR();
+                        receivedLoraPacket.freqError  = radio.getFrequencyError();
+                    }
+                } else {
+                    Serial.print(F("failed, code "));   // 7 = CRC mismatch
+                    Serial.println(state);
+                }
             }
         }
         return receivedLoraPacket;
