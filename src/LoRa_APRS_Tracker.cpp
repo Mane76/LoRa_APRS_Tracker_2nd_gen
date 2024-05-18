@@ -23,8 +23,8 @@ ________________________________________________________________________________
 #include "keyboard_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
+#include "boards_pinout.h"
 #include "button_utils.h"
-#include "pins_config.h"
 #include "power_utils.h"
 #include "menu_utils.h"
 #include "lora_utils.h"
@@ -45,7 +45,7 @@ TinyGPSPlus                         gps;
     OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.16m";
+String      versionDate             = "2024.05.17m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -91,7 +91,7 @@ int         ackRequestNumber;
 APRSPacket                          lastReceivedPacket;
 
 logging::Logger                     logger;
-#define DEBUG
+//#define DEBUG
 
 void setup() {
     Serial.begin(115200);
