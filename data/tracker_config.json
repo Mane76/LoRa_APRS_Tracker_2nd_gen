@@ -5,7 +5,7 @@
 			"symbol": "b",
 			"overlay": "/",
 			"micE": "",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
+			"comment": "https://t1p.de/LORA",
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
@@ -23,7 +23,7 @@
 			"symbol": "[",
 			"overlay": "/",
 			"micE": "",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
+			"comment": "https://t1p.de/LORA",
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
@@ -41,7 +41,7 @@
 			"symbol": ">",
 			"overlay": "/",
 			"micE": "",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
+			"comment": "https://t1p.de/LORA",
 			"smartBeacon": {
 				"active": true,
 				"slowRate": 120,
@@ -70,7 +70,7 @@
 		"maxDistanceToTracker": 300,
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
-		"sendBatteryInfo": false,
+		"sendBatteryInfo": true,
 		"bluetoothType": 1,
 		"bluetoothActive": true,
 		"disableGPS": false
