@@ -45,7 +45,7 @@ TinyGPSPlus                         gps;
     OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.16m";
+String      versionDate             = "2024.05.17m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -91,7 +91,7 @@ int         ackRequestNumber;
 APRSPacket                          lastReceivedPacket;
 
 logging::Logger                     logger;
-#define DEBUG
+//#define DEBUG
 
 void setup() {
     Serial.begin(115200);
