@@ -46,7 +46,7 @@ class MyCallbacks : public NimBLECharacteristicCallbacks {
         }
         if (Config.bluetoothType == 0) {
             BLEToLoRaPacket = AX25_Utils::AX25FrameToLoRaPacket(receivedString);
-        } else if (Config.bluetoothType == 3) {
+        } else if (Config.bluetoothType == 2) {
             BLEToLoRaPacket = receivedString;
         }
         sendBleToLoRa = true;
@@ -112,6 +112,12 @@ namespace BLE_Utils {
     }
 
     void txToPhoneOverBLE(const String& frame) {
+        if (Config.bluetoothType == 2){
+            for(int n = 0; n < frame.length(); n++) {
+            uint8_t byteCharacter = frame[n];
+            txBLE(byteCharacter);
+            }
+        } else if (Config.bluetoothType == 0){   
         txBLE((byte)KissChar::Fend);
         txBLE((byte)KissCmd::Data);
         for(int n = 0; n < frame.length(); n++) {
@@ -127,6 +133,7 @@ namespace BLE_Utils {
             }       
         }
         txBLE((byte)KissChar::Fend);
+        }
     }
 
     void sendToPhone(const String& packet) {
@@ -138,7 +145,7 @@ namespace BLE_Utils {
             }
             if (Config.bluetoothType == 0) {
                 txToPhoneOverBLE(AX25_Utils::LoRaPacketToAX25Frame(receivedPacketString));
-            } else if (Config.bluetoothType == 3) {
+            } else if (Config.bluetoothType == 2) {
                 txToPhoneOverBLE(receivedPacketString);                
             }
         }
