@@ -111,22 +111,30 @@ namespace BLE_Utils {
         delay(3);
     }
 
-    void txToPhoneOverBLE(const String& frame) { 
-        txBLE((byte)KissChar::Fend);
-        txBLE((byte)KissCmd::Data);
+    void txToPhoneOverBLE(const String& frame) {
+        if (Config.bluetoothType == 0) {
+            txBLE((byte)KissChar::Fend);
+            txBLE((byte)KissCmd::Data);
+        }        
         for(int n = 0; n < frame.length(); n++) {
             uint8_t byteCharacter = frame[n];
-            if (byteCharacter == KissChar::Fend) {
-                txBLE((byte)KissChar::Fesc);
-                txBLE((byte)KissChar::Tfend);
-            } else if (byteCharacter == KissChar::Fesc) {
-                txBLE((byte)KissChar::Fesc);
-                txBLE((byte)KissChar::Tfesc);
-            } else {
+            if (Config.bluetoothType == 2) {
                 txBLE(byteCharacter);
-            }       
+            } else {
+                if (byteCharacter == KissChar::Fend) {
+                    txBLE((byte)KissChar::Fesc);
+                    txBLE((byte)KissChar::Tfend);
+                } else if (byteCharacter == KissChar::Fesc) {
+                    txBLE((byte)KissChar::Fesc);
+                    txBLE((byte)KissChar::Tfesc);
+                } else {
+                    txBLE(byteCharacter);
+                }
+            }    
         }
-        txBLE((byte)KissChar::Fend);
+        if (Config.bluetoothType == 0) {
+            txBLE((byte)KissChar::Fend);
+        }        
     }
 
     void sendToPhone(const String& packet) {
