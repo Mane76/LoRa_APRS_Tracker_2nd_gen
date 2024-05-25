@@ -9,7 +9,7 @@
 
                                                     Ricardo Guzman - CA2RXU 
                                           https://github.com/richonguzman/LoRa_APRS_Tracker
-                                            (donations : http://paypal.me/richonguzman)                                                                       
+                                            (donations : http://paypal.me/richonguzman)
 __________________________________________________________________________________________________________________________________*/
 
 #include <BluetoothSerial.h>
@@ -45,7 +45,7 @@ TinyGPSPlus                         gps;
     OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.05.17";
+String      versionDate             = "2024.05.21";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -119,7 +119,7 @@ void setup() {
     WiFi.mode(WIFI_OFF);
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "WiFi controller stopped");
 
-    if (Config.bluetoothType == 0 || Config.bluetoothType == 3) {
+    if (Config.bluetoothType == 0 || Config.bluetoothType == 2) {
         BLE_Utils::setup();
     } else {
         #ifdef HAS_BT_CLASSIC
@@ -180,7 +180,7 @@ void loop() {
     MSG_Utils::ledNotification();
     Utils::checkFlashlight();
     STATION_Utils::checkListenedTrackersByTimeAndDelete();
-    if (Config.bluetoothType == 0 || Config.bluetoothType == 3) {
+    if (Config.bluetoothType == 0 || Config.bluetoothType == 2) {
         BLE_Utils::sendToLoRa();
     } else {
         #ifdef HAS_BT_CLASSIC

@@ -42,7 +42,7 @@ uint8_t     updateCounter           = Config.sendCommentAfterXBeacons;
 bool        wxRequestStatus         = false;
 uint32_t    wxRequestTime           = 0;
 
-uint32_t    lastTelemetryTx         = millis();
+uint32_t    lastTelemetryTx         = 0;
 uint32_t    telemetryTx             = millis();
 
 String      firstNearTracker;
@@ -396,11 +396,7 @@ namespace STATION_Utils {
         String packet, comment;
         int sendCommentAfterXBeacons;
         if (Config.bme.sendTelemetry && type == 1) { // WX
-            if (miceActive) {
-                packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign,"_", currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
-            } else {
-                packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
-            }
+            packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
             if (wxModuleType != 0) {
                 packet += BME_Utils::readDataSensor(0);
             } else {
@@ -426,7 +422,7 @@ namespace STATION_Utils {
             #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
                 comment += " Bat=" + batteryVoltage + "V (" + batteryChargeCurrent + "mA)";
             #endif
-            #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262)
+            #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
                 comment += " Bat=" + String(batteryVoltage.toFloat()/1000,2) + "V (" + batteryChargeCurrent + "%)";
             #endif
             #if defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER)
@@ -460,7 +456,7 @@ namespace STATION_Utils {
         if (Config.bme.active && Config.bme.sendTelemetry) {
             lastTx = millis() - lastTxTime;
             telemetryTx = millis() - lastTelemetryTx;
-            if (telemetryTx > 10 * 60 * 1000 && lastTx > 10 * 1000) {
+            if ((lastTelemetryTx == 0 || telemetryTx > 10 * 60 * 1000) && lastTx > 10 * 1000) {
                 sendBeacon(1);
                 lastTelemetryTx = millis();
             }
