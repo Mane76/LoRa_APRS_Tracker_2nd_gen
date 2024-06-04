@@ -10,6 +10,7 @@ struct ReceivedLoRaPacket {
     int     freqError;
 };
 
+
 namespace LoRa_Utils {
 
     void setFlag();
@@ -17,6 +18,7 @@ namespace LoRa_Utils {
     void setup();
     void sendNewPacket(const String& newPacket);
     ReceivedLoRaPacket receivePacket();
+    void sleepRadio();
 
 }
 
