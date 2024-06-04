@@ -49,6 +49,7 @@ namespace LoRa_Utils {
         float signalBandwidth = currentLoRaType->signalBandwidth/1000;
         radio.setBandwidth(signalBandwidth);
         radio.setCodingRate(currentLoRaType->codingRate4);
+        radio.autoLDRO();
         #if defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_V1_0_SX1268) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_Beam_S3_SUPREME_V3) || defined(TTGO_T_DECK_GPS)
             radio.setOutputPower(currentLoRaType->power + 2); // values available: 10, 17, 22 --> if 20 in tracker_conf.json it will be updated to 22.
         #endif
