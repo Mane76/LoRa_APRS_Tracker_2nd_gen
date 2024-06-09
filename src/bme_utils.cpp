@@ -1,13 +1,15 @@
+#include <TinyGPS++.h>
+#include <logger.h>
 #include "bme_utils.h"
 #include "configuration.h"
 #include "display.h"
-#include <logger.h>
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define CORRECTION_FACTOR (8.2296)      // for meters
 
 extern Configuration    Config;
 extern logging::Logger  logger;
+extern TinyGPSPlus      gps;
 
 float newHum, newTemp, newPress, newGas;
 
@@ -117,7 +119,7 @@ namespace BME_Utils {
         }
     }
 
-    String generateTempString(float bmeTemp, uint8_t type) {
+    const String generateTempString(const float bmeTemp, const uint8_t type) {
         String strTemp;
         if (type == 1) {    // OLED
             strTemp = String((int)bmeTemp);
@@ -131,23 +133,20 @@ namespace BME_Utils {
                 } else {
                     return "00" + strTemp;
                 }
-                break;
             case 2:
                 if (type == 1) {
                     return " " + strTemp;
                 } else {
                     return "0" + strTemp;
                 }
-                break;
             case 3:
                 return strTemp;
-                break;
             default:
                 return "-999";
         }
     }
 
-    String generateHumString(float bmeHum, uint8_t type) {
+    const String generateHumString(const float bmeHum, const uint8_t type) {
         String strHum;
         strHum = String((int)bmeHum);
         switch (strHum.length()) {
@@ -157,10 +156,8 @@ namespace BME_Utils {
                 } else {
                     return "0" + strHum;
                 }
-                break;
             case 2:
                 return strHum;
-                break;
             case 3:
                 if ((int)bmeHum == 100) {
                     if (type == 1) {
@@ -171,13 +168,12 @@ namespace BME_Utils {
                 } else {
                     return "-99";
                 }
-                break;
             default:
                 return "-99";
         }
     }
 
-    String generatePresString(float bmePress, uint8_t type) {
+    const String generatePresString(const float bmePress, const uint8_t type) {
         String strPress = String((int)bmePress);
         String decPress = String(int((bmePress - int(bmePress)) * 10));
         switch (strPress.length()) {
@@ -187,37 +183,32 @@ namespace BME_Utils {
                 } else {
                     return "000" + strPress + decPress;
                 }
-                break;
             case 2:
                 if (type == 1) {
                     return "00" + strPress;
                 } else {
                     return "00" + strPress + decPress;
                 }
-                break;
             case 3:
                 if (type == 1) {
                     return "0" + strPress;
                 } else {
                     return "0" + strPress + decPress;
                 }
-                break;
             case 4:
                 if (type == 1) {
                     return strPress;
                 } else {
                     return strPress + decPress;
                 }
-                break;
             case 5:
                 return strPress;
-                break;
             default:
                 return "-99999";
         }
     }
 
-    String readDataSensor(uint8_t type) {
+    const String readDataSensor(const uint8_t type) {
         String wx, tempStr, humStr, presStr;
         uint32_t lastReading = millis() - bmeLastReading;
         if (lastReading > 60 * 1000) {
@@ -265,17 +256,33 @@ namespace BME_Utils {
             } else if (wxModuleType == 2) {
                 humStr  = "..";
             }
-            presStr = generatePresString(newPress + (Config.bme.heightCorrection/CORRECTION_FACTOR), type);
+            presStr = generatePresString(newPress + (gps.altitude.meters()/CORRECTION_FACTOR), type);
             if (type == 1) {
                 if (wxModuleType == 1 || wxModuleType == 3) {
-                    wx = tempStr + "C   " + humStr + "%   " + presStr + "hPa";
+                    wx = tempStr;
+                    wx += "C   ";
+                    wx += humStr;
+                    wx += "%   ";
+                    wx += presStr;
+                    wx += "hPa";
                 } else if (wxModuleType == 2) {
-                    wx = "T: " + tempStr + "C " + "P: " + presStr + "hPa";
+                    wx = "T: ";
+                    wx += tempStr;
+                    wx += "C P: ";
+                    wx += presStr;
+                    wx += "hPa";
                 }
             } else {
-                wx = ".../...g...t" + tempStr + "r...p...P...h" + humStr + "b" + presStr;
+                wx = ".../...g...t";
+                wx += tempStr;
+                wx += "r...p...P...h";
+                wx += humStr;
+                wx += "b";
+                wx += presStr;
                 if (wxModuleType == 3) {
-                    wx += "Gas: " + String(newGas) + "Kohms";
+                    wx += "Gas: ";
+                    wx += String(newGas);
+                    wx += "Kohms";
                 }
             }
             return wx;

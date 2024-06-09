@@ -1,10 +1,13 @@
 #include <SPI.h>
-#include "configuration.h"
-#include "power_utils.h"
 #include "notification_utils.h"
+#include "configuration.h"
 #include "boards_pinout.h"
+#include "power_utils.h"
+#include "lora_utils.h"
 #include "ble_utils.h"
+#include "display.h"
 #include "logger.h"
+
 
 #ifndef TTGO_T_Beam_S3_SUPREME_V3
     #ifndef HELTEC_WIRELESS_TRACKER
@@ -33,6 +36,7 @@
 extern Configuration    Config;
 extern logging::Logger  logger;
 extern bool             disableGPS;
+extern bool             transmitFlag;
 
 uint32_t    batteryMeasurmentTime   = 0;
 
@@ -82,11 +86,11 @@ namespace POWER_Utils {
     #endif    
     }
 
-    String getBatteryInfoVoltage() {
+    const String getBatteryInfoVoltage() {
         return batteryVoltage;
     }
 
-    String getBatteryInfoCurrent() {
+    const String getBatteryInfoCurrent() {
         return batteryChargeDischargeCurrent;
     }
 
@@ -458,6 +462,7 @@ namespace POWER_Utils {
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "SHUTDOWN !!!");
         #if defined(HAS_AXP192) || defined(HAS_AXP2101)
             if (Config.notification.shutDownBeep) NOTIFICATION_Utils::shutDownBeep();
+            display_toggle(false);
             PMU.shutdown();
         #else
 
@@ -480,26 +485,11 @@ namespace POWER_Utils {
                 #endif
             #endif
 
-
-            #ifdef HELTEC_WIRELESS_TRACKER
-                /*Serial.flush();           // not working yet
-                SPI.endTransaction();           
-                SPI.end();
-                pinMode(RADIO_DIO1_PIN, ANALOG);
-                pinMode(RADIO_RST_PIN, ANALOG);
-                pinMode(RADIO_BUSY_PIN, ANALOG);
-                pinMode(RADIO_SCLK_PIN, ANALOG);
-                pinMode(RADIO_MISO_PIN, ANALOG);
-                pinMode(RADIO_MOSI_PIN, ANALOG);
-
-                pinMode(RADIO_CS_PIN, OUTPUT);
-                digitalWrite(RADIO_CS_PIN, HIGH);
-                gpio_hold_en((gpio_num_t)RADIO_CS_PIN);*/
-            #endif
-
+            LoRa_Utils::sleepRadio();
 
             long DEEP_SLEEP_TIME_SEC = 1296000; // 30 days
             esp_sleep_enable_timer_wakeup(1000000ULL * DEEP_SLEEP_TIME_SEC);
+            delay(500);           
             esp_deep_sleep_start();
         #endif
     }
