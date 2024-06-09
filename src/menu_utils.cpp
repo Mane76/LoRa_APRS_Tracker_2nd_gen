@@ -49,24 +49,20 @@ uint8_t     lowBatteryPercent       = 21;
 
 namespace MENU_Utils {
 
-    String checkBTType() {
+    const String checkBTType() {
         switch (Config.bluetoothType) {
             case 0:
                 return "BLE iPhone";
-                break;
             case 1:
                 return "BT Android";
-                break;
             case 2:
                 return "BLE Text";
-                break;
             default:
                 return "no BT";
-                break;
         }
     }
 
-    String checkProcessActive(bool process) {
+    const String checkProcessActive(const bool process) {
         if (process) {
             return "ON";
         } else {
@@ -74,11 +70,11 @@ namespace MENU_Utils {
         }
     }
 
-    String checkScreenBrightness(uint8_t bright) {
+    const String screenBrightnessAsString(const uint8_t bright) {
         if (bright == 255) {
             return "MAX";
         } else {
-            return "MIN";
+            return "min";
         }
     }
 
@@ -232,10 +228,10 @@ namespace MENU_Utils {
                 break;
 
             case 220:   // 2.Configuration ---> Display ---> ECO Mode
-                show_display("_DISPLAY__", "", "> ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","  Brightness  (" + checkScreenBrightness(screenBrightness) + ")","",lastLine);
+                show_display("_DISPLAY__", "", "> ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","  Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
                 break;
             case 221:   // 2.Configuration ---> Display ---> Brightness
-                show_display("_DISPLAY__", "", "  ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","> Brightness  (" + checkScreenBrightness(screenBrightness) + ")","",lastLine);
+                show_display("_DISPLAY__", "", "  ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","> Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
                 break;
 
             case 230:
