@@ -78,28 +78,28 @@ namespace STATION_Utils {
         if (firstNearTracker != "") {
             firstNearTrackermillis = firstNearTracker.substring(firstNearTracker.indexOf(",") + 1);
             firstTrackermillis = firstNearTrackermillis.toInt();
-            if ((millis() - firstTrackermillis) > Config.rememberStationTime*60*1000) {
+            if ((millis() - firstTrackermillis) > Config.rememberStationTime * 60 * 1000) {
                 firstNearTracker = "";
             }
         }
         if (secondNearTracker != "") {
             secondNearTrackermillis = secondNearTracker.substring(secondNearTracker.indexOf(",") + 1);
             secondTrackermillis = secondNearTrackermillis.toInt();
-            if ((millis() - secondTrackermillis) > Config.rememberStationTime*60*1000) {
+            if ((millis() - secondTrackermillis) > Config.rememberStationTime * 60 * 1000) {
                 secondNearTracker = "";
             }
         }
         if (thirdNearTracker != "") {
             thirdNearTrackermillis = thirdNearTracker.substring(thirdNearTracker.indexOf(",") + 1);
             thirdTrackermillis = thirdNearTrackermillis.toInt();
-            if ((millis() - thirdTrackermillis) > Config.rememberStationTime*60*1000) {
+            if ((millis() - thirdTrackermillis) > Config.rememberStationTime * 60 * 1000) {
                 thirdNearTracker = "";
             }
         }
         if (fourthNearTracker != "") {
             fourthNearTrackermillis = fourthNearTracker.substring(fourthNearTracker.indexOf(",") + 1);
             fourthTrackermillis = fourthNearTrackermillis.toInt();
-            if ((millis() - fourthTrackermillis) > Config.rememberStationTime*60*1000) {
+            if ((millis() - fourthTrackermillis) > Config.rememberStationTime * 60 * 1000) {
                 fourthNearTracker = "";
             }
         }
@@ -129,8 +129,7 @@ namespace STATION_Utils {
     }
 
     void orderListenedTrackersByDistance(const String& callsign, float distance, float course) {
-        String firstNearTrackerDistance, secondNearTrackerDistance, thirdNearTrackerDistance, fourthNearTrackerDistance, newTrackerInfo, firstNearTrackerCallsign, secondNearTrackerCallsign,thirdNearTrackerCallsign, fourthNearTrackerCallsign;
-        newTrackerInfo = callsign + "> " + String(distance,2) + "km " + String(int(course)) + "," + String(millis());
+        String firstNearTrackerDistance, secondNearTrackerDistance, thirdNearTrackerDistance, fourthNearTrackerDistance, firstNearTrackerCallsign, secondNearTrackerCallsign,thirdNearTrackerCallsign, fourthNearTrackerCallsign;
         float firstDistance   = 0.0;
         float secondDistance  = 0.0;
         float thirdDistance   = 0.0;
@@ -155,6 +154,14 @@ namespace STATION_Utils {
             fourthNearTrackerDistance = fourthNearTracker.substring(fourthNearTracker.indexOf(">") + 1, fourthNearTracker.indexOf("km"));
             fourthDistance = fourthNearTrackerDistance.toFloat();
         } 
+
+        String newTrackerInfo = callsign;
+        newTrackerInfo += "> ";
+        newTrackerInfo += String(distance,2);
+        newTrackerInfo += "km ";
+        newTrackerInfo += String(int(course));
+        newTrackerInfo += ",";
+        newTrackerInfo += String(millis());
 
         if (firstNearTracker == "" && secondNearTracker == "" && thirdNearTracker == "" && fourthNearTracker == "") {
             firstNearTracker = newTrackerInfo;
@@ -393,22 +400,27 @@ namespace STATION_Utils {
     }
 
     void sendBeacon(uint8_t type) {
-        String packet, comment;
-        int sendCommentAfterXBeacons;
+        String packet;
         if (Config.bme.sendTelemetry && type == 1) { // WX
-            packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
+            packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), 0.0, currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
             if (wxModuleType != 0) {
                 packet += BME_Utils::readDataSensor(0);
             } else {
                 packet += ".../...g...t...r...p...P...h..b.....";
             }            
         } else {
+            String path = Config.path;
+            if (gps.speed.kmph() > 200 || gps.altitude.meters() > 9000) {   // avoid plane speed and altitude
+                path = "";
+            }
             if (miceActive) {
-                packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign, currentBeacon->symbol, currentBeacon->overlay, Config.path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
+                packet = APRSPacketLib::generateMiceGPSBeacon(currentBeacon->micE, currentBeacon->callsign, currentBeacon->symbol, currentBeacon->overlay, path, gps.location.lat(), gps.location.lng(), gps.course.deg(), gps.speed.knots(), gps.altitude.meters());
             } else {
-                packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+                packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", path, currentBeacon->overlay, APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
             }
         }
+        String comment;
+        int sendCommentAfterXBeacons;
         if (winlinkCommentState) {
             comment = " winlink";
             sendCommentAfterXBeacons = 1;
@@ -463,7 +475,7 @@ namespace STATION_Utils {
     }
 
     void checkTelemetryTx() {
-        if (Config.bme.active && Config.bme.sendTelemetry) {
+        if (Config.bme.active && Config.bme.sendTelemetry && sendStandingUpdate) {
             lastTx = millis() - lastTxTime;
             telemetryTx = millis() - lastTelemetryTx;
             if ((lastTelemetryTx == 0 || telemetryTx > 10 * 60 * 1000) && lastTx > 10 * 1000) {
