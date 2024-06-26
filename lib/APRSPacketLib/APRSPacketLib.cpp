@@ -269,7 +269,9 @@ namespace APRSPacketLib {
 
     String generateDigiRepeatedPacket(const String& packet, const String &callsign, const String& path) {
         bool thirdParty = false;
-        if (packet.indexOf(":}") != -1) thirdParty = true;
+
+        int firstColonIndex = packet.indexOf(":");
+        if (firstColonIndex > 5 && firstColonIndex < (packet.length() - 1) && packet[firstColonIndex + 1] == '}') thirdParty = true;
 
         String temp;
         if (thirdParty) { // only header is used
@@ -595,7 +597,8 @@ namespace APRSPacketLib {
         APRSPacket aprsPacket;
 
         String temp0;
-        if (receivedPacket.indexOf(":}") != -1) {   // 3rd Party
+        int firstColonIndex = receivedPacket.indexOf(":");
+        if (firstColonIndex > 0 && firstColonIndex < receivedPacket.length() && receivedPacket[firstColonIndex + 1] == '}') {   // 3rd Party
             aprsPacket.header = receivedPacket.substring(receivedPacket.indexOf(":}"));
             temp0 = receivedPacket.substring(receivedPacket.indexOf(":}") + 2);
         } else {
