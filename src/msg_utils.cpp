@@ -401,7 +401,7 @@ namespace MSG_Utils {
         if (packet.text.substring(0,3) == "\x3c\xff\x01") {              // its an APRS packet
             //Serial.println(packet.text); // only for debug
             lastReceivedPacket = APRSPacketLib::processReceivedPacket(packet.text.substring(3),packet.rssi, packet.snr, packet.freqError);
-            if (lastReceivedPacket.sender!=currentBeacon->callsign) {
+            if (lastReceivedPacket.sender != currentBeacon->callsign) {
 
                 if (lastReceivedPacket.message.indexOf("\x3c\xff\x01") != -1) {
                     lastReceivedPacket.message = lastReceivedPacket.message.substring(0, lastReceivedPacket.message.indexOf("\x3c\xff\x01"));
