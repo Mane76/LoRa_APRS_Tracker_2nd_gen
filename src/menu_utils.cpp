@@ -8,6 +8,7 @@
 #include "power_utils.h"
 #include "menu_utils.h"
 #include "msg_utils.h"
+#include "gps_utils.h"
 #include "bme_utils.h"
 #include "display.h"
 #include "utils.h"
@@ -32,6 +33,7 @@ extern bool                 bluetoothActive;
 extern bool                 displayEcoMode;
 extern bool                 screenBrightness;
 extern bool                 disableGPS;
+extern bool                 showHumanHeading;
 extern APRSPacket           lastReceivedPacket;
 
 extern uint8_t              winlinkStatus;
@@ -280,55 +282,56 @@ namespace MENU_Utils {
                 break;
 
             case 300:   //3.Stations ---> Packet Decoder
-                firstLineDecoder = lastReceivedPacket.sender;
-                for(int i = firstLineDecoder.length(); i < 9; i++) {
-                    firstLineDecoder += ' ';
-                }
-                firstLineDecoder += lastReceivedPacket.symbol;
+                if (lastReceivedPacket.sender != currentBeacon->callsign) {
+                    firstLineDecoder = lastReceivedPacket.sender;
+                    for(int i = firstLineDecoder.length(); i < 9; i++) {
+                        firstLineDecoder += ' ';
+                    }
+                    firstLineDecoder += lastReceivedPacket.symbol;
+                    if (lastReceivedPacket.type == 0 || lastReceivedPacket.type == 4) {      // gps and Mic-E gps
+                        courseSpeedAltitude = String(lastReceivedPacket.altitude);
+                        for(int j = courseSpeedAltitude.length(); j < 4; j++) {
+                            courseSpeedAltitude = '0' + courseSpeedAltitude;
+                        }
+                        courseSpeedAltitude = "A=" + courseSpeedAltitude + "m ";
+                        speedPacketDec = String(lastReceivedPacket.speed);
+                        for (int k = speedPacketDec.length(); k < 3; k++) {
+                            speedPacketDec = ' ' + speedPacketDec;
+                        }
+                        courseSpeedAltitude += speedPacketDec + "km/h ";
+                        for(int l = courseSpeedAltitude.length(); l < 17; l++) {
+                            courseSpeedAltitude += ' ';
+                        }
+                        coursePacketDec = String(lastReceivedPacket.course);
+                        for(int m = coursePacketDec.length(); m < 3; m++) {
+                            coursePacketDec = ' ' + coursePacketDec;
+                        }
+                        courseSpeedAltitude += coursePacketDec;
+                        
+                        double distanceKm = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude) / 1000.0;
+                        double courseTo   = TinyGPSPlus::courseTo(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude);
+                        
+                        if (lastReceivedPacket.path.length()>14) {
+                            pathDec = "P:";
+                        } else {
+                            pathDec = "PATH:  ";
+                        }
+                        pathDec += lastReceivedPacket.path;
 
-                if (lastReceivedPacket.type==0 || lastReceivedPacket.type==4) {      // gps and Mic-E gps
-                    courseSpeedAltitude = String(lastReceivedPacket.altitude);
-                    for(int j = courseSpeedAltitude.length(); j < 4; j++) {
-                        courseSpeedAltitude = '0' + courseSpeedAltitude;
+                        show_display(firstLineDecoder, "GPS " + String(lastReceivedPacket.latitude,3) + " " + String(lastReceivedPacket.longitude,3), courseSpeedAltitude, "D:" + String(distanceKm) + "km    " + String(courseTo,0), pathDec, "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
+                    } else if (lastReceivedPacket.type == 1) {    // message
+                        show_display(firstLineDecoder, "ADDRESSEE: " + lastReceivedPacket.addressee, "MSG:  " + lastReceivedPacket.message, "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
+                    } else if (lastReceivedPacket.type == 2) {    // status
+                        show_display(firstLineDecoder, "-------STATUS-------", lastReceivedPacket.message, "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
+                    } else if (lastReceivedPacket.type == 3) {    // telemetry
+                        show_display(firstLineDecoder, "------TELEMETRY------", "", "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
+                    } else if (lastReceivedPacket.type == 5) {    // object
+                        show_display(firstLineDecoder, "-------OBJECT-------", "", "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
                     }
-                    courseSpeedAltitude = "A=" + courseSpeedAltitude + "m ";
-                    speedPacketDec = String(lastReceivedPacket.speed);
-                    for (int k = speedPacketDec.length(); k < 3; k++) {
-                        speedPacketDec = ' ' + speedPacketDec;
-                    }
-                    courseSpeedAltitude += speedPacketDec + "km/h ";
-                    for(int l = courseSpeedAltitude.length(); l < 17; l++) {
-                        courseSpeedAltitude += ' ';
-                    }
-                    coursePacketDec = String(lastReceivedPacket.course);
-                    for(int m = coursePacketDec.length(); m < 3; m++) {
-                        coursePacketDec = ' ' + coursePacketDec;
-                    }
-                    courseSpeedAltitude += coursePacketDec;
-                    
-                    double distanceKm = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude) / 1000.0;
-                    double courseTo   = TinyGPSPlus::courseTo(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude);
-                    
-                    if (lastReceivedPacket.path.length()>14) {
-                        pathDec = "P:";
-                    } else {
-                        pathDec = "PATH:  ";
-                    }
-                    pathDec += lastReceivedPacket.path;
-
-                    show_display(firstLineDecoder, "GPS  " + String(lastReceivedPacket.latitude,2) + " " + String(lastReceivedPacket.longitude,2), courseSpeedAltitude, "D:" + String(distanceKm) + "km    " + String(courseTo,0), pathDec, "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
-                } else if (lastReceivedPacket.type==1) {    // message
-                    show_display(firstLineDecoder, "ADDRESSEE: " + lastReceivedPacket.addressee, "MSG:  " + lastReceivedPacket.message, "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
-                } else if (lastReceivedPacket.type==2) {    // status
-                    show_display(firstLineDecoder, "-------STATUS-------", lastReceivedPacket.message, "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
-                } else if (lastReceivedPacket.type==3) {    // telemetry
-                    show_display(firstLineDecoder, "------TELEMETRY------", "", "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
-                } else if (lastReceivedPacket.type==5) {    // object
-                    show_display(firstLineDecoder, "-------OBJECT-------", "", "", "", "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
                 }
                 break;
             case 310:    //3.Stations ---> Near By Stations
-                show_display("NEAR BY >", STATION_Utils::getFirstNearTracker(), STATION_Utils::getSecondNearTracker(), STATION_Utils::getThirdNearTracker(), STATION_Utils::getFourthNearTracker(), "<Back");
+                show_display("NEAR BY >", STATION_Utils::getNearTracker(0), STATION_Utils::getNearTracker(1), STATION_Utils::getNearTracker(2), STATION_Utils::getNearTracker(3), "<Back");
                 break;
 
 //////////
@@ -509,11 +512,6 @@ namespace MENU_Utils {
                     }
                 }
 
-                #ifdef TTGO_T_LORA32_V2_1_TNC
-                secondRowMainMenu = "";
-                thirdRowMainMenu = "    LoRa APRS TNC";
-                fourthRowMainMenu = "";
-                #else
                 if (disableGPS) {
                     secondRowMainMenu = "";
                     thirdRowMainMenu = "    LoRa APRS TNC";
@@ -590,20 +588,23 @@ namespace MENU_Utils {
                         fourthRowMainMenu += " ***";
                     }
                 }
-                #endif
 
-                fifthRowMainMenu = "LAST Rx = ";
-                fifthRowMainMenu += MSG_Utils::getLastHeardTracker();
+                if (showHumanHeading) {
+                    fifthRowMainMenu = GPS_Utils::getCardinalDirection(gps.course.deg());
+                } else {
+                    fifthRowMainMenu = "LAST Rx = ";
+                    fifthRowMainMenu += MSG_Utils::getLastHeardTracker();
+                }
 
                 if (POWER_Utils::getBatteryInfoIsConnected()) {
                     String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
                     String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
-                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS)
+                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS)
 					    sixthRowMainMenu = "Bat: ";
                         sixthRowMainMenu += batteryVoltage;
                         sixthRowMainMenu += "V";
                     #endif
-                    #if defined(TTGO_T_Beam_V1_0) || defined(TTGO_T_Beam_V1_0_SX1268)
+                    #ifdef HAS_AXP192
                         if (batteryCharge.toInt() == 0) {
                             sixthRowMainMenu = "Battery Charged ";
                             sixthRowMainMenu += batteryVoltage;
@@ -620,7 +621,7 @@ namespace MENU_Utils {
                             sixthRowMainMenu += "mA";
                         }
                     #endif
-                    #if defined(TTGO_T_Beam_V1_2) || defined(TTGO_T_Beam_V1_2_SX1262) || defined(TTGO_T_Beam_S3_SUPREME_V3)
+                    #ifdef HAS_AXP2101
                         if (Config.notification.lowBatteryBeep && !POWER_Utils::isCharging() && batteryCharge.toInt() < lowBatteryPercent) {
                             lowBatteryPercent = batteryCharge.toInt();
                             NOTIFICATION_Utils::lowBatteryBeep();
@@ -652,11 +653,11 @@ namespace MENU_Utils {
                     sixthRowMainMenu = "No Battery Connected" ;
                 }
                 show_display(firstRowMainMenu,
-                            secondRowMainMenu,
-                            thirdRowMainMenu,
-                            fourthRowMainMenu,
-                            fifthRowMainMenu,
-                            sixthRowMainMenu);
+                                secondRowMainMenu,
+                                thirdRowMainMenu,
+                                fourthRowMainMenu,
+                                fifthRowMainMenu,
+                                sixthRowMainMenu);
                 break;
         }
     }
