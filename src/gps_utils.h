@@ -12,6 +12,7 @@ namespace GPS_Utils {
     void calculateDistanceTraveled();
     void calculateHeadingDelta(int speed);
     void checkStartUpFrames();
+    String getCardinalDirection(float course);
 
 }
 
