@@ -80,6 +80,9 @@ namespace LoRa_Utils {
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", "Set SPI pins!");
         SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
         float freq = (float)currentLoRaType->frequency/1000000;
+        #if defined(RADIO_HAS_XTAL)
+            radio.XTAL = true;
+        #endif
         int state = radio.begin(freq);
         if (state == RADIOLIB_ERR_NONE) {
             #if defined(HAS_SX1262) || defined(HAS_SX1268)
@@ -102,7 +105,8 @@ namespace LoRa_Utils {
         radio.setBandwidth(signalBandwidth);
         radio.setCodingRate(currentLoRaType->codingRate4);
         radio.setCRC(true);
-        
+        radio.autoLDRO();
+
         #if defined(RADIO_RXEN) && defined(RADIO_TXEN)
             radio.setRfSwitchPins(RADIO_RXEN, RADIO_TXEN);
         #endif
@@ -166,6 +170,25 @@ namespace LoRa_Utils {
         #endif
     }
 
+    void wakeRadio() {
+        radio.startReceive();
+    }
+
+    ReceivedLoRaPacket receiveFromSleep() {
+        ReceivedLoRaPacket receivedLoraPacket;
+        String packet = "";
+        int state = radio.readData(packet);
+        if (state == RADIOLIB_ERR_NONE) {
+            receivedLoraPacket.text       = packet;
+            receivedLoraPacket.rssi       = radio.getRSSI();
+            receivedLoraPacket.snr        = radio.getSNR();
+            receivedLoraPacket.freqError  = radio.getFrequencyError();
+        } else {
+            //
+        }
+        return receivedLoraPacket;
+    }
+
     ReceivedLoRaPacket receivePacket() {
         ReceivedLoRaPacket receivedLoraPacket;
         String packet = "";
@@ -185,6 +208,7 @@ namespace LoRa_Utils {
                         receivedLoraPacket.freqError  = radio.getFrequencyError();
                     }
                 } else {
+                    //Serial.println(packet);
                     Serial.print(F("failed, code "));   // 7 = CRC mismatch
                     Serial.println(state);
                 }
