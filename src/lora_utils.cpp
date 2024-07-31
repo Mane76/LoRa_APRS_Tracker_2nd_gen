@@ -216,10 +216,6 @@ namespace LoRa_Utils {
         return receivedLoraPacket;
     }
 
-    void wakeRadio() {
-        radio.startReceive();
-    }
-
     void sleepRadio() {
         radio.sleep();
     }
