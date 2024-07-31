@@ -26,6 +26,7 @@ ________________________________________________________________________________
 #include "boards_pinout.h"
 #include "button_utils.h"
 #include "power_utils.h"
+#include "sleep_utils.h"
 #include "menu_utils.h"
 #include "lora_utils.h"
 #include "msg_utils.h"
@@ -45,7 +46,7 @@ TinyGPSPlus                         gps;
     OneButton userButton                = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.06.24m";
+String      versionDate             = "2024.07.30m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -70,7 +71,7 @@ String      BLEToLoRaPacket         = "";
 
 uint32_t    lastTx                  = 0.0;
 uint32_t    txInterval              = 60000L;
-uint32_t    lastTxTime              = millis();
+uint32_t    lastTxTime              = 0;
 double      lastTxLat               = 0.0;
 double      lastTxLng               = 0.0;
 double      lastTxDistance          = 0.0;
@@ -80,7 +81,6 @@ uint32_t    menuTime                = millis();
 bool        flashlight              = false;
 bool        digirepeaterActive      = false;
 bool        sosActive               = false;
-bool        disableGPS;
 
 bool        miceActive              = false;
 
@@ -88,10 +88,14 @@ bool        smartBeaconValue        = true;
 
 int         ackRequestNumber;
 
+uint32_t    lastGPSTime             = 0;
+
 APRSPacket                          lastReceivedPacket;
 
 logging::Logger                     logger;
 //#define DEBUG
+
+extern bool gpsIsActive;
 
 void setup() {
     Serial.begin(115200);
@@ -106,6 +110,7 @@ void setup() {
 
     STATION_Utils::loadIndex(0);
     STATION_Utils::loadIndex(1);
+    STATION_Utils::nearTrackerInit();
     startupScreen(loraIndex, versionDate);
 
     MSG_Utils::loadNumMessages();
@@ -152,9 +157,9 @@ void loop() {
         }
         miceActive = Config.validateMicE(currentBeacon->micE);
     }
-    STATION_Utils::checkSmartBeaconValue();
-
     POWER_Utils::batteryManager();
+        
+    STATION_Utils::checkSmartBeaconValue();
 
     if (!Config.simplifiedTrackerMode) {
         #ifdef BUTTON_PIN
@@ -169,11 +174,6 @@ void loop() {
         KEYBOARD_Utils::mouseRead();
     #endif
 
-    GPS_Utils::getData();
-    bool gps_time_update = gps.time.isUpdated();
-    bool gps_loc_update  = gps.location.isUpdated();
-    GPS_Utils::setDateFromData();
-
     MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
     MSG_Utils::processOutputBuffer();
     MSG_Utils::clean25SegBuffer();
@@ -187,28 +187,43 @@ void loop() {
             BLUETOOTH_Utils::sendToLoRa();
         #endif
     }
-
-    int currentSpeed = (int) gps.speed.kmph();
-
-    if (gps_loc_update) {
-        Utils::checkStatus();
-        STATION_Utils::checkTelemetryTx();
-    }
     lastTx = millis() - lastTxTime;
-    if (!sendUpdate && gps_loc_update && smartBeaconValue) {
-        GPS_Utils::calculateDistanceTraveled();
-        if (!sendUpdate) {
-            GPS_Utils::calculateHeadingDelta(currentSpeed);
+    if (gpsIsActive) {
+        GPS_Utils::getData();
+        bool gps_time_update = gps.time.isUpdated();
+        bool gps_loc_update  = gps.location.isUpdated();
+        GPS_Utils::setDateFromData();
+
+        int currentSpeed = (int) gps.speed.kmph();
+
+        if (gps_loc_update) {
+            Utils::checkStatus();
+            STATION_Utils::checkTelemetryTx();
+        }
+        if (!sendUpdate && gps_loc_update && smartBeaconValue) {
+            GPS_Utils::calculateDistanceTraveled();
+            if (!sendUpdate) {
+                GPS_Utils::calculateHeadingDelta(currentSpeed);
+            }
+            STATION_Utils::checkStandingUpdateTime();
+        }
+        STATION_Utils::checkSmartBeaconState();
+        if (sendUpdate && gps_loc_update) STATION_Utils::sendBeacon(0);
+        if (gps_time_update) STATION_Utils::checkSmartBeaconInterval(currentSpeed);
+
+        if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {
+            GPS_Utils::checkStartUpFrames();
+            MENU_Utils::showOnScreen();
+            refreshDisplayTime = millis();
+        }
+    } else {
+        if (millis() - lastGPSTime > txInterval) {
+            SLEEP_Utils::gpsWakeUp();
         }
         STATION_Utils::checkStandingUpdateTime();
-    }
-    STATION_Utils::checkSmartBeaconState();
-    if (sendUpdate && gps_loc_update) STATION_Utils::sendBeacon(0);
-    if (gps_time_update) STATION_Utils::checkSmartBeaconInterval(currentSpeed);
-  
-    if (millis() - refreshDisplayTime >= 1000 || gps_time_update) {
-        GPS_Utils::checkStartUpFrames();
-        MENU_Utils::showOnScreen();
-        refreshDisplayTime = millis();
+        if (millis() - refreshDisplayTime >= 1000) {
+            MENU_Utils::showOnScreen();
+            refreshDisplayTime = millis();
+        }
     }
 }

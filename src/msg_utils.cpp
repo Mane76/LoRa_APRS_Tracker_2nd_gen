@@ -35,6 +35,8 @@ extern uint32_t             wxRequestTime;
 
 extern APRSPacket           lastReceivedPacket;
 
+extern bool                 SleepModeActive;
+
 String  lastMessageSaved        = "";
 int     numAPRSMessages         = 0;
 int     numWLNKMessages         = 0;
@@ -298,6 +300,13 @@ namespace MSG_Utils {
                 outputMessagesBuffer.push_back(station + "," + textMessage);
             }
         }
+    }
+
+    bool checkOutputBufferEmpty() {
+        if(outputMessagesBuffer.empty()) {
+            return true;
+        }
+        return false;
     }
 
     void processOutputBuffer() {

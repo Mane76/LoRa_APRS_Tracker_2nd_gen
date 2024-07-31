@@ -3,6 +3,8 @@
 #include "configuration.h"
 #include "station_utils.h"
 #include "boards_pinout.h"
+#include "power_utils.h"
+#include "sleep_utils.h"
 #include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
@@ -20,7 +22,6 @@ extern HardwareSerial   neo6m_gps;      // cambiar a gpsSerial
 extern TinyGPSPlus      gps;
 extern Beacon           *currentBeacon;
 extern logging::Logger  logger;
-extern bool             disableGPS;
 extern bool             sendUpdate;
 extern bool		        sendStandingUpdate;
 
@@ -30,18 +31,18 @@ extern double           lastTxLat;
 extern double           lastTxLng;
 extern double           lastTxDistance;
 extern uint32_t         lastTx;
+extern bool             disableGPS;
 
-double      currentHeading          = 0;
-double      previousHeading         = 0;
+double      currentHeading  = 0;
+double      previousHeading = 0;
+float       bearing         = 0;
+
+bool        gpsIsActive     = true;
+
 
 namespace GPS_Utils {
 
     void setup() {
-        #ifdef TTGO_T_LORA32_V2_1_TNC
-            disableGPS = true;
-        #else
-            disableGPS = Config.disableGPS;
-        #endif
         if (disableGPS) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "GPS disabled");
             return;
@@ -75,6 +76,15 @@ namespace GPS_Utils {
             if (lastTxDistance > currentBeacon->minTxDist) {
                 sendUpdate = true;
                 sendStandingUpdate = false;
+            } else {
+                if (currentBeacon->gpsEcoMode) {
+                    //
+                    Serial.print("minTxDistance not achieved : ");
+                    Serial.println(lastTxDistance);
+                    //
+
+                    SLEEP_Utils::gpsSleep();
+                }
             }
         }
     }
@@ -103,6 +113,63 @@ namespace GPS_Utils {
                         "firmware: https://github.com/richonguzman/TTGO_T_BEAM_GPS_RESET");
             show_display("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
         }
+    }
+
+    String getHumanBearing(const String& left, const String& center, const String& right) {
+        String bearing = ">.";
+        bearing += left;
+        for (int i = 0; i < 9; i++) {
+            bearing += ".";
+        }
+        bearing += "(";
+        bearing += center;
+        bearing += ").....";
+        if (right.length() == 1 && center.length() != 2) {
+            bearing += ".";
+        }
+        bearing += right;
+        bearing += ".<";
+        return bearing;
+    }
+
+    String getCardinalDirection(float course) {
+        if (gps.speed.kmph() > 0.5) {
+            bearing = course;
+        }
+
+        if (bearing >= 354.375 || bearing < 5.625)    return ">.NW.....(N).....NE.<"; // N
+        if (bearing >= 5.675 && bearing < 16.875)     return ">.......N.|.....NE..<";
+        if (bearing >= 16.875 && bearing < 28.125)    return ">.....N...|...NE....<"; // NEN
+        if (bearing >= 28.125 && bearing < 39.375)    return ">...N.....|.NE......<";
+        if (bearing >= 39.375 && bearing < 50.625)    return ">.N......(NE).....E.<"; // NE
+        if (bearing >= 50.625 && bearing < 61.875)    return ">.......NE|.....E...<"; 
+        if (bearing >= 61.875 && bearing < 73.125)    return ">.....NE..|...E.....<"; // ENE
+        if (bearing >= 73.125 && bearing < 84.375)    return ">...NE....|.E.......<"; 
+        if (bearing >= 84.375 && bearing < 95.625)    return ">.NE.....(E).....SE.<"; // E
+        if (bearing >= 95.625 && bearing < 106.875)   return ">.......E.|.....SE..<";
+        if (bearing >= 106.875 && bearing < 118.125)  return ">.....E...|...SE....<"; // ESE
+        if (bearing >= 118.125 && bearing < 129.375)  return ">...E.....|.SE......<";
+        if (bearing >= 129.375 && bearing < 140.625)  return ">.E......(SE).....S.<"; // SE
+        if (bearing >= 140.625 && bearing < 151.875)  return ">.......SE|.....S...<";
+        if (bearing >= 151.875 && bearing < 163.125)  return ">.....SE..|...S.....<"; // SES
+        if (bearing >= 163.125 && bearing < 174.375)  return ">...SE....|.S.......<";
+        if (bearing >= 174.375 && bearing < 185.625)  return ">.SE.....(S).....SW.<"; // S
+        if (bearing >= 185.625 && bearing < 196.875)  return ">.......S.|.....SW..<";
+        if (bearing >= 196.875 && bearing < 208.125)  return ">.....S...|...SW....<"; // SWS
+        if (bearing >= 208.125 && bearing < 219.375)  return ">...S.....|.SW......<";
+        if (bearing >= 219.375 && bearing < 230.625)  return ">.S......(SW).....W.<"; // SW
+        if (bearing >= 230.625 && bearing < 241.875)  return ">.......SW|.....W...<";
+        if (bearing >= 241.875 && bearing < 253.125)  return ">.....SW..|...W.....<"; // WSW
+        if (bearing >= 253.125 && bearing < 264.375)  return ">...SW....|.W.......<";
+        if (bearing >= 264.375 && bearing < 275.625)  return ">.SW.....(W).....NW.<"; // W
+        if (bearing >= 275.625 && bearing < 286.875)  return ">.......W.|.....NW..<";
+        if (bearing >= 286.875 && bearing < 298.125)  return ">.....W...|...NW....<"; // WNW
+        if (bearing >= 298.125 && bearing < 309.375)  return ">...W.....|.NW......<";
+        if (bearing >= 309.375 && bearing < 320.625)  return ">.W......(NW).....N.<"; // NW
+        if (bearing >= 320.625 && bearing < 331.875)  return ">.......NW|.....N...<";
+        if (bearing >= 331.875 && bearing < 343.125)  return ">.....NW..|...N.....<"; // NWN
+        if (bearing >= 343.125 && bearing < 354.375)  return ">...NW....|.N.......<";
+        return "";
     }
 
 }

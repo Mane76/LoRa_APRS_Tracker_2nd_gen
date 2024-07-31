@@ -6,8 +6,9 @@
 #include "winlink_utils.h"
 #include "station_utils.h"
 #include "configuration.h"
-#include "power_utils.h"
 #include "boards_pinout.h"
+#include "power_utils.h"
+#include "sleep_utils.h"
 #include "msg_utils.h"
 #include "display.h"
 
@@ -50,6 +51,7 @@ extern String           winlinkBody;
 extern String           winlinkAlias;
 extern String           winlinkAliasComplete;
 extern bool             winlinkCommentState;
+extern bool             gpsIsActive;
 
 extern std::vector<String>  outputMessagesBuffer;
 
@@ -61,6 +63,8 @@ String      messageCallsign         = "";
 String      messageText             = "";
 
 int         messagesIterator        = 0;
+
+bool        showHumanHeading        = false;
 
 bool        mouseUpState            = 0;
 bool        mouseDownState          = 0;
@@ -158,6 +162,7 @@ namespace KEYBOARD_Utils {
         if (menuDisplay == 0) {
             if (displayState) {
                 sendUpdate = true;
+                if (!gpsIsActive) SLEEP_Utils::gpsWakeUp();
             } else {
                 display_toggle(true);
                 displayTime = millis();   
@@ -532,6 +537,8 @@ namespace KEYBOARD_Utils {
         }
         if (menuDisplay == 0 && key == 13) {       // Main Menu
             menuDisplay = 1;      
+        } else if (menuDisplay == 0 && key == 8) {
+            showHumanHeading = !showHumanHeading;
         } else if (key == 27) {                           // ESC = return to Main Menu
             menuDisplay = 0;
             messagesIterator = 0;

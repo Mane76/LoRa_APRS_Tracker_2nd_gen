@@ -14,12 +14,12 @@
     #ifdef HELTEC_WIRELESS_TRACKER
         #define bigSizeFont     2
         #define smallSizeFont   1
-        #define lineSpacing     9
+        #define lineSpacing     12
     #endif
     #ifdef TTGO_T_DECK_GPS
         #define bigSizeFont     4
         #define smallSizeFont   2
-        #define lineSpacing     18
+        #define lineSpacing     22
     #endif
 #else
     #include <Adafruit_GFX.h>
@@ -51,12 +51,12 @@ extern int              menuDisplay;
 extern bool             bluetoothConnected;
 
 const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k",
-                                "C", "a", "Y", "O", "'", "=", "y"};
+                                "C", "a", "Y", "O", "'", "=", "y", "U", "p"};
 int   symbolArraySize         = sizeof(symbolArray)/sizeof(symbolArray[0]);
 const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, 
                                 truck18Symbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol,
                                 houseSymbol, truckSymbol, canoeSymbol, ambulanceSymbol, yatchSymbol, baloonSymbol,
-                                aircraftSymbol, trainSymbol, yagiSymbol};
+                                aircraftSymbol, trainSymbol, yagiSymbol, busSymbol, dogSymbol};
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
@@ -72,6 +72,14 @@ void cleanTFT() {
     #ifdef HAS_TFT
         tft.fillScreen(TFT_BLACK);
     #endif
+}
+
+String fillStringLength(const String& line, uint8_t length) {
+    String outputLine = line;
+    for (int a = line.length(); a < length; a++) {
+        outputLine += " ";
+    }
+    return outputLine;
 }
 
 void setup_display() {
@@ -102,7 +110,7 @@ void setup_display() {
                 }
             }
         #else
-            if (!display.begin(0x3c, true)) {
+            if (!display.begin(0x3c, false)) {
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "SH1106", "allocation failed!");
                 while (true) {
                 }
@@ -154,8 +162,11 @@ void display_toggle(bool toggle) {
 }
 
 void show_display(const String& header, const String& line1, const String& line2, int wait) {
-    const String* const lines[] = {&line1, &line2};
     #ifdef HAS_TFT
+        String filledLine1 = fillStringLength(line1, 22);
+        String filledLine2 = fillStringLength(line2, 22);
+        const String* const lines[] = {&filledLine1, &filledLine2};
+        
         cleanTFT();
         tft.setTextColor(TFT_WHITE,TFT_BLACK);
         tft.setTextSize(bigSizeFont);
@@ -167,6 +178,8 @@ void show_display(const String& header, const String& line1, const String& line2
             tft.print(*lines[i]);
         }
     #else
+        const String* const lines[] = {&line1, &line2};
+
         display.clearDisplay();
         #ifdef ssd1306
             display.setTextColor(WHITE);
@@ -193,8 +206,14 @@ void show_display(const String& header, const String& line1, const String& line2
 }
 
 void show_display(const String& header, const String& line1, const String& line2, const String& line3, const String& line4, const String& line5, int wait) {
-    const String* const lines[] = {&line1, &line2, &line3, &line4, &line5};
     #ifdef HAS_TFT
+        String filledLine1 = fillStringLength(line1, 22);
+        String filledLine2 = fillStringLength(line2, 22);
+        String filledLine3 = fillStringLength(line3, 22);
+        String filledLine4 = fillStringLength(line4, 22);
+        String filledLine5 = fillStringLength(line5, 22);
+        const String* const lines[] = {&filledLine1, &filledLine2, &filledLine3, &filledLine4, &filledLine5};
+
         if (menuDisplay != lastMenuDisplay) {
             lastMenuDisplay = menuDisplay;
             cleanTFT();
@@ -246,6 +265,8 @@ void show_display(const String& header, const String& line1, const String& line2
         }
 
     #else
+        const String* const lines[] = {&line1, &line2, &line3, &line4, &line5};
+
         display.clearDisplay();
         #ifdef ssd1306
             display.setTextColor(WHITE);
@@ -306,7 +327,7 @@ void startupScreen(uint8_t index, const String& version) {
         case 1: workingFreq += "PL]"; break;
         case 2: workingFreq += "UK]"; break;
     }
-    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + version, 4000);
+    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "", "  CA2RXU  " + version, 4000);
     #ifdef HAS_TFT
         cleanTFT();
     #endif
