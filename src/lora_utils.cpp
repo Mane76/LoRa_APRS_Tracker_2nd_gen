@@ -105,7 +105,8 @@ namespace LoRa_Utils {
         radio.setBandwidth(signalBandwidth);
         radio.setCodingRate(currentLoRaType->codingRate4);
         radio.setCRC(true);
-        
+        radio.autoLDRO();
+
         #if defined(RADIO_RXEN) && defined(RADIO_TXEN)
             radio.setRfSwitchPins(RADIO_RXEN, RADIO_TXEN);
         #endif
