@@ -4,6 +4,7 @@
 #include "station_utils.h"
 #include "boards_pinout.h"
 #include "power_utils.h"
+#include "sleep_utils.h"
 #include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
@@ -35,6 +36,8 @@ extern bool             disableGPS;
 double      currentHeading  = 0;
 double      previousHeading = 0;
 float       bearing         = 0;
+
+bool        gpsIsActive     = true;
 
 
 namespace GPS_Utils {
@@ -73,6 +76,15 @@ namespace GPS_Utils {
             if (lastTxDistance > currentBeacon->minTxDist) {
                 sendUpdate = true;
                 sendStandingUpdate = false;
+            } else {
+                if (currentBeacon->gpsEcoMode) {
+                    //
+                    Serial.print("minTxDistance not achieved : ");
+                    Serial.println(lastTxDistance);
+                    //
+
+                    SLEEP_Utils::gpsSleep();
+                }
             }
         }
     }

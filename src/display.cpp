@@ -51,12 +51,12 @@ extern int              menuDisplay;
 extern bool             bluetoothConnected;
 
 const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k",
-                                "C", "a", "Y", "O", "'", "=", "y"};
+                                "C", "a", "Y", "O", "'", "=", "y", "U", "p"};
 int   symbolArraySize         = sizeof(symbolArray)/sizeof(symbolArray[0]);
 const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, 
                                 truck18Symbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol,
                                 houseSymbol, truckSymbol, canoeSymbol, ambulanceSymbol, yatchSymbol, baloonSymbol,
-                                aircraftSymbol, trainSymbol, yagiSymbol};
+                                aircraftSymbol, trainSymbol, yagiSymbol, busSymbol, dogSymbol};
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
@@ -327,7 +327,7 @@ void startupScreen(uint8_t index, const String& version) {
         case 1: workingFreq += "PL]"; break;
         case 2: workingFreq += "UK]"; break;
     }
-    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "Richonguzman / CA2RXU", "      " + version, 4000);
+    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "", "  CA2RXU  " + version, 4000);
     #ifdef HAS_TFT
         cleanTFT();
     #endif
