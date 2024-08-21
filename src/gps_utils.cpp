@@ -4,6 +4,7 @@
 #include "station_utils.h"
 #include "boards_pinout.h"
 #include "power_utils.h"
+#include "sleep_utils.h"
 #include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
@@ -31,10 +32,13 @@ extern double           lastTxLng;
 extern double           lastTxDistance;
 extern uint32_t         lastTx;
 extern bool             disableGPS;
+extern bool             gpsShouldSleep;
 
 double      currentHeading  = 0;
 double      previousHeading = 0;
 float       bearing         = 0;
+
+bool        gpsIsActive     = true;
 
 
 namespace GPS_Utils {
@@ -72,6 +76,14 @@ namespace GPS_Utils {
             if (lastTxDistance > currentBeacon->minTxDist) {
                 sendUpdate = true;
                 sendStandingUpdate = false;
+            } else {
+                if (currentBeacon->gpsEcoMode) {
+                    //
+                    Serial.print("minTxDistance not achieved : ");
+                    Serial.println(lastTxDistance);
+                    //
+                    gpsShouldSleep = true;
+                }
             }
         }
     }
@@ -98,7 +110,7 @@ namespace GPS_Utils {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "GPS",
                         "No GPS frames detected! Try to reset the GPS Chip with this "
                         "firmware: https://github.com/richonguzman/TTGO_T_BEAM_GPS_RESET");
-            show_display("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
+            displayShow("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
         }
     }
 

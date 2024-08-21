@@ -20,6 +20,7 @@
 		},
 		{
 			"callsign": "NOCALL-7",
+			"gpsEcoMode": false,
 			"symbol": "[",
 			"overlay": "/",
 			"micE":"",
@@ -38,6 +39,7 @@
 		},
 		{
 			"callsign": "NOCALL-9",
+			"gpsEcoMode": false,
 			"symbol": ">",
 			"overlay": "/",
 			"micE":"",

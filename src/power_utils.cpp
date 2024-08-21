@@ -5,6 +5,7 @@
 #include "power_utils.h"
 #include "lora_utils.h"
 #include "ble_utils.h"
+#include "gps_utils.h"
 #include "display.h"
 #include "logger.h"
 
@@ -34,6 +35,7 @@
 extern Configuration    Config;
 extern logging::Logger  logger;
 extern bool             transmitFlag;
+extern bool             gpsIsActive;
 
 uint32_t    batteryMeasurmentTime   = 0;
 
@@ -57,7 +59,7 @@ namespace POWER_Utils {
                 #ifdef HELTEC_WIRELESS_TRACKER
                     digitalWrite(ADC_CTRL, HIGH);
                 #endif
-                #ifdef HELTEC_V3_GPS
+                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)|| defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915)
                     digitalWrite(ADC_CTRL, LOW);
                 #endif
             #endif
@@ -66,17 +68,21 @@ namespace POWER_Utils {
                 #ifdef HELTEC_WIRELESS_TRACKER
                     digitalWrite(ADC_CTRL, LOW);
                 #endif
-                #ifdef HELTEC_V3_GPS
+                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915)
                     digitalWrite(ADC_CTRL, HIGH);
                 #endif
                 batteryMeasurmentTime = millis();
             #endif
                 double voltage = (adc_value * 3.3 ) / 4095.0;
-            #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(ESP32_DIY_LoRa_GPS) || defined(ESP32_DIY_LoRa_GPS_915) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(ESP32_DIY_1W_LoRa_GPS_915) || defined(OE5HWN_MeshCom) || defined(TTGO_T_DECK_GPS)
+            #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(ESP32_DIY_LoRa_GPS) || defined(ESP32_DIY_LoRa_GPS_915) || defined(ESP32_DIY_1W_LoRa_GPS) || defined(ESP32_DIY_1W_LoRa_GPS_915) || defined(ESP32_DIY_1W_LoRa_GPS_LLCC68) || defined(OE5HWN_MeshCom) || defined(TTGO_T_DECK_GPS) || defined(ESP32S3_DIY_LoRa_GPS) || defined(ESP32S3_DIY_LoRa_GPS_915)
                 return (2 * (voltage + 0.1)) * (1 + (lora32BatReadingCorr/100)); // (2 x 100k voltage divider) 2 x voltage divider/+0.1 because ESP32 nonlinearity ~100mV ADC offset/extra correction
             #endif
-            #if defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(ESP32_C3_DIY_LoRa_GPS) || defined(ESP32_C3_DIY_LoRa_GPS_915) || defined(WEMOS_ESP32_Bat_LoRa_GPS)
+            #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)|| defined(HELTEC_WIRELESS_TRACKER) || defined(ESP32_C3_DIY_LoRa_GPS) || defined(ESP32_C3_DIY_LoRa_GPS_915) || defined(WEMOS_ESP32_Bat_LoRa_GPS)
                 double inputDivider = (1.0 / (390.0 + 100.0)) * 100.0;  // The voltage divider is a 390k + 100k resistor in series, 100k on the low side. 
+                return (voltage / inputDivider) + 0.285; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
+            #endif
+            #if defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915)
+                double inputDivider = (1.0 / (220.0 + 100.0)) * 100.0;  // The voltage divider is a 390k + 100k resistor in series, 100k on the low side. 
                 return (voltage / inputDivider) + 0.285; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
             #endif
         #else
@@ -202,6 +208,10 @@ namespace POWER_Utils {
                 PMU.enableALDO3();
             #endif
         #endif
+        #ifdef HELTEC_WIRELESS_TRACKER
+            digitalWrite(VEXT_CTRL, HIGH);
+        #endif
+        gpsIsActive = true;
     }
 
     void deactivateGPS() {
@@ -216,6 +226,10 @@ namespace POWER_Utils {
                 PMU.disableALDO3();
             #endif
         #endif
+        #ifdef HELTEC_WIRELESS_TRACKER
+            digitalWrite(VEXT_CTRL, LOW);
+        #endif
+        gpsIsActive = false;
     }
 
     void activateLoRa() {
@@ -413,7 +427,7 @@ namespace POWER_Utils {
             Wire.begin(BOARD_I2C_SDA, BOARD_I2C_SCL);
         #endif
 
-        #ifdef HELTEC_V3_GPS
+        #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)
             Wire1.begin(BOARD_I2C_SDA, BOARD_I2C_SCL);
         #endif
 
@@ -453,7 +467,7 @@ namespace POWER_Utils {
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "SHUTDOWN !!!");
         #if defined(HAS_AXP192) || defined(HAS_AXP2101)
             if (Config.notification.shutDownBeep) NOTIFICATION_Utils::shutDownBeep();
-            display_toggle(false);
+            displayToggle(false);
             PMU.shutdown();
         #else
 
@@ -471,14 +485,14 @@ namespace POWER_Utils {
                 #ifdef HELTEC_WIRELESS_TRACKER
                     digitalWrite(ADC_CTRL, LOW);
                 #endif
-                #ifdef HELTEC_V3_GPS
+                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)
                     digitalWrite(ADC_CTRL, HIGH);
                 #endif
             #endif
 
             LoRa_Utils::sleepRadio();
 
-            long DEEP_SLEEP_TIME_SEC = 1296000; // 30 days
+            long DEEP_SLEEP_TIME_SEC = 1296000; // 15 days
             esp_sleep_enable_timer_wakeup(1000000ULL * DEEP_SLEEP_TIME_SEC);
             delay(500);           
             esp_deep_sleep_start();

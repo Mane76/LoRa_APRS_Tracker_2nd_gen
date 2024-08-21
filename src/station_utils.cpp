@@ -3,7 +3,9 @@
 #include "APRSPacketLib.h"
 #include "station_utils.h"
 #include "configuration.h"
+#include "boards_pinout.h"
 #include "power_utils.h"
+#include "sleep_utils.h"
 #include "lora_utils.h"
 #include "bme_utils.h"
 #include "display.h"
@@ -36,6 +38,8 @@ extern uint8_t              winlinkStatus;
 extern bool                 winlinkCommentState;
 
 extern int                  wxModuleType;
+extern bool                 gpsIsActive;
+extern bool                 gpsShouldSleep;
 
 bool	    sendStandingUpdate      = false;
 uint8_t     updateCounter           = Config.sendCommentAfterXBeacons;
@@ -179,6 +183,9 @@ namespace STATION_Utils {
         if (!sendUpdate && lastTx >= Config.standingUpdateTime * 60 * 1000) {
             sendUpdate = true;
             sendStandingUpdate = true;
+            if (!gpsIsActive) {
+                SLEEP_Utils::gpsWakeUp();
+            }
         }
     }
 
@@ -231,8 +238,9 @@ namespace STATION_Utils {
             comment = currentBeacon->comment;
             sendCommentAfterXBeacons = Config.sendCommentAfterXBeacons;
         }
+        String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
         if (Config.sendBatteryInfo) {
-            String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
+            //String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
             String batteryChargeCurrent = POWER_Utils::getBatteryInfoCurrent();
             #ifdef HAS_AXP192
                 comment += " Bat=";
@@ -264,7 +272,7 @@ namespace STATION_Utils {
         #ifdef HAS_TFT
             cleanTFT();
         #endif
-        show_display("<<< TX >>>", "", packet,100);
+        displayShow("<<< TX >>>", "", packet,100);
         LoRa_Utils::sendNewPacket(packet);
         
         if (smartBeaconValue) {
@@ -273,10 +281,18 @@ namespace STATION_Utils {
             previousHeading = currentHeading;
             lastTxDistance  = 0.0;
         }
-        lastTxTime = millis();
-        sendUpdate = false;
+        lastTxTime  = millis();
+        sendUpdate  = false;
         #ifdef HAS_TFT
-            cleanTFT();
+            cleanTFT(); 
+        #endif
+        if (currentBeacon->gpsEcoMode) {
+            gpsShouldSleep = true;
+        }
+        #if !defined(HAS_AXP192) && !defined(HAS_AXP2101) && defined(BATTERY_PIN)
+            if (batteryVoltage.toFloat() < 3.0) {
+                POWER_Utils::shutdown();
+            }
         #endif
     }
 

@@ -28,6 +28,9 @@ bool transmitFlag    = true;
 #if defined(HAS_SX1276)
     SX1276 radio = new Module(RADIO_CS_PIN, RADIO_BUSY_PIN, RADIO_RST_PIN);
 #endif
+#if defined(HAS_LLCC68) //LLCC68 supports spreading factor only in range of 5-11!
+    LLCC68 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+#endif
 
 namespace LoRa_Utils {
 
@@ -72,13 +75,16 @@ namespace LoRa_Utils {
         currentLoRainfo += String(currentLoRaType->codingRate4);
         
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", currentLoRainfo.c_str());
-        show_display("LORA FREQ>", "", "CHANGED TO: " + loraCountryFreq, "", "", "", 2000);
+        displayShow("LORA FREQ>", "", "CHANGED TO: " + loraCountryFreq, "", "", "", 2000);
     }
 
     void setup() {
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", "Set SPI pins!");
         SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
         float freq = (float)currentLoRaType->frequency/1000000;
+        #if defined(RADIO_HAS_XTAL)
+            radio.XTAL = true;
+        #endif
         int state = radio.begin(freq);
         if (state == RADIOLIB_ERR_NONE) {
             #if defined(HAS_SX1262) || defined(HAS_SX1268)
@@ -87,10 +93,10 @@ namespace LoRa_Utils {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "Initializing SX127X ...");
             #endif
         } else {
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed! State: %d", state);
             while (true);
         }
-        #if defined(HAS_SX1262) || defined(HAS_SX1268)
+        #if defined(HAS_SX1262) || defined(HAS_SX1268) || defined(HAS_LLCC68)
             radio.setDio1Action(setFlag);
         #endif
         #if defined(HAS_SX1278) || defined(HAS_SX1276)
@@ -106,7 +112,7 @@ namespace LoRa_Utils {
             radio.setRfSwitchPins(RADIO_RXEN, RADIO_TXEN);
         #endif
 
-        #ifdef HAS_1W_LORA  // Ebyte E22 400M30S (SX1268) / 900M30S (SX1262)
+        #ifdef HAS_1W_LORA  // Ebyte E22 400M30S (SX1268) / 900M30S (SX1262) / Ebyte E220 400M30S (LLCC68)
             state = radio.setOutputPower(currentLoRaType->power); // max value 20 (when 20dB in setup 30dB in output as 400M30S has Low Noise Amp)
             radio.setCurrentLimit(140); // to be validated (100 , 120, 140)?
         #endif
@@ -121,14 +127,14 @@ namespace LoRa_Utils {
             radio.setCurrentLimit(100); // to be validated (80 , 100)?
         #endif
 
-        #if defined(HAS_SX1262) || defined(HAS_SX1268)
+        #if defined(HAS_SX1262) || defined(HAS_SX1268) || defined(HAS_LLCC68)
         radio.setRxBoostedGainMode(true);
         #endif
 
         if (state == RADIOLIB_ERR_NONE) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "LoRa", "LoRa init done!");
         } else {
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed!");
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed! State: %d", state);
             while (true);
         }        
     }
@@ -163,6 +169,25 @@ namespace LoRa_Utils {
         #ifdef HAS_TFT
             cleanTFT();
         #endif
+    }
+
+    void wakeRadio() {
+        radio.startReceive();
+    }
+
+    ReceivedLoRaPacket receiveFromSleep() {
+        ReceivedLoRaPacket receivedLoraPacket;
+        String packet = "";
+        int state = radio.readData(packet);
+        if (state == RADIOLIB_ERR_NONE) {
+            receivedLoraPacket.text       = packet;
+            receivedLoraPacket.rssi       = radio.getRSSI();
+            receivedLoraPacket.snr        = radio.getSNR();
+            receivedLoraPacket.freqError  = radio.getFrequencyError();
+        } else {
+            //
+        }
+        return receivedLoraPacket;
     }
 
     ReceivedLoRaPacket receivePacket() {
