@@ -43,10 +43,10 @@ TinyGPSPlus                         gps;
     BluetoothSerial                     SerialBT;
 #endif
 #ifdef BUTTON_PIN
-    OneButton userButton                = OneButton(BUTTON_PIN, true, true);
+    OneButton userButton            = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.07.30m";
+String      versionDate             = "2024.08.16m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -105,7 +105,7 @@ void setup() {
     #endif
 
     POWER_Utils::setup();
-    setup_display();
+    displaySetup();
     POWER_Utils::externalPinSetup();
 
     STATION_Utils::loadIndex(0);
@@ -216,6 +216,7 @@ void loop() {
             MENU_Utils::showOnScreen();
             refreshDisplayTime = millis();
         }
+        SLEEP_Utils::checkIfGPSShouldSleep();
     } else {
         if (millis() - lastGPSTime > txInterval) {
             SLEEP_Utils::gpsWakeUp();

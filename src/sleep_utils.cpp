@@ -5,6 +5,8 @@
 extern uint32_t         lastGPSTime;
 extern bool             gpsIsActive;
 
+bool gpsShouldSleep     = false;
+
 
 namespace SLEEP_Utils {
 
@@ -24,11 +26,18 @@ namespace SLEEP_Utils {
         #ifdef HAS_GPS_CTRL
             if (!gpsIsActive) {
                 POWER_Utils::activateGPS();
+                gpsShouldSleep = false;
                 //
                 Serial.println("GPS WAKEUP");
                 //
             }
         #endif
+    }
+
+    void checkIfGPSShouldSleep() {
+        if (gpsShouldSleep) {
+            gpsSleep();
+        }
     }
 
 }

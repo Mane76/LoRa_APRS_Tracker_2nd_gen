@@ -32,6 +32,7 @@ extern double           lastTxLng;
 extern double           lastTxDistance;
 extern uint32_t         lastTx;
 extern bool             disableGPS;
+extern bool             gpsShouldSleep;
 
 double      currentHeading  = 0;
 double      previousHeading = 0;
@@ -82,8 +83,7 @@ namespace GPS_Utils {
                     Serial.print("minTxDistance not achieved : ");
                     Serial.println(lastTxDistance);
                     //
-
-                    SLEEP_Utils::gpsSleep();
+                    gpsShouldSleep = true;
                 }
             }
         }
@@ -111,7 +111,7 @@ namespace GPS_Utils {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "GPS",
                         "No GPS frames detected! Try to reset the GPS Chip with this "
                         "firmware: https://github.com/richonguzman/TTGO_T_BEAM_GPS_RESET");
-            show_display("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
+            displayShow("ERROR", "No GPS frames!", "Reset the GPS Chip", 2000);
         }
     }
 

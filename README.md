@@ -51,6 +51,10 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.08.16 BLE support for Android devices (not APRSDroid yet).
+- 2024.08.12 Added support for EByte E220 400M30S 1Watt LoRa module for DIY ESP32 Tracker (LLCC68 supports spreading factor only in range of 5 - 11!)
+- 2024.08.02 New gpsEcoMode added for Testing.
+- 2024.08.02 ESP32S3 DIY LoRa GPS added.
 - 2024.07.30 HELTEC V3 TNC added.
 - 2024.07.01 All boards with 433MHZ and 915MHz versions now.
 - 2024.06.21 3rd Party Packets decode added following the corrections on iGate Firmware.

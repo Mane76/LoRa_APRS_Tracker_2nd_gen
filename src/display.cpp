@@ -6,6 +6,8 @@
 #include "display.h"
 #include "TimeLib.h"
 
+String currentSymbol, lastSymbol, lastHeader;
+
 #ifdef HAS_TFT
     #include <TFT_eSPI.h>
 
@@ -82,7 +84,7 @@ String fillStringLength(const String& line, uint8_t length) {
     return outputLine;
 }
 
-void setup_display() {
+void displaySetup() {
     delay(500);
     #ifdef HAS_TFT
         tft.init();
@@ -137,7 +139,7 @@ void setup_display() {
     #endif
 }
 
-void display_toggle(bool toggle) {
+void displayToggle(bool toggle) {
     if (toggle) {
         #ifdef HAS_TFT
             digitalWrite(TFT_BL, HIGH);
@@ -161,7 +163,7 @@ void display_toggle(bool toggle) {
     }
 }
 
-void show_display(const String& header, const String& line1, const String& line2, int wait) {
+void displayShow(const String& header, const String& line1, const String& line2, int wait) {
     #ifdef HAS_TFT
         String filledLine1 = fillStringLength(line1, 22);
         String filledLine2 = fillStringLength(line2, 22);
@@ -171,7 +173,14 @@ void show_display(const String& header, const String& line1, const String& line2
         tft.setTextColor(TFT_WHITE,TFT_BLACK);
         tft.setTextSize(bigSizeFont);
         tft.setCursor(0, 0);
-        tft.print(header);
+
+        if (header != lastHeader) {
+            tft.print(fillStringLength(header, 11));
+            lastHeader = header;
+        } else {
+            tft.print(header);
+        }
+
         tft.setTextSize(smallSizeFont);
         for (int i = 0; i < 2; i++) {
             tft.setCursor(0, ((lineSpacing * (2 + i)) - 2));
@@ -205,13 +214,13 @@ void show_display(const String& header, const String& line1, const String& line2
     delay(wait);
 }
 
-void show_display(const String& header, const String& line1, const String& line2, const String& line3, const String& line4, const String& line5, int wait) {
+void displayShow(const String& header, const String& line1, const String& line2, const String& line3, const String& line4, const String& line5, int wait) {
     #ifdef HAS_TFT
-        String filledLine1 = fillStringLength(line1, 22);
-        String filledLine2 = fillStringLength(line2, 22);
-        String filledLine3 = fillStringLength(line3, 22);
-        String filledLine4 = fillStringLength(line4, 22);
-        String filledLine5 = fillStringLength(line5, 22);
+        String filledLine1  = fillStringLength(line1, 22);
+        String filledLine2  = fillStringLength(line2, 22);
+        String filledLine3  = fillStringLength(line3, 22);
+        String filledLine4  = fillStringLength(line4, 22);
+        String filledLine5  = fillStringLength(line5, 22);
         const String* const lines[] = {&filledLine1, &filledLine2, &filledLine3, &filledLine4, &filledLine5};
 
         if (menuDisplay != lastMenuDisplay) {
@@ -222,7 +231,14 @@ void show_display(const String& header, const String& line1, const String& line2
         tft.setTextColor(TFT_WHITE,TFT_BLACK);
         tft.setTextSize(bigSizeFont);
         tft.setCursor(0, 0);
-        tft.print(header);
+
+        if (header != lastHeader) {
+            tft.print(fillStringLength(header, 11));
+            lastHeader = header;
+        } else {
+            tft.print(header);
+        }
+
         tft.setTextSize(smallSizeFont);
         for (int i = 0; i < 5; i++) {
             tft.setCursor(0, ((lineSpacing * (2 + i)) - 2));
@@ -244,10 +260,16 @@ void show_display(const String& header, const String& line1, const String& line2
             * If bluetooth is disconnected or if we are in the first part of the clock, then we show the APRS symbol
             * Otherwise, we are in the second part of the clock, then we show BT connected
             */
+
             const auto time_now = now();
             if (!bluetoothConnected || time_now % 10 < 5) {
                 if (symbolAvailable) {
+                    currentSymbol = symbolArray[symbol];
                     #if HELTEC_WIRELESS_TRACKER
+                        if (currentSymbol != lastSymbol) {
+                            tft.fillRect((TFT_WIDTH - SYMBOL_WIDTH + (128 - TFT_WIDTH)), 0, SYMBOL_WIDTH, SYMBOL_HEIGHT, TFT_BLACK);
+                            lastSymbol = currentSymbol;
+                        }
                         tft.drawBitmap((TFT_WIDTH - SYMBOL_WIDTH + (128 - TFT_WIDTH)), 0, symbolsAPRS[symbol], SYMBOL_WIDTH, SYMBOL_HEIGHT, TFT_WHITE);//, TFT_RED);
                     #endif
                     #if TTGO_T_DECK_GPS
@@ -327,10 +349,40 @@ void startupScreen(uint8_t index, const String& version) {
         case 1: workingFreq += "PL]"; break;
         case 2: workingFreq += "UK]"; break;
     }
-    show_display(" LoRa APRS", "      (TRACKER)", workingFreq, "", "", "  CA2RXU  " + version, 4000);
+    displayShow(" LoRa APRS", "      (TRACKER)", workingFreq, "", "", "  CA2RXU  " + version, 4000);
     #ifdef HAS_TFT
         cleanTFT();
     #endif
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "RichonGuzman (CA2RXU) --> LoRa APRS Tracker/Station");
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Version: %s", version);
+}
+
+String fillMessageLine(const String& line, const int& length) {
+    String completeLine = line;
+    for (int i = 0; completeLine.length() <= length; i++) {
+        completeLine = completeLine + " ";
+    }
+    return completeLine;
+}
+
+void displayMessage(const String& sender, const String& message, const int& lineLength, bool next, int wait) {
+    String messageLine1, messageLine2, messageLine3;
+    int messageLength = message.length();
+
+    if (message.length() > 0) {
+        messageLine1 = message.substring(0, min(lineLength, messageLength));
+        if (messageLength > lineLength) {
+            messageLine2 = message.substring(lineLength, min(2 * lineLength, messageLength));
+            if (messageLength > 2 * lineLength) {
+                messageLine3 = message.substring(2 * lineLength);
+            }
+        }
+    }
+    if (next) {
+        String nextLine = fillMessageLine("Next=Down", lineLength);
+        displayShow("MSG_APRS>", "From --> " + sender, fillMessageLine(messageLine1, lineLength), fillMessageLine(messageLine2, lineLength), fillMessageLine(messageLine3, lineLength), nextLine);
+    } else {
+        displayShow("< MSG Rx >", "From --> " + sender, "", fillMessageLine(messageLine1, lineLength) , fillMessageLine(messageLine2, lineLength), fillMessageLine(messageLine3, lineLength), wait);
+    }
+    
 }
