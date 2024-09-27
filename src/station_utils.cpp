@@ -2,6 +2,7 @@
 #include <SPIFFS.h>
 #include "APRSPacketLib.h"
 #include "station_utils.h"
+#include "battery_utils.h"
 #include "configuration.h"
 #include "boards_pinout.h"
 #include "power_utils.h"
@@ -23,8 +24,6 @@ extern uint32_t             lastTxTime;
 
 extern bool                 sendUpdate;
 
-extern uint32_t             txInterval;
-
 extern double               currentHeading;
 extern double               previousHeading;
 
@@ -33,19 +32,19 @@ extern double               lastTxLng;
 extern double               lastTxDistance;
 
 extern bool                 miceActive;
-extern bool                 smartBeaconValue;
-extern uint8_t              winlinkStatus;
+extern bool                 smartBeaconActive;
 extern bool                 winlinkCommentState;
 
 extern int                  wxModuleType;
 extern bool                 gpsIsActive;
 extern bool                 gpsShouldSleep;
 
-bool	    sendStandingUpdate      = false;
-uint8_t     updateCounter           = Config.sendCommentAfterXBeacons;
-bool        wxRequestStatus         = false;
-uint32_t    wxRequestTime           = 0;
 
+bool	    sendStandingUpdate      = false;
+uint8_t     updateCounter           = 100;
+
+
+bool        sendStartTelemetry      = true;
 uint32_t    lastTelemetryTx         = 0;
 uint32_t    telemetryTx             = millis();
 
@@ -167,18 +166,6 @@ namespace STATION_Utils {
         }
     }
 
-    void checkSmartBeaconInterval(int speed) {
-        if (smartBeaconValue) {
-            if (speed < currentBeacon->slowSpeed) {
-                txInterval = currentBeacon->slowRate * 1000;
-            } else if (speed > currentBeacon->fastSpeed) {
-                txInterval = currentBeacon->fastRate * 1000;
-            } else {
-                txInterval = min(currentBeacon->slowRate, currentBeacon->fastSpeed * currentBeacon->fastRate / speed) * 1000;
-            }
-        }
-    }
-
     void checkStandingUpdateTime() {
         if (!sendUpdate && lastTx >= Config.standingUpdateTime * 60 * 1000) {
             sendUpdate = true;
@@ -189,27 +176,39 @@ namespace STATION_Utils {
         }
     }
 
-    void checkSmartBeaconValue() {
-        if (wxRequestStatus && (millis() - wxRequestTime) > 20000) {
-            wxRequestStatus = false;
-        }
-        if(winlinkStatus == 0 && !wxRequestStatus) {
-            smartBeaconValue = currentBeacon->smartBeaconState;
-        } else {
-            smartBeaconValue = false;
-        }
-    }
-
-    void checkSmartBeaconState() {
-        if (!smartBeaconValue) {
-            uint32_t lastTxSmartBeacon = millis() - lastTxTime;
-            if (lastTxSmartBeacon >= Config.nonSmartBeaconRate * 60 * 1000) {
-                sendUpdate = true;
-            }
-        }
-    }
-
     void sendBeacon(uint8_t type) {
+        if (sendStartTelemetry && Config.battery.sendVoltage && Config.battery.voltageAsTelemetry) {                
+            String sender = currentBeacon->callsign;
+            for (int i = sender.length(); i < 9; i++) {
+                sender += ' ';
+            }
+            String basePacket = currentBeacon->callsign;
+            basePacket += ">APLRT1";
+            if (Config.path != "") {
+                basePacket += ",";
+                basePacket += Config.path;
+            }
+            basePacket += "::";
+            basePacket += sender;
+            basePacket += ":";
+
+            String tempPacket = basePacket;
+            tempPacket += "EQNS.0,0.01,0";
+            LoRa_Utils::sendNewPacket(tempPacket);
+            delay(3000);
+
+            tempPacket = basePacket;
+            tempPacket += "UNIT.VDC";
+            LoRa_Utils::sendNewPacket(tempPacket);
+            delay(3000);
+
+            tempPacket = basePacket;
+            tempPacket += "PARM.V_Batt";
+            LoRa_Utils::sendNewPacket(tempPacket);
+            delay(3000);
+            sendStartTelemetry = false;
+        }
+
         String packet;
         if (Config.bme.sendTelemetry && type == 1) { // WX
             packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), 0.0, currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
@@ -231,16 +230,15 @@ namespace STATION_Utils {
         }
         String comment;
         int sendCommentAfterXBeacons;
-        if (winlinkCommentState) {
-            comment = " winlink";
+        if (winlinkCommentState || Config.battery.sendVoltageAlways) {
+            if (winlinkCommentState) comment = " winlink";
             sendCommentAfterXBeacons = 1;
         } else {
             comment = currentBeacon->comment;
             sendCommentAfterXBeacons = Config.sendCommentAfterXBeacons;
         }
         String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
-        if (Config.sendBatteryInfo) {
-            //String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
+        if (Config.battery.sendVoltage && !Config.battery.voltageAsTelemetry) {
             String batteryChargeCurrent = POWER_Utils::getBatteryInfoCurrent();
             #ifdef HAS_AXP192
                 comment += " Bat=";
@@ -251,7 +249,7 @@ namespace STATION_Utils {
             #endif
             #ifdef HAS_AXP2101
                 comment += " Bat=";
-                comment += String(batteryVoltage.toFloat()/1000,2);
+                comment += String(batteryVoltage.toFloat(),2);
                 comment += "V (";
                 comment += batteryChargeCurrent;
                 comment += "%)";
@@ -262,20 +260,21 @@ namespace STATION_Utils {
                 comment += "V";
             #endif
         }
-        if (comment != "") {
+        if (comment != "" || (Config.battery.sendVoltage && Config.battery.voltageAsTelemetry)) {
             updateCounter++;
             if (updateCounter >= sendCommentAfterXBeacons) {
-                packet += comment;
+                if (comment != "") packet += comment;
+                if (Config.battery.sendVoltage && Config.battery.voltageAsTelemetry) packet += BATTERY_Utils::generateEncodedTelemetry(batteryVoltage.toFloat());
                 updateCounter = 0;
-            } 
-        }        
+            }
+        }
         #ifdef HAS_TFT
             cleanTFT();
         #endif
         displayShow("<<< TX >>>", "", packet,100);
         LoRa_Utils::sendNewPacket(packet);
         
-        if (smartBeaconValue) {
+        if (smartBeaconActive) {
             lastTxLat       = gps.location.lat();
             lastTxLng       = gps.location.lng();
             previousHeading = currentHeading;

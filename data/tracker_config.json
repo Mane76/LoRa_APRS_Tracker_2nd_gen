@@ -2,21 +2,13 @@
 	"beacons": [
 		{
 			"callsign": "NOCALL-4",
+			"gpsEcoMode": false,
 			"symbol": "b",
 			"overlay": "/",
 			"micE":"",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 5,
-				"fastRate": 60,
-				"fastSpeed": 20,
-				"minTxDist": 100,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 20,
-				"turnSlope": 50
-			}
+			"comment": "https://t1p.de/LORA",
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 1
 		},
 		{
 			"callsign": "NOCALL-7",
@@ -24,18 +16,9 @@
 			"symbol": "[",
 			"overlay": "/",
 			"micE":"",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 3,
-				"fastRate": 60,
-				"fastSpeed": 10,
-				"minTxDist": 100,
-				"minDeltaBeacon": 12,
-				"turnMinDeg": 20,
-				"turnSlope": 30
-			}
+			"comment": "https://t1p.de/LORA",
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 0
 		},
 		{
 			"callsign": "NOCALL-9",
@@ -43,18 +26,9 @@
 			"symbol": ">",
 			"overlay": "/",
 			"micE":"",
-			"comment": "https://github.com/Mane76/LoRa_APRS_Tracker_2nd_gen",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 10,
-				"fastRate": 60,
-				"fastSpeed": 70,
-				"minTxDist": 100,
-				"minDeltaBeacon": 12,
-				"turnMinDeg": 20,
-				"turnSlope": 80
-			}
+			"comment": "https://t1p.de/LORA",
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 2
 		}		
 	],
 	"display": {
@@ -63,6 +37,11 @@
 		"timeout": 4,
 		"turn180" : false
     },
+	"battery": {
+		"sendVoltage": false,
+		"voltageAsTelemetry": true,
+		"sendVoltageAlways": false
+	},
 	"other": {
 		"simplifiedTrackerMode": false,
 		"sendCommentAfterXBeacons": 20,
@@ -72,7 +51,6 @@
 		"maxDistanceToTracker": 300, 
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
-		"sendBatteryInfo": false,
 		"bluetoothType": 1,
 		"bluetoothActive": true,
 		"disableGPS": false

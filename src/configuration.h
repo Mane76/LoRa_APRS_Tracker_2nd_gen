@@ -8,20 +8,13 @@
 class Beacon {
 public:
     String  callsign;
-    bool    gpsEcoMode;
     String  symbol;
     String  overlay;
-    String  micE;
     String  comment;
-    bool    smartBeaconState;
-    int     slowRate;
-    int     slowSpeed;
-    int     fastRate;
-    int     fastSpeed;
-    int     minTxDist;
-    int     minDeltaBeacon;
-    int     turnMinDeg;
-    int     turnSlope;
+    bool    smartBeaconActive;
+    byte    smartBeaconSetting;
+    String  micE;
+    bool    gpsEcoMode;
 };
 
 class Display {
@@ -30,6 +23,13 @@ public:
     bool    ecoMode;
     int     timeout;
     bool    turn180;
+};
+
+class Battery {
+public:
+    bool    sendVoltage;
+    bool    voltageAsTelemetry;
+    bool    sendVoltageAlways;
 };
 
 class Winlink {
@@ -86,6 +86,7 @@ public:
 
     std::vector<Beacon>     beacons;  
     Display                 display;
+    Battery                 battery;
     Winlink                 winlink;
     BME                     bme;
     Notification            notification;
@@ -100,7 +101,6 @@ public:
     int     maxDistanceToTracker;
     int     standingUpdateTime;
     bool    sendAltitude;
-    bool    sendBatteryInfo;
     int     bluetoothType;
     bool    bluetoothActive;
     bool    disableGPS;
