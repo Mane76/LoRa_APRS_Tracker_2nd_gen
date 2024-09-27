@@ -171,7 +171,7 @@
 #if defined(ESP32_DIY_1W_LoRa_GPS) || defined(ESP32_DIY_1W_LoRa_GPS_915) || defined(ESP32_DIY_1W_LoRa_GPS_LLCC68)
     #define OLED_SDA            21
     #define OLED_SCL            22
-    #define OLED_RST            16
+    #define OLED_RST            -1
     #define GPS_RX              17
     #define GPS_TX              16
     #define BUTTON_PIN          15
@@ -191,7 +191,7 @@
 #ifdef OE5HWN_MeshCom
     #define OLED_SDA            21
     #define OLED_SCL            22
-    #define OLED_RST            16
+    #define OLED_RST            -1
     #define GPS_RX              17
     #define GPS_TX              16
     #define BUTTON_PIN          12
@@ -257,6 +257,21 @@
     #define RADIO_CS_PIN        18
     #define RADIO_RST_PIN       14
     #define RADIO_BUSY_PIN      26
+#endif
+
+#if defined(HELTEC_HTCT62_GPS)
+    #define OLED_SDA            18
+    #define OLED_SCL            19
+    #define OLED_RST            -1
+    #define GPS_RX              0
+    #define GPS_TX              1
+    #define RADIO_SCLK_PIN      10
+    #define RADIO_MISO_PIN      6
+    #define RADIO_MOSI_PIN      7
+    #define RADIO_CS_PIN        8
+    #define RADIO_RST_PIN       5
+    #define RADIO_DIO1_PIN      3
+    #define RADIO_BUSY_PIN      4
 #endif
 
 #endif

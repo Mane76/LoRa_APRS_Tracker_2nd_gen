@@ -5,64 +5,42 @@
 			"gpsEcoMode": false,
 			"symbol": "b",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://t1p.de/LORA",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 5,
-				"fastRate": 60,
-				"fastSpeed": 20,
-				"minTxDist": 100,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 20,
-				"turnSlope": 50
-			}
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 1
 		},
 		{
 			"callsign": "NOCALL-7",
 			"gpsEcoMode": false,
 			"symbol": "[",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://t1p.de/LORA",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 3,
-				"fastRate": 60,
-				"fastSpeed": 10,
-				"minTxDist": 100,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 20,
-				"turnSlope": 5
-			}
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 0
 		},
 		{
 			"callsign": "NOCALL-9",
 			"gpsEcoMode": false,
 			"symbol": ">",
 			"overlay": "/",
-			"micE": "",
+			"micE":"",
 			"comment": "https://t1p.de/LORA",
-			"smartBeacon": {
-				"active": true,
-				"slowRate": 120,
-				"slowSpeed": 10,
-				"fastRate": 60,
-				"fastSpeed": 70,
-				"minTxDist": 100,
-				"minDeltaBeacon": 20,
-				"turnMinDeg": 20,
-				"turnSlope": 80
-			}
-		}
+			"smartBeaconActive": true,
+			"smartBeaconSetting": 2
+		}		
 	],
 	"display": {
 		"showSymbol": true,
 		"ecoMode": false,
-		"timeout": 45,
-		"turn180": false
+		"timeout": 4,
+		"turn180" : false
+    },
+	"battery": {
+		"sendVoltage": false,
+		"voltageAsTelemetry": true,
+		"sendVoltageAlways": false
 	},
 	"other": {
 		"simplifiedTrackerMode": false,
@@ -73,7 +51,6 @@
 		"maxDistanceToTracker": 300,
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
-		"sendBatteryInfo": false,
 		"bluetoothType": 1,
 		"bluetoothActive": false,
 		"disableGPS": false
