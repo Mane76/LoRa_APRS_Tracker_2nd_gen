@@ -30,9 +30,11 @@ ________________________________________________________________________________
 #include "sleep_utils.h"
 #include "menu_utils.h"
 #include "lora_utils.h"
+#include "wifi_utils.h"
 #include "msg_utils.h"
 #include "gps_utils.h"
 #include "bme_utils.h"
+#include "web_utils.h"
 #include "ble_utils.h"
 #include "display.h"
 #include "utils.h"
@@ -47,7 +49,7 @@ TinyGPSPlus                         gps;
     OneButton userButton            = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.09.19";
+String      versionDate             = "2024.10.03";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -114,6 +116,8 @@ void setup() {
     STATION_Utils::nearTrackerInit();
     startupScreen(loraIndex, versionDate);
 
+    WIFI_Utils::checkIfWiFiAP();
+
     MSG_Utils::loadNumMessages();
     GPS_Utils::setup();
     currentLoRaType = &Config.loraTypes[loraIndex];
@@ -125,7 +129,7 @@ void setup() {
     WiFi.mode(WIFI_OFF);
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "WiFi controller stopped");
 
-    if (Config.bluetoothType == 0 || Config.bluetoothType == 2) {
+    if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
         BLE_Utils::setup();
     } else {
         #ifdef HAS_BT_CLASSIC
@@ -182,7 +186,7 @@ void loop() {
     MSG_Utils::ledNotification();
     Utils::checkFlashlight();
     STATION_Utils::checkListenedTrackersByTimeAndDelete();
-    if (Config.bluetoothType == 0 || Config.bluetoothType == 2) {
+    if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
         BLE_Utils::sendToLoRa();
     } else {
         #ifdef HAS_BT_CLASSIC

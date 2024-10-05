@@ -353,7 +353,11 @@ namespace POWER_Utils {
         #ifdef HAS_NO_GPS
             disableGPS = true;
         #else
-            disableGPS = Config.disableGPS;
+            if (Config.wifiAP.active) {
+                disableGPS = true;
+            } else {
+                disableGPS = Config.disableGPS;
+            }            
         #endif
 
         #ifdef HAS_AXP192
@@ -466,7 +470,7 @@ namespace POWER_Utils {
             PMU.shutdown();
         #else
 
-            if (Config.bluetoothType == 0 || Config.bluetoothType == 2) {
+            if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
                 BLE_Utils::stop();
             } else {
                 // turn off BT classic ???

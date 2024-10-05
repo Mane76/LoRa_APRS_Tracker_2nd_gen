@@ -36,6 +36,7 @@ extern bool                 smartBeaconActive;
 extern bool                 winlinkCommentState;
 
 extern int                  wxModuleType;
+extern bool                 wxModuleFound;
 extern bool                 gpsIsActive;
 extern bool                 gpsShouldSleep;
 
@@ -210,12 +211,12 @@ namespace STATION_Utils {
         }
 
         String packet;
-        if (Config.bme.sendTelemetry && type == 1) { // WX
+        if (Config.bme.sendTelemetry && wxModuleFound && type == 1) { // WX
             packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, "/", APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), 0.0, currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "Wx"));
             if (wxModuleType != 0) {
                 packet += BME_Utils::readDataSensor(0);
             } else {
-                packet += ".../...g...t...r...p...P...h..b.....";
+                packet += ".../...g...t...";
             }            
         } else {
             String path = Config.path;
@@ -238,26 +239,29 @@ namespace STATION_Utils {
             sendCommentAfterXBeacons = Config.sendCommentAfterXBeacons;
         }
         String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
+        #if defined(BATTERY_PIN) && !defined(HAS_AXP192) && !defined(HAS_AXP2101)
+            BATTERY_Utils::checkLowVoltageAndSleep(batteryVoltage.toFloat());
+        #endif
         if (Config.battery.sendVoltage && !Config.battery.voltageAsTelemetry) {
             String batteryChargeCurrent = POWER_Utils::getBatteryInfoCurrent();
-            #ifdef HAS_AXP192
+            #if defined(HAS_AXP192)
                 comment += " Bat=";
                 comment += batteryVoltage;
                 comment += "V (";
                 comment += batteryChargeCurrent;
                 comment += "mA)";
-            #endif
-            #ifdef HAS_AXP2101
+            #elif defined(HAS_AXP2101)
                 comment += " Bat=";
                 comment += String(batteryVoltage.toFloat(),2);
                 comment += "V (";
                 comment += batteryChargeCurrent;
                 comment += "%)";
-            #endif
-            #if defined(HELTEC_V3_GPS) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS)
+            #elif defined(BATTERY_PIN) && !defined(HAS_AXP192) && !defined(HAS_AXP2101)
                 comment += " Bat=";
                 comment += String(batteryVoltage.toFloat(),2);
                 comment += "V";
+                comment += BATTERY_Utils::getPercentVoltageBattery(batteryVoltage.toFloat());
+                comment += "%";
             #endif
         }
         if (comment != "" || (Config.battery.sendVoltage && Config.battery.voltageAsTelemetry)) {
