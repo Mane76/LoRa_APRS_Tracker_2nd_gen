@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "battery_utils.h"
+#include "power_utils.h"
 
 
 int telemetryCounter    = random(1,999);
@@ -45,6 +46,21 @@ namespace BATTERY_Utils {
         telemetry += generateEncodedTelemetryBytes(voltage, false, 0);
         telemetry += "|";
         return telemetry;
+    }
+
+    String getPercentVoltageBattery(float voltage) {
+        int percent = ((voltage - 3.0) / (4.2 - 3.0)) * 100;
+        if (percent < 10) {
+            return "  " + String(percent);
+        } else if (percent >= 10 && percent < 100) {
+            return " " + String(percent);
+        } else {
+            return "100";
+        }
+    }
+
+    void checkLowVoltageAndSleep(float voltage) {
+        if (voltage <= 3.0) POWER_Utils::shutdown();
     }
 
 }

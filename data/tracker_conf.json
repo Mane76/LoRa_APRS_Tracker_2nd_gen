@@ -47,12 +47,9 @@
 		"sendCommentAfterXBeacons": 20,
 		"path": "WIDE1-1",
 		"nonSmartBeaconRate": 15,
-		"rememberStationTime": 300,
-		"maxDistanceToTracker": 300,
+		"rememberStationTime": 30,
 		"standingUpdateTime": 15,
 		"sendAltitude": true,
-		"bluetoothType": 1,
-		"bluetoothActive": false,
 		"disableGPS": false
 	},
 	"winlink": {
@@ -103,11 +100,20 @@
 			"power": 20
 		}
 	],
+	"bluetooth": {
+		"type": 1,
+		"active": false
+	},
 	"pttTrigger": {
 		"active": false,
 		"io_pin": 4,
 		"preDelay": 0,
 		"postDelay": 0,
 		"reverse": false
+	},
+	"wifiAP": {
+		"active": false,
+		"password": "1234567890"
 	}
+
 }

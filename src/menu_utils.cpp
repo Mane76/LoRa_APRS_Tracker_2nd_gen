@@ -5,6 +5,7 @@
 #include "station_utils.h"
 #include "configuration.h"
 #include "APRSPacketLib.h"
+#include "battery_utils.h"
 #include "power_utils.h"
 #include "menu_utils.h"
 #include "msg_utils.h"
@@ -53,7 +54,7 @@ uint8_t     lowBatteryPercent       = 21;
 namespace MENU_Utils {
 
     const String checkBTType() {
-        switch (Config.bluetoothType) {
+        switch (Config.bluetooth.type) {
             case 0:
                 return "BLE iPhone";
             case 1:
@@ -161,7 +162,7 @@ namespace MENU_Utils {
                 displayShow("_MESSAGES_", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "> APRSThursday", lastLine);
                 break;
             case 130:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu._", "> Join APRSThursday", "  Check In", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow("APRS Thu._", "> Check In", "  Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 1300:
                 if (messageText.length() <= 67) {
@@ -175,7 +176,7 @@ namespace MENU_Utils {
                 }
                 break;
             case 131:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu._", "  Join APRSThursday", "> Check In", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow("APRS Thu._", "  Check In", "> Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 1310:
                 if (messageText.length() <= 67) {
@@ -189,10 +190,10 @@ namespace MENU_Utils {
                 }
                 break;
             case 132:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu._", "  Join APRSThursday", "  Check In", "> Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow("APRS Thu._", "  Check In", "  Join", "> Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 133:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu._", "  Join APRSThursday", "  Check In", "  Unsubscribe", "> KeepSubscribed+12h", lastLine);
+                displayShow("APRS Thu._", "  Check In", "  Join", "  Unsubscribe", "> KeepSubscribed+12h", lastLine);
                 break;
 
 //////////            
@@ -505,6 +506,15 @@ namespace MENU_Utils {
                 break;
 
 //////////
+            case 9000:  //  9. multiPress Menu ---> Turn ON WiFi AP
+                displayShow("__CONFIG__", "> Turn Tracker Off","  Config. WiFi AP",  "","",lastLine);
+                break;
+            case 9001:  //  9. multiPress Menu
+                displayShow("__CONFIG__", "  Turn Tracker Off","> Config. WiFi AP",  "","",lastLine);
+                break;
+
+
+//////////
             case 0:       ///////////// MAIN MENU //////////////
                 String hdopState, firstRowMainMenu, secondRowMainMenu, thirdRowMainMenu, fourthRowMainMenu, fifthRowMainMenu, sixthRowMainMenu;
 
@@ -615,9 +625,11 @@ namespace MENU_Utils {
                     String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
                     String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
                     #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS)
-					    sixthRowMainMenu = "Bat: ";
+					    sixthRowMainMenu = "Battery: ";
                         sixthRowMainMenu += batteryVoltage;
-                        sixthRowMainMenu += "V";
+                        sixthRowMainMenu += "V   ";
+                        sixthRowMainMenu += BATTERY_Utils::getPercentVoltageBattery(batteryVoltage.toFloat());
+                        sixthRowMainMenu += "%";
                     #endif
                     #ifdef HAS_AXP192
                         if (batteryCharge.toInt() == 0) {
