@@ -36,12 +36,14 @@ void Configuration::writeFile() {
     data["battery"]["sendVoltage"]              = battery.sendVoltage;
     data["battery"]["voltageAsTelemetry"]       = battery.voltageAsTelemetry;
     data["battery"]["sendVoltageAlways"]        = battery.sendVoltageAlways;
+    data["battery"]["monitorVoltage"]           = battery.monitorVoltage;
+    data["battery"]["sleepVoltage"]             = battery.sleepVoltage;
 
     data["winlink"]["password"]                 = winlink.password;
 
-    data["bme"]["active"]                       = bme.active;
-    data["bme"]["temperatureCorrection"]        = bme.temperatureCorrection;
-    data["bme"]["sendTelemetry"]                = bme.sendTelemetry;
+    data["wxsensor"]["active"]                  = wxsensor.active;
+    data["wxsensor"]["temperatureCorrection"]   = wxsensor.temperatureCorrection;
+    data["wxsensor"]["sendTelemetry"]           = wxsensor.sendTelemetry;
 
     data["notification"]["ledTx"]               = notification.ledTx;
     data["notification"]["ledTxPin"]            = notification.ledTxPin;
@@ -129,12 +131,14 @@ bool Configuration::readFile() {
         battery.sendVoltage             = data["battery"]["sendVoltage"] | false;
         battery.voltageAsTelemetry      = data["battery"]["voltageAsTelemetry"] | false;
         battery.sendVoltageAlways       = data["battery"]["sendVoltageAlways"] | false;
+        battery.monitorVoltage          = data["battery"]["monitorVoltage"] | false;
+        battery.sleepVoltage            = data["battery"]["sleepVoltage"] | 2.9;
 
         winlink.password                = data["winlink"]["password"] | "NOPASS";
 
-        bme.active                      = data["bme"]["active"] | false;
-        bme.temperatureCorrection       = data["bme"]["temperatureCorrection"] | 0.0;
-        bme.sendTelemetry               = data["bme"]["sendTelemetry"] | false;
+        wxsensor.active                 = data["wxsensor"]["active"] | false;
+        wxsensor.temperatureCorrection  = data["wxsensor"]["temperatureCorrection"] | 0.0;
+        wxsensor.sendTelemetry          = data["wxsensor"]["sendTelemetry"] | false;
 
         notification.ledTx              = data["notification"]["ledTx"] | false;
         notification.ledTxPin           = data["notification"]["ledTxPin"]| 13;
@@ -238,12 +242,14 @@ void Configuration::init() {
     battery.sendVoltage             = false;
     battery.voltageAsTelemetry      = false;
     battery.sendVoltageAlways       = false;
+    battery.monitorVoltage          = false;
+    battery.sleepVoltage            = 2.9;
 
     winlink.password                = "NOPASS";
 
-    bme.active                      = false;
-    bme.temperatureCorrection       = 0.0;
-    bme.sendTelemetry               = false;
+    wxsensor.active                 = false;
+    wxsensor.temperatureCorrection  = 0.0;
+    wxsensor.sendTelemetry          = false;
 
     notification.ledTx              = false;
     notification.ledTxPin           = 13;

@@ -19,7 +19,7 @@
 #endif
 
 extern Configuration        Config;
-extern HardwareSerial       neo6m_gps;      // cambiar a gpsSerial
+extern HardwareSerial       gpsSerial;
 extern TinyGPSPlus          gps;
 extern Beacon               *currentBeacon;
 extern logging::Logger      logger;
@@ -50,7 +50,12 @@ namespace GPS_Utils {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "GPS disabled");
             return;
         }
-        neo6m_gps.begin(GPS_BAUD, SERIAL_8N1, GPS_TX, GPS_RX);
+        #ifdef LIGHTTRACKER_PLUS_1_0
+            pinMode(GPS_VCC, OUTPUT);
+            digitalWrite(GPS_VCC, LOW);
+            delay(200);
+        #endif
+        gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_TX, GPS_RX);
     }
 
     void calculateDistanceCourse(const String& callsign, double checkpointLatitude, double checkPointLongitude) {
@@ -62,8 +67,8 @@ namespace GPS_Utils {
 
     void getData() {
         if (disableGPS) return;
-        while (neo6m_gps.available() > 0) {
-            gps.encode(neo6m_gps.read());
+        while (gpsSerial.available() > 0) {
+            gps.encode(gpsSerial.read());
         }
     }
 

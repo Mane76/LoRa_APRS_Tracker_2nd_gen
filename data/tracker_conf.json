@@ -40,7 +40,9 @@
 	"battery": {
 		"sendVoltage": false,
 		"voltageAsTelemetry": true,
-		"sendVoltageAlways": false
+		"sendVoltageAlways": false,
+		"monitorVoltage": false,
+		"sleepVoltage": 2.9
 	},
 	"other": {
 		"simplifiedTrackerMode": false,
@@ -55,7 +57,7 @@
 	"winlink": {
 		"password": "ABCDEF"
 	},
-	"bme": {
+	"wxsensor": {
 		"active": false,
 		"temperatureCorrection": 0.0,
 		"sendTelemetry": false
