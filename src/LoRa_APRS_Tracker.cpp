@@ -33,14 +33,14 @@ ________________________________________________________________________________
 #include "wifi_utils.h"
 #include "msg_utils.h"
 #include "gps_utils.h"
-#include "bme_utils.h"
 #include "web_utils.h"
 #include "ble_utils.h"
+#include "wx_utils.h"
 #include "display.h"
 #include "utils.h"
 
 Configuration                       Config;
-HardwareSerial                      neo6m_gps(1);
+HardwareSerial                      gpsSerial(1);
 TinyGPSPlus                         gps;
 #ifdef HAS_BT_CLASSIC
     BluetoothSerial                 SerialBT;
@@ -49,7 +49,7 @@ TinyGPSPlus                         gps;
     OneButton userButton            = OneButton(BUTTON_PIN, true, true);
 #endif
 
-String      versionDate             = "2024.10.03M";
+String      versionDate             = "2024.10.10m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -122,7 +122,7 @@ void setup() {
     GPS_Utils::setup();
     currentLoRaType = &Config.loraTypes[loraIndex];
     LoRa_Utils::setup();
-    BME_Utils::setup();
+    WX_Utils::setup();
     
     ackRequestNumber = random(1,999);
 

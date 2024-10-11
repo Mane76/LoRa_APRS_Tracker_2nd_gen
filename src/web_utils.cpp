@@ -142,14 +142,16 @@ namespace WEB_Utils {
         Config.battery.sendVoltage              = request->hasParam("battery.sendVoltage", true);
         Config.battery.voltageAsTelemetry       = request->hasParam("battery.voltageAsTelemetry", true);
         Config.battery.sendVoltageAlways        = request->hasParam("battery.sendVoltageAlways", true);
+        Config.battery.monitorVoltage           = request->hasParam("battery.monitorVoltage", true);
+        Config.battery.sleepVoltage             = request->getParam("battery.sleepVoltage", true)->value().toFloat();
 
         //  Winlink
         Config.winlink.password                 = request->getParam("winlink.password", true)->value();
         
         //  Wx Telemtry
-        Config.bme.active                       = request->hasParam("bme.active", true);
-        Config.bme.temperatureCorrection        = request->getParam("bme.temperatureCorrection", true)->value().toFloat();
-        Config.bme.sendTelemetry                = request->hasParam("bme.sendTelemetry", true);
+        Config.wxsensor.active                  = request->hasParam("wxsensor.active", true);
+        Config.wxsensor.temperatureCorrection   = request->getParam("wxsensor.temperatureCorrection", true)->value().toFloat();
+        Config.wxsensor.sendTelemetry           = request->hasParam("wxsensor.sendTelemetry", true);
 
         //  Notification
         Config.notification.ledTx               = request->hasParam("notification.ledTx", true);

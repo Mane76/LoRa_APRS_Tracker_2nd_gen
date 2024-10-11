@@ -215,15 +215,17 @@ function loadSettings(settings) {
     // BATTERY
     document.getElementById("battery.sendVoltage").checked              = settings.battery.sendVoltage;
     document.getElementById("battery.voltageAsTelemetry").checked       = settings.battery.voltageAsTelemetry;
-    document.getElementById("battery.sendVoltageAlways").checked        = settings.battery.sendVoltageAlways;    
+    document.getElementById("battery.sendVoltageAlways").checked        = settings.battery.sendVoltageAlways;
+    document.getElementById("battery.monitorVoltage").checked           = settings.battery.monitorVoltage;
+    document.getElementById("battery.sleepVoltage").value               = settings.battery.sleepVoltage.toFixed(1);
 
     // WINLINK
     document.getElementById("winlink.password").value                   = settings.winlink.password;
 
-    // TELEMETRY BME/WX
-    document.getElementById("bme.active").checked                       = settings.bme.active;
-    document.getElementById("bme.temperatureCorrection").value          = settings.bme.temperatureCorrection.toFixed(1);
-    document.getElementById("bme.sendTelemetry").checked                = settings.bme.sendTelemetry;
+    // TELEMETRY WX Sensor
+    document.getElementById("wxsensor.active").checked                  = settings.wxsensor.active;
+    document.getElementById("wxsensor.temperatureCorrection").value     = settings.wxsensor.temperatureCorrection.toFixed(1);
+    document.getElementById("wxsensor.sendTelemetry").checked           = settings.wxsensor.sendTelemetry;
     
     // NOTIFICATION
     document.getElementById("notification.ledTx").checked               = settings.notification.ledTx;
@@ -277,7 +279,7 @@ document.getElementById('reboot').addEventListener('click', function (e) {
     showToast("Your device will be rebooted in a while");
 });
 
-const bmeCheckbox = document.querySelector("input[name='bme.active']");
+//const bmeCheckbox = document.querySelector("input[name='bme.active']");
 
 const stationModeSelect = document.querySelector("select[name='stationMode']");
 

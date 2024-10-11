@@ -36,6 +36,8 @@ public:
     bool    sendVoltage;
     bool    voltageAsTelemetry;
     bool    sendVoltageAlways;
+    bool    monitorVoltage;
+    float   sleepVoltage;
 };
 
 class Winlink {
@@ -43,7 +45,7 @@ public:
     String  password;
 };
 
-class BME {
+class WXSENSOR {
 public:
     bool    active;
     float   temperatureCorrection;
@@ -102,7 +104,7 @@ public:
     Display                 display;
     Battery                 battery;
     Winlink                 winlink;
-    BME                     bme;
+    WXSENSOR                wxsensor;
     Notification            notification;
     std::vector<LoraType>   loraTypes;
     PTT                     ptt;
