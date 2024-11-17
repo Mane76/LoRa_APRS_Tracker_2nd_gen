@@ -1,10 +1,12 @@
 #include <NimBLEDevice.h>
 #include "configuration.h"
-#include "ax25_utils.h"
 #include "lora_utils.h"
+#include "kiss_utils.h"
 #include "ble_utils.h"
 #include "display.h"
 #include "logger.h"
+
+#define BLE_CHUNK_SIZE  64
 
 
 // APPLE - APRS.fi app
@@ -24,9 +26,12 @@ BLECharacteristic *pCharacteristicRx;
 extern Configuration    Config;
 extern Beacon           *currentBeacon;
 extern logging::Logger  logger;
-extern bool             sendBleToLoRa;
 extern bool             bluetoothConnected;
-extern String           BLEToLoRaPacket;
+
+bool    shouldSendBLEtoLoRa     = false;
+String  BLEToLoRaPacket         = "";
+
+String kissSerialBuffer = "";
 
 
 class MyServerCallbacks : public NimBLEServerCallbacks {
@@ -44,21 +49,36 @@ class MyServerCallbacks : public NimBLEServerCallbacks {
     }
 };
 
+
 class MyCallbacks : public NimBLECharacteristicCallbacks {
     void onWrite(NimBLECharacteristic *pCharacteristic) {
-        std::string receivedData = pCharacteristic->getValue();
-        String receivedString = "";
-        for (int i = 0; i < receivedData.length(); i++) {
-            //Serial.print(receivedData[i],HEX); // delete
-            //Serial.print(" ");
-            receivedString += receivedData[i];
-        }
-        if (Config.bluetooth.type == 0) {
-            BLEToLoRaPacket = AX25_Utils::AX25FrameToLoRaPacket(receivedString);
-        } else if (Config.bluetooth.type == 2) {
+        if (Config.bluetooth.type == 0) {                               // AX25 KISS
+            std::string receivedData = pCharacteristic->getValue();
+            delay(100);
+            for (int i = 0; i < receivedData.length(); i++) {
+                char character = receivedData[i];
+
+                if (kissSerialBuffer.length() == 0 && character != (char)KissChar::FEND) continue;
+                kissSerialBuffer += receivedData[i];
+                
+                if (character == (char)KissChar::FEND && kissSerialBuffer.length() > 3) {
+                    bool isDataFrame = false;
+
+                    BLEToLoRaPacket = KISS_Utils::decodeKISS(kissSerialBuffer, isDataFrame);
+
+                    if (isDataFrame) {
+                        shouldSendBLEtoLoRa = true;
+                        kissSerialBuffer = "";
+                    }
+                }
+            }
+        } else if (Config.bluetooth.type == 2) {                        // TNC2
+            std::string receivedData = pCharacteristic->getValue();
+            String receivedString = "";
+            for (int i = 0; i < receivedData.length(); i++) receivedString += receivedData[i];
             BLEToLoRaPacket = receivedString;
+            shouldSendBLEtoLoRa = true;
         }
-        sendBleToLoRa = true;
     }
 };
 
@@ -110,14 +130,22 @@ namespace BLE_Utils {
     }
 
     void sendToLoRa() {
-        if (!sendBleToLoRa) {
-            return;
+        if (!shouldSendBLEtoLoRa) return;
+
+        if (!Config.acceptOwnFrameFromTNC && BLEToLoRaPacket.indexOf("::") == -1) {
+            String sender = BLEToLoRaPacket.substring(0, BLEToLoRaPacket.indexOf(">"));
+            if (sender == currentBeacon->callsign) {
+                BLEToLoRaPacket = "";
+                shouldSendBLEtoLoRa = false;
+                return;
+            }
         }
+
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BLE Tx", "%s", BLEToLoRaPacket.c_str());
         displayShow("BLE Tx >>", "", BLEToLoRaPacket, 1000);
         LoRa_Utils::sendNewPacket(BLEToLoRaPacket);
         BLEToLoRaPacket = "";
-        sendBleToLoRa = false;
+        shouldSendBLEtoLoRa = false;
     }
 
     void txBLE(uint8_t p) {
@@ -127,29 +155,24 @@ namespace BLE_Utils {
     }
 
     void txToPhoneOverBLE(const String& frame) {
-        if (Config.bluetooth.type == 0) {
-            txBLE((byte)KissChar::Fend);
-            txBLE((byte)KissCmd::Data);
-        }        
-        for(int n = 0; n < frame.length(); n++) {
-            uint8_t byteCharacter = frame[n];
-            if (Config.bluetooth.type == 2) {
-                txBLE(byteCharacter);
-            } else {
-                if (byteCharacter == KissChar::Fend) {
-                    txBLE((byte)KissChar::Fesc);
-                    txBLE((byte)KissChar::Tfend);
-                } else if (byteCharacter == KissChar::Fesc) {
-                    txBLE((byte)KissChar::Fesc);
-                    txBLE((byte)KissChar::Tfesc);
-                } else {
-                    txBLE(byteCharacter);
-                }
-            }    
-        }
-        if (Config.bluetooth.type == 0) {
-            txBLE((byte)KissChar::Fend);
-        } else if (Config.bluetooth.type == 2) {
+        if (Config.bluetooth.type == 0) {                                   // AX25 KISS
+            const String kissEncodedFrame = KISS_Utils::encodeKISS(frame);
+
+            const char* t   = kissEncodedFrame.c_str();
+            int length      = kissEncodedFrame.length();
+            for (int i = 0; i < length; i += BLE_CHUNK_SIZE) {
+                int chunkSize = (length - i < BLE_CHUNK_SIZE) ? (length - i) : BLE_CHUNK_SIZE;
+                
+                uint8_t* chunk = new uint8_t[chunkSize];
+                memcpy(chunk, t + i, chunkSize);
+
+                pCharacteristicTx->setValue(chunk, chunkSize);
+                pCharacteristicTx->notify();
+                delete[] chunk;
+                delay(200);
+            }
+        } else {                                                            // TNC2
+            for(int n = 0; n < frame.length(); n++) txBLE(frame[n]);
             txBLE('\n');
         }   
     }
@@ -158,14 +181,8 @@ namespace BLE_Utils {
         if (!packet.isEmpty() && bluetoothConnected) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BLE Rx", "%s", packet.c_str());
             String receivedPacketString = "";
-            for (int i = 0; i < packet.length(); i++) {
-                receivedPacketString += packet[i];
-            }
-            if (Config.bluetooth.type == 0) {
-                txToPhoneOverBLE(AX25_Utils::LoRaPacketToAX25Frame(receivedPacketString));
-            } else if (Config.bluetooth.type == 2) {
-                txToPhoneOverBLE(receivedPacketString);                
-            }
+            for (int i = 0; i < packet.length(); i++) receivedPacketString += packet[i];
+            txToPhoneOverBLE(receivedPacketString);
         }
     }
 

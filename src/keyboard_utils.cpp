@@ -41,7 +41,7 @@ extern String           messageCallsign;
 extern String           messageText;
 extern bool             sendStandingUpdate;
 extern bool             flashlight;
-extern bool             digirepeaterActive;
+extern bool             digipeaterActive;
 extern bool             sosActive;
 extern uint8_t          winlinkStatus;
 extern String           winlinkMailNumber;
@@ -66,18 +66,6 @@ String      messageText             = "";
 int         messagesIterator        = 0;
 
 bool        showHumanHeading        = false;
-
-bool        mouseUpState            = 0;
-bool        mouseDownState          = 0;
-bool        mouseLeftState          = 0;
-bool        mouseRightState         = 0;
-int         debounceInterval        = 50;
-uint32_t    lastDebounceTime        = millis();
-int         upCounter               = 0;
-int         downCounter             = 0;
-int         leftCounter             = 0;
-int         rightCounter            = 0;
-int         trackBallSensitivity    = 5;
 
 
 namespace KEYBOARD_Utils {
@@ -452,14 +440,14 @@ namespace KEYBOARD_Utils {
                 displayShow("__EXTRAS__", "","     Flashlight","NOT ACTIVE IN CONFIG!", "", "", 2000);
             }
         } else if (menuDisplay == 61) {
-            if (digirepeaterActive) {
-                displayShow("__EXTRAS__", "","   DigiRepeater","   Status --> OFF", "", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "DigiRepeater OFF");
-                digirepeaterActive = false;
+            if (digipeaterActive) {
+                displayShow("__EXTRAS__", "","     Digipeater","   Status --> OFF", "", "", 2000);
+                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater OFF");
+                digipeaterActive = false;
             } else {
-                displayShow("__EXTRAS__", "","   DigiRepeater","   Status --> ON","", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "DigiRepeater ON");
-                digirepeaterActive = true;
+                displayShow("__EXTRAS__", "","     Digipeater","   Status --> ON","", "", 2000);
+                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater ON");
+                digipeaterActive = true;
             }
         } else if (menuDisplay == 62) {
             if (sosActive) {
@@ -709,63 +697,6 @@ namespace KEYBOARD_Utils {
         else if (key == 183) {  // Arrow Right
             rightArrow();
         }
-    }
-
-    void clearTrackballCounter() {
-        upCounter       = 0;
-        downCounter     = 0;
-        leftCounter     = 0;
-        rightCounter    = 0;
-    }
-
-    void mouseRead() {
-        #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
-            int ballUp      = digitalRead(TrackBallUp);
-            int ballDown    = digitalRead(TrackBallDown);
-            int ballLeft    = digitalRead(TrackBallLeft);
-            int ballRight   = digitalRead(TrackBallRight);
-
-            if (!digitalRead(TrackBallCenter)) {
-                processPressedKey(13);
-            } else if (ballUp != mouseUpState && ballDown == mouseDownState && ballLeft == mouseLeftState && ballRight == mouseRightState) {
-                if (millis() - lastDebounceTime > debounceInterval) {
-                    lastDebounceTime = millis();
-                    mouseUpState = ballUp;
-                    upCounter++;
-                }
-            } else if (ballDown != mouseDownState && ballUp == mouseUpState && ballLeft == mouseLeftState && ballRight == mouseRightState) {
-                if (millis() - lastDebounceTime > debounceInterval) {
-                    lastDebounceTime = millis();
-                    mouseDownState = ballDown;
-                    downCounter++;
-                }
-            } else if (ballLeft != mouseLeftState && ballUp == mouseUpState && ballDown == mouseDownState && ballRight == mouseRightState) {
-                if (millis() - lastDebounceTime > debounceInterval) {
-                    lastDebounceTime = millis();
-                    mouseLeftState = ballLeft;
-                    leftCounter++;
-                }
-            } else if (ballRight != mouseRightState && ballUp == mouseUpState && ballDown == mouseDownState && ballLeft == mouseLeftState) {
-                if (millis() - lastDebounceTime > debounceInterval) {
-                    lastDebounceTime = millis();
-                    mouseRightState = ballRight;
-                    rightCounter++;
-                }
-            }
-            if (upCounter == trackBallSensitivity) {
-                clearTrackballCounter();
-                upArrow();
-            } else if (downCounter == trackBallSensitivity) {
-                clearTrackballCounter();
-                downArrow();
-            } else if (leftCounter == trackBallSensitivity) {
-                clearTrackballCounter();
-                leftArrow();
-            } else if (rightCounter == trackBallSensitivity) {
-                clearTrackballCounter();
-                rightArrow();
-            }
-        #endif
     }
 
     void read() {

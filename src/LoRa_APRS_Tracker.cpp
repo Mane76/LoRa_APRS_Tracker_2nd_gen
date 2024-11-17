@@ -1,19 +1,25 @@
-/*__________________________________________________________________________________________________________________________________
+/*___________________________________________________________________
 
-██╗      ██████╗ ██████╗  █████╗      █████╗ ██████╗ ██████╗ ███████╗    ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗ 
-██║     ██╔═══██╗██╔══██╗██╔══██╗    ██╔══██╗██╔══██╗██╔══██╗██╔════╝    ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗
-██║     ██║   ██║██████╔╝███████║    ███████║██████╔╝██████╔╝███████╗       ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝
-██║     ██║   ██║██╔══██╗██╔══██║    ██╔══██║██╔═══╝ ██╔══██╗╚════██║       ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗
-███████╗╚██████╔╝██║  ██║██║  ██║    ██║  ██║██║     ██║  ██║███████║       ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║
-╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+██╗      ██████╗ ██████╗  █████╗      █████╗ ██████╗ ██████╗ ███████╗
+██║     ██╔═══██╗██╔══██╗██╔══██╗    ██╔══██╗██╔══██╗██╔══██╗██╔════╝
+██║     ██║   ██║██████╔╝███████║    ███████║██████╔╝██████╔╝███████╗
+██║     ██║   ██║██╔══██╗██╔══██║    ██╔══██║██╔═══╝ ██╔══██╗╚════██║
+███████╗╚██████╔╝██║  ██║██║  ██║    ██║  ██║██║     ██║  ██║███████║
+╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝
+                                                                     
+      ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗             
+      ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗            
+         ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝            
+         ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗            
+         ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║            
+         ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝  
 
-                                                    Ricardo Guzman - CA2RXU 
-                                          https://github.com/richonguzman/LoRa_APRS_Tracker
-                                            (donations : http://paypal.me/richonguzman)
-__________________________________________________________________________________________________________________________________*/
+                       Ricardo Guzman - CA2RXU 
+          https://github.com/richonguzman/LoRa_APRS_Tracker
+             (donations : http://paypal.me/richonguzman)
+____________________________________________________________________*/
 
 #include <BluetoothSerial.h>
-#include <OneButton.h>
 #include <TinyGPS++.h>
 #include <Arduino.h>
 #include <logger.h>
@@ -22,10 +28,12 @@ ________________________________________________________________________________
 #include "smartbeacon_utils.h"
 #include "bluetooth_utils.h"
 #include "keyboard_utils.h"
+#include "joystick_utils.h"
 #include "configuration.h"
 #include "station_utils.h"
 #include "boards_pinout.h"
 #include "button_utils.h"
+#include "audio_utils.h"
 #include "power_utils.h"
 #include "sleep_utils.h"
 #include "menu_utils.h"
@@ -39,17 +47,15 @@ ________________________________________________________________________________
 #include "display.h"
 #include "utils.h"
 
+
 Configuration                       Config;
 HardwareSerial                      gpsSerial(1);
 TinyGPSPlus                         gps;
 #ifdef HAS_BT_CLASSIC
     BluetoothSerial                 SerialBT;
 #endif
-#ifdef BUTTON_PIN
-    OneButton userButton            = OneButton(BUTTON_PIN, true, true);
-#endif
 
-String      versionDate             = "2024.10.11";
+String      versionDate             = "2024.11.13";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -69,8 +75,6 @@ uint32_t    refreshDisplayTime      = millis();
 bool        sendUpdate              = true;
 
 bool        bluetoothConnected      = false;
-bool        sendBleToLoRa           = false;
-String      BLEToLoRaPacket         = "";
 
 uint32_t    lastTx                  = 0.0;
 uint32_t    txInterval              = 60000L;
@@ -82,7 +86,7 @@ double      lastTxDistance          = 0.0;
 uint32_t    menuTime                = millis();
 
 bool        flashlight              = false;
-bool        digirepeaterActive      = false;
+bool        digipeaterActive        = false;
 bool        sosActive               = false;
 
 bool        miceActive              = false;
@@ -139,13 +143,17 @@ void setup() {
 
     if (!Config.simplifiedTrackerMode) {
         #ifdef BUTTON_PIN
-            userButton.attachClick(BUTTON_Utils::singlePress);
-            userButton.attachLongPressStart(BUTTON_Utils::longPress);
-            userButton.attachDoubleClick(BUTTON_Utils::doublePress);
-            userButton.attachMultiClick(BUTTON_Utils::multiPress);
+            BUTTON_Utils::setup();
+        #endif
+        #ifdef HAS_JOYSTICK
+            JOYSTICK_Utils::setup();
         #endif
         KEYBOARD_Utils::setup();
     }
+
+    #ifdef HAS_I2S
+        AUDIO_Utils::setup();
+    #endif
 
     POWER_Utils::lowerCpuFrequency();
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
@@ -164,35 +172,39 @@ void loop() {
     }
     POWER_Utils::batteryManager();
 
-    SMARTBEACON_Utils::checkValues(myBeaconsIndex);
+    SMARTBEACON_Utils::checkSettings(currentBeacon->smartBeaconSetting);
     SMARTBEACON_Utils::checkState();
 
     if (!Config.simplifiedTrackerMode) {
         #ifdef BUTTON_PIN
-            userButton.tick();
+            BUTTON_Utils::loop();
         #endif
     }
 
     Utils::checkDisplayEcoMode();
 
     KEYBOARD_Utils::read();
-    #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
-        KEYBOARD_Utils::mouseRead();
-    #endif
 
-    MSG_Utils::checkReceivedMessage(LoRa_Utils::receivePacket());
+    ReceivedLoRaPacket packet = LoRa_Utils::receivePacket();
+
+    MSG_Utils::checkReceivedMessage(packet);
     MSG_Utils::processOutputBuffer();
     MSG_Utils::clean25SegBuffer();
-    MSG_Utils::ledNotification();
-    Utils::checkFlashlight();
-    STATION_Utils::checkListenedTrackersByTimeAndDelete();
+
     if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
+        BLE_Utils::sendToPhone(packet.text.substring(3));
         BLE_Utils::sendToLoRa();
     } else {
         #ifdef HAS_BT_CLASSIC
+            BLUETOOTH_Utils::sendToPhone(packet.text.substring(3));
             BLUETOOTH_Utils::sendToLoRa();
         #endif
     }
+    
+    MSG_Utils::ledNotification();
+    Utils::checkFlashlight();
+    STATION_Utils::checkListenedTrackersByTimeAndDelete();
+
     lastTx = millis() - lastTxTime;
     if (gpsIsActive) {
         GPS_Utils::getData();
