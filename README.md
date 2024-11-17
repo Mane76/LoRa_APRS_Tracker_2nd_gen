@@ -55,6 +55,9 @@ ____________________________________________________
 ____________________________________________________
 ## Timeline (Versions):
 
+- 2024.11.13 Added Heltec Wireless Stick Lite V3 + GPS + Oled Display support for another DIY ESP32 Tracker.
+- 2024.11.13 T-Deck Joystick and Button Pressing Fix for smother operation.
+- 2024.10.24 Added QRP Labs LightTracker Plus1.0 support.
 - 2024.10.11 Added Lilygo TTGO T-Deck Plus support.
 - 2024.10.10 Configuration WiFiAP stops after 1 minute of no-client connected.
 - 2024.10.09 WEB INSTALLER/FLASHER.
@@ -102,7 +105,7 @@ ____________________________________________________
 - 2023.12.06 T-Beam V1.2 as default board.
 - 2023.12.05 Updated packets recognition (+Objects + Mic-E).
 - 2023.11.28 Adding BLE connection to use it as TNC with APRS.fi app for iOS.
-- 2023.11.07 DigiRepeater Mode added in Emergency Menu.
+- 2023.11.07 Digipeater Mode added in Emergency Menu.
 - 2023.10.23 COMPLETE New Menu for Keyboard add-on.
 - 2023.10.22 Added Keyboard Support over I2C ( CARDKB from https://m5stack.com )
 - 2023.10.07 Screen Brightness control added.

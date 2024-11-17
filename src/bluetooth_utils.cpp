@@ -2,8 +2,8 @@
 #include <esp_bt.h>
 #include "bluetooth_utils.h"
 #include "configuration.h"
-#include "KISS_TO_TNC2.h"
 #include "lora_utils.h"
+#include "kiss_utils.h"
 #include "display.h"
 #include "logger.h"
 
@@ -86,9 +86,9 @@ namespace BLUETOOTH_Utils {
         isNmea = serialReceived.indexOf("$G") != -1 || serialReceived.indexOf("$B") != -1;
         if (isNmea) useKiss = false;
         if (isNmea || serialReceived.isEmpty()) return;
-        if (validateKISSFrame(serialReceived)) {
+        if (KISS_Utils::validateKISSFrame(serialReceived)) {
             bool dataFrame;
-            String decodeKiss = decode_kiss(serialReceived, dataFrame);
+            String decodeKiss = KISS_Utils::decodeKISS(serialReceived, dataFrame);
             serialReceived.clear();
             serialReceived += decodeKiss;
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "bluetooth", "It's a kiss frame. dataFrame: %d", dataFrame);
@@ -96,28 +96,25 @@ namespace BLUETOOTH_Utils {
         } else {
             useKiss = false;
         }
-        if (validateTNC2Frame(serialReceived)) {
+        if (KISS_Utils::validateTNC2Frame(serialReceived)) {
             shouldSendToLoRa = true;
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "bluetooth", "Data received should be transmitted to RF => %s", serialReceived.c_str());
         }
     }
 
     void sendToLoRa() {
-        if (!shouldSendToLoRa) {
-            return;
-        }
-
+        if (!shouldSendToLoRa) return;
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BT TX", "%s", serialReceived.c_str());
         displayShow("BT Tx >>", "", serialReceived, 1000);
         LoRa_Utils::sendNewPacket(serialReceived);
         shouldSendToLoRa = false;
     }
 
-    void sendPacket(const String& packet) {
-        if (bluetoothActive && !packet.isEmpty()) {
+    void sendToPhone(const String& packet) {
+        if (!packet.isEmpty() && bluetoothActive) {
             if (useKiss) {
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BT RX Kiss", "%s", serialReceived.c_str());
-                SerialBT.println(encode_kiss(packet));
+                SerialBT.println(KISS_Utils::encodeKISS(packet));
             } else {
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "BT RX TNC2", "%s", serialReceived.c_str());
                 SerialBT.println(packet);

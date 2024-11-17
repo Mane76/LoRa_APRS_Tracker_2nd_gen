@@ -78,10 +78,14 @@
 #endif
 
 
-#if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)
+#if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_WSL_V3_GPS_DISPLAY)
     #define OLED_SDA            17
     #define OLED_SCL            18
-    #define OLED_RST            21
+    #ifdef HELTEC_WSL_V3_GPS_DISPLAY
+        #define OLED_RST        -1
+    #else
+        #define OLED_RST        21
+    #endif
     #define BOARD_I2C_SDA       41
     #define BOARD_I2C_SCL       42
     #define GPS_RX              47
@@ -157,14 +161,22 @@
     #define RADIO_RST_PIN       17
     #define RADIO_DIO1_PIN      45
     #define RADIO_BUSY_PIN      13
-    #define TrackBallCenter     0
-    #define TrackBallUp         3   // G S1
-    #define TrackBallDown       15  // G S3
-    #define TrackBallLeft       1   // G S4
-    #define TrackBallRight      2   // G S2
-    /*#define BOARD_I2S_WS    5     // esto es para el audio!
-    #define BOARD_I2S_BCK   7
-    #define BOARD_I2S_DOUT  6*/
+
+    #define HAS_JOYSTICK
+    #define JOYSTICK_CENTER     0
+    #define BUTTON_PIN          JOYSTICK_CENTER
+    #define JOYSTICK_UP         3   // G S1
+    #define JOYSTICK_DOWN       15  // G S3
+    #define JOYSTICK_LEFT       1   // G S4
+    #define JOYSTICK_RIGHT      2   // G S2
+
+    #define HAS_I2S
+    #define DAC_I2S_WS          5
+    #define DAC_I2S_DOUT        6
+    #define DAC_I2S_BCK         7
+    #define SPK_I2S_PORT        I2S_NUM_0
+    #define MIC_I2S_SAMPLE_RATE 16000
+    #define MIC_I2S_PORT        I2S_NUM_1
 #endif
 
 
@@ -282,6 +294,7 @@
     #define GPS_TX              18
     #define GPS_VCC             33    //#define LED_PIN             16
     #define BUTTON_PIN          0
+    #define BATTERY_PIN         1
     #define RADIO_VCC_PIN       21
     #define RADIO_SCLK_PIN      12
     #define RADIO_MISO_PIN      13

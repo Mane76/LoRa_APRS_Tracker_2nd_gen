@@ -28,7 +28,7 @@ extern bool                 keyDetected;
 extern String               messageCallsign;
 extern String               messageText;
 extern bool                 flashlight;
-extern bool                 digirepeaterActive;
+extern bool                 digipeaterActive;
 extern bool                 sosActive;
 extern bool                 bluetoothActive;
 extern bool                 displayEcoMode;
@@ -482,16 +482,16 @@ namespace MENU_Utils {
 
 //////////
             case 60:    // 6. Extras ---> Flashlight
-                displayShow("__EXTRAS__", "> Flashlight    (" + checkProcessActive(flashlight) + ")", "  DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+                displayShow("__EXTRAS__", "> Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
                 break;
-            case 61:    // 6. Extras ---> Digirepeater
-                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "> DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+            case 61:    // 6. Extras ---> Digipeater
+                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "> Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
                 break;
             case 62:    // 6. Extras ---> S.O.S.
-                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "> S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "> S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
                 break;
             case 63:    // 6. Extras ---> Extra Comment.
-                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  DigiRepeater  (" + checkProcessActive(digirepeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","> Send GPS + Comment",lastLine);
+                displayShow("__EXTRAS__", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","> Send GPS + Comment",lastLine);
                 break;
             case 630:
                 if (messageText.length() <= 67) {
@@ -624,7 +624,7 @@ namespace MENU_Utils {
                 if (POWER_Utils::getBatteryInfoIsConnected()) {
                     String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
                     String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
-                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
+                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
 					    sixthRowMainMenu = "Battery: ";
                         sixthRowMainMenu += batteryVoltage;
                         sixthRowMainMenu += "V   ";
