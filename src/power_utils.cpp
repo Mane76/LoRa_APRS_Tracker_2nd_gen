@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include "notification_utils.h"
 #include "configuration.h"
-#include "boards_pinout.h"
+#include "board_pinout.h"
 #include "power_utils.h"
 #include "lora_utils.h"
 #include "ble_utils.h"
@@ -59,7 +59,7 @@ namespace POWER_Utils {
                 #ifdef HELTEC_WIRELESS_TRACKER
                     digitalWrite(ADC_CTRL, HIGH);
                 #endif
-                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)|| defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915) || defined(HELTEC_WSL_V3_GPS_DISPLAY)
+                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)|| defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915) || defined(HELTEC_V2_TNC) || defined(HELTEC_WSL_V3_GPS_DISPLAY)
                     digitalWrite(ADC_CTRL, LOW);
                 #endif
             #endif
@@ -68,7 +68,7 @@ namespace POWER_Utils {
                 #ifdef HELTEC_WIRELESS_TRACKER
                     digitalWrite(ADC_CTRL, LOW);
                 #endif
-                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915) || defined(HELTEC_WSL_V3_GPS_DISPLAY)
+                #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915) || defined(HELTEC_V2_TNC) || defined(HELTEC_WSL_V3_GPS_DISPLAY)
                     digitalWrite(ADC_CTRL, HIGH);
                 #endif
                 batteryMeasurmentTime = millis();
@@ -84,7 +84,7 @@ namespace POWER_Utils {
                 double inputDivider = (1.0 / (390.0 + 100.0)) * 100.0;  // The voltage divider is a 390k + 100k resistor in series, 100k on the low side. 
                 return (voltage / inputDivider) + 0.210; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
             #endif
-            #if defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915)
+            #if defined(HELTEC_V2_GPS) || defined(HELTEC_V2_GPS_915) || defined(HELTEC_V2_TNC)
                 double inputDivider = (1.0 / (220.0 + 100.0)) * 100.0;  // The voltage divider is a 390k + 100k resistor in series, 100k on the low side. 
                 return (voltage / inputDivider) + 0.285; // Yes, this offset is excessive, but the ADC on the ESP32s3 is quite inaccurate and noisy. Adjust to own measurements.
             #endif
@@ -172,7 +172,7 @@ namespace POWER_Utils {
 
     void batteryManager() {
         #ifdef ADC_CTRL
-            if(batteryMeasurmentTime == 0 || (millis() - batteryMeasurmentTime) > 15 * 1000) obtainBatteryInfo();
+            if (batteryMeasurmentTime == 0 || (millis() - batteryMeasurmentTime) > 30 * 1000) obtainBatteryInfo();
         #else
             obtainBatteryInfo();
         #endif

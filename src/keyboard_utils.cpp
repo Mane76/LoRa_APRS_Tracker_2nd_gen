@@ -1,22 +1,17 @@
+#include <APRSPacketLib.h>
 #include <TinyGPS++.h>
 #include <logger.h>
 #include <Wire.h>
 #include "keyboard_utils.h"
-#include "APRSPacketLib.h"
 #include "winlink_utils.h"
 #include "station_utils.h"
 #include "configuration.h"
-#include "boards_pinout.h"
+#include "board_pinout.h"
 #include "power_utils.h"
 #include "sleep_utils.h"
 #include "msg_utils.h"
 #include "display.h"
-
-#if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
-    #define KB_ADDR     0x55    // T-Deck internal keyboard (Keyboard Backlight On = ALT + B)
-#else
-    #define KB_ADDR     0x5F    // CARDKB from m5stack.com (YEL - SDA / WTH SCL)
-#endif
+#include "utils.h"
 
 
 extern Configuration    Config;
@@ -53,6 +48,7 @@ extern String           winlinkAliasComplete;
 extern bool             winlinkCommentState;
 extern bool             gpsIsActive;
 extern bool             sendStartTelemetry;
+extern uint8_t          keyboardAddress;
 
 extern std::vector<String>  outputMessagesBuffer;
 
@@ -274,7 +270,7 @@ namespace KEYBOARD_Utils {
             statusState  = true;
             statusTime = millis();
             winlinkCommentState = false;
-            displayShow("__ INFO __", "", "  CHANGING CALLSIGN!", "", "-----> " + Config.beacons[myBeaconsIndex].callsign, "", 2000);
+            displayShow("   INFO", "", "  CHANGING CALLSIGN!", "", "-----> " + Config.beacons[myBeaconsIndex].callsign, "", 2000);
             STATION_Utils::saveIndex(0, myBeaconsIndex);
             sendStartTelemetry = true;
             if (menuDisplay == 200) menuDisplay = 20;
@@ -283,13 +279,17 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 10) {
             MSG_Utils::loadMessagesFromMemory(0);
             if (MSG_Utils::warnNoAPRSMessages()) {
-                menuDisplay = 10;
+                #ifdef HAS_JOYSTICK
+                    menuDisplay = 11;
+                #else
+                    menuDisplay = 10;
+                #endif
             } else {
                 menuDisplay = 100;
             }
         } else if (menuDisplay == 120) {
             MSG_Utils::deleteFile(0);
-            displayShow("___INFO___", "", "ALL MESSAGES DELETED!", 2000);
+            displayShow("   INFO", "", "ALL MESSAGES DELETED!", 2000);
             MSG_Utils::loadNumMessages();
             menuDisplay = 12;
         } else if (menuDisplay == 130) {
@@ -321,25 +321,25 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 220) {
             if (!displayEcoMode) {
                 displayEcoMode = true;
-                displayShow("_DISPLAY__", "", "   ECO MODE -> ON", 1000);
+                displayShow(" DISPLAY", "", "   ECO MODE -> ON", 1000);
             } else {
                 displayEcoMode = false;
-                displayShow("_DISPLAY__", "", "   ECO MODE -> OFF", 1000);
+                displayShow(" DISPLAY", "", "   ECO MODE -> OFF", 1000);
             }
         } else if (menuDisplay == 221) {
             if (screenBrightness ==1) {
-                displayShow("_SCREEN___", "", "SCREEN BRIGHTNESS MAX", 1000);
+                displayShow("  SCREEN", "", "SCREEN BRIGHTNESS MAX", 1000);
                 screenBrightness = 255;   
             } else {
-                displayShow("_SCREEN___", "", "SCREEN BRIGHTNESS MIN", 1000);
+                displayShow("  SCREEN", "", "SCREEN BRIGHTNESS MIN", 1000);
                 screenBrightness = 1;
             }
         } else if (menuDisplay == 240) {
-            displayShow("_STATUS___", "", "WRITE STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
+            displayShow("  STATUS", "", "WRITE STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } else if (menuDisplay == 241) {
-            displayShow("_STATUS___", "", "SELECT STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
+            displayShow("  STATUS", "", "SELECT STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } else if (menuDisplay == 250) {
-            displayShow("_NOTIFIC__", "", "NOTIFICATIONS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
+            displayShow(" NOTIFIC", "", "NOTIFICATIONS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } 
 
         else if (menuDisplay == 4) {
@@ -355,7 +355,11 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 51) {
             MSG_Utils::loadMessagesFromMemory(1);
             if (MSG_Utils::warnNoWLNKMails()) {
-                menuDisplay = 51;
+                #ifdef HAS_JOYSTICK
+                    menuDisplay = 50;
+                #else
+                    menuDisplay = 51;
+                #endif
             } else {
                 menuDisplay = 50101;
             }
@@ -364,10 +368,10 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 53) {
             if (winlinkCommentState) {
                 winlinkCommentState = false;
-                displayShow("_WINLINK_>", "", "  WLNK COMMENTs OFF!", 2000);
+                displayShow(" WINLINK>", "", "  WLNK COMMENTs OFF!", 2000);
             } else {
                 winlinkCommentState = true;
-                displayShow("_WINLINK_>", "", "  WLNK COMMENTs ON!", 2000);
+                displayShow(" WINLINK>", "", "  WLNK COMMENTs ON!", 2000);
             }
         } else if (menuDisplay == 5000) {
             MSG_Utils::addToOutputBuffer(1, "WLNK-1", "L");
@@ -384,10 +388,14 @@ namespace KEYBOARD_Utils {
             menuDisplay = 50111;
         } else if (menuDisplay == 50111) {
             MSG_Utils::deleteFile(1);
-            displayShow("___INFO___", "", " ALL MAILS DELETED!", 2000);
+            displayShow("   INFO", "", " ALL MAILS DELETED!", 2000);
             MSG_Utils::loadNumMessages();
             if (winlinkStatus == 0) {
-                menuDisplay = 52;
+                #ifdef HAS_JOYSTICK
+                    menuDisplay = 50;
+                #else
+                    menuDisplay = 52;
+                #endif
             } else {
                 menuDisplay = 50110;
             }
@@ -430,32 +438,32 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 60) {
             if (Config.notification.ledFlashlight) {
                 if (flashlight) {
-                    displayShow("__EXTRAS__", "","     Flashlight","   Status --> OFF", "", "", 2000);
+                    displayShow("  EXTRAS", "","     Flashlight","   Status --> OFF", "", "", 2000);
                     flashlight = false;
                 } else {
-                    displayShow("__EXTRAS__", "","     Flashlight","   Status --> ON", "", "", 2000);
+                    displayShow("  EXTRAS", "","     Flashlight","   Status --> ON", "", "", 2000);
                     flashlight = true;
                 }
             } else {
-                displayShow("__EXTRAS__", "","     Flashlight","NOT ACTIVE IN CONFIG!", "", "", 2000);
+                displayShow("  EXTRAS", "","     Flashlight","NOT ACTIVE IN CONFIG!", "", "", 2000);
             }
         } else if (menuDisplay == 61) {
             if (digipeaterActive) {
-                displayShow("__EXTRAS__", "","     Digipeater","   Status --> OFF", "", "", 2000);
+                displayShow("  EXTRAS", "","     Digipeater","   Status --> OFF", "", "", 2000);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater OFF");
                 digipeaterActive = false;
             } else {
-                displayShow("__EXTRAS__", "","     Digipeater","   Status --> ON","", "", 2000);
+                displayShow("  EXTRAS", "","     Digipeater","   Status --> ON","", "", 2000);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater ON");
                 digipeaterActive = true;
             }
         } else if (menuDisplay == 62) {
             if (sosActive) {
-                displayShow("__EXTRAS__", "","       S.O.S.","   Status --> OFF", "", "", 2000);
+                displayShow("  EXTRAS", "","       S.O.S.","   Status --> OFF", "", "", 2000);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "S.O.S Mode OFF");
                 sosActive = false;
             } else {
-                displayShow("__EXTRAS__", "","       S.O.S.","   Status --> ON", "", "", 2000);
+                displayShow("  EXTRAS", "","       S.O.S.","   Status --> ON", "", "", 2000);
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "S.O.S Mode ON");
                 sosActive = true;
             }
@@ -674,7 +682,7 @@ namespace KEYBOARD_Utils {
             } else if (key == 13 && messageText.length() > 0) {
                 messageText.trim();
                 if (messageText.length() > 67) messageText = messageText.substring(0, 67);
-                String packet = APRSPacketLib::generateGPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encodeGPS(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+                String packet = APRSPacketLib::generateBase91GPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encodeGPSIntoBase91(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
                 packet += messageText;
                 displayShow("<<< TX >>>", "", packet,100);
                 LoRa_Utils::sendNewPacket(packet);       
@@ -703,8 +711,8 @@ namespace KEYBOARD_Utils {
         if (keyboardConnected) {
             uint32_t lastKey = millis() - keyboardTime;
             if (lastKey > 30 * 1000) keyDetected = false;
-            Wire.requestFrom(KB_ADDR, 1);
-            while(Wire.available()) {
+            Wire.requestFrom(keyboardAddress, static_cast<uint8_t>(1));
+            while (Wire.available()) {
                 char c = Wire.read();
                 if (c != 0) {
                     //Serial.print(c, DEC); Serial.print(" "); Serial.print(c, HEX); Serial.print(" "); Serial.println(char(c));    // just for debugging
@@ -716,13 +724,7 @@ namespace KEYBOARD_Utils {
     }
 
     void setup() {
-        Wire.beginTransmission(KB_ADDR);
-        if (Wire.endTransmission() == 0) {
-            keyboardConnected = true;
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Main", "Keyboard Connected to I2C");
-        } else {
-            logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "No Keyboard Connected to I2C");
-        }
+        if (keyboardAddress != 0x00) keyboardConnected = true;
     }
 
 }
