@@ -26,7 +26,7 @@
     #endif
     #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
         #define color1  TFT_BLACK
-        #define color2  0x0249        
+        #define color2  0x0249
         #define green   0x1B08
 
         #define bigSizeFont     4
@@ -88,7 +88,7 @@ bool        symbolAvailable         = true;
 extern logging::Logger logger;
 
 
-#if defined(HAS_TFT) && (defined(TTGO_T_DECK_PLUS) || defined(TTGO_T_DECK_GPS))
+#if defined(HAS_TFT) && (defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS))
     void drawButton(int xPos, int yPos, int wide, int height, String buttonText, int color) {
         uint16_t baseColor, lightColor, darkColor;
         switch (color) {
@@ -323,7 +323,7 @@ void displaySetup() {
         //analogWrite(BOARD_BL_PIN, brightnessValues[tftBrightness]);
         tft.setTextFont(0);
         tft.fillScreen(TFT_BLACK);
-        #if defined(TTGO_T_DECK_PLUS) || defined(TTGO_T_DECK_GPS)
+        #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
             sprite.createSprite(320,240);
         #else
             sprite.createSprite(160,80);
@@ -333,7 +333,7 @@ void displaySetup() {
             grays[i] = tft.color565(co, co, co);
             co = co - 20;
         }
-    #else    
+    #else
         #ifdef OLED_DISPLAY_HAS_RST_PIN
             pinMode(OLED_RST, OUTPUT);
             digitalWrite(OLED_RST, LOW);
@@ -345,14 +345,12 @@ void displaySetup() {
         #ifdef ssd1306
             if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false, false)) {
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "SSD1306", "allocation failed!");
-                while (true) {
-                }
+                while (true) {}
             }
         #else
             if (!display.begin(0x3c, false)) {
                 logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "SH1106", "allocation failed!");
-                while (true) {
-                }
+                while (true) {}
             }
         #endif
         if (Config.display.turn180) display.setRotation(2);
@@ -400,7 +398,7 @@ void displayToggle(bool toggle) {
 
 void displayShow(const String& header, const String& line1, const String& line2, int wait) {
     #ifdef HAS_TFT
-        #if defined(TTGO_T_DECK_PLUS) || defined(TTGO_T_DECK_GPS)
+        #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
             draw_T_DECK_Top();
             String tftLine1, tftLine2, tftLine3, tftLine4;
             if (line1.length() > 22 && line2.length() > 22) {
@@ -491,8 +489,8 @@ void drawSymbol(int symbolIndex, bool bluetoothActive) {
 
 void displayShow(const String& header, const String& line1, const String& line2, const String& line3, const String& line4, const String& line5, int wait) {
     #ifdef HAS_TFT
-        #if defined(TTGO_T_DECK_PLUS)
-            draw_T_DECK_Top();//header, line1, line2);
+        #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
+            draw_T_DECK_Top();
             draw_T_DECK_Body(header, line1, line2, line3, line4, line5);
         #endif
         #if defined(HELTEC_WIRELESS_TRACKER)
@@ -585,7 +583,7 @@ void displayShow(const String& header, const String& line1, const String& line2,
             } else if (bluetoothConnected) {    // TODO In this case, the text symbol stay displayed due to symbolAvailable false in menu_utils
                 drawSymbol(symbol, true);
             }
-        }        
+        }
         display.display();
     #endif
     delay(wait);
@@ -630,5 +628,5 @@ void displayMessage(const String& sender, const String& message, const int& line
     } else {
         displayShow("< MSG Rx >", "From --> " + sender, "", fillMessageLine(messageLine1, lineLength) , fillMessageLine(messageLine2, lineLength), fillMessageLine(messageLine3, lineLength), wait);
     }
-    
+
 }
