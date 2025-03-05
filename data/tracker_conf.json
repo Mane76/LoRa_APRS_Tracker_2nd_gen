@@ -29,7 +29,7 @@
 			"comment": "https://t1p.de/LORA",
 			"smartBeaconActive": true,
 			"smartBeaconSetting": 2
-		}		
+		}
 	],
 	"display": {
 		"showSymbol": true,
