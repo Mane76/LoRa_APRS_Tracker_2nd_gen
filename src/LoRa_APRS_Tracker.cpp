@@ -57,7 +57,7 @@ TinyGPSPlus                         gps;
     BluetoothSerial                 SerialBT;
 #endif
 
-String      versionDate             = "2025.01.07m";
+String      versionDate             = "2025.02.27m";
 
 uint8_t     myBeaconsIndex          = 0;
 int         myBeaconsSize           = Config.beacons.size();
@@ -76,6 +76,7 @@ uint32_t    refreshDisplayTime      = millis();
 
 bool        sendUpdate              = true;
 
+bool        bluetoothActive         = Config.bluetooth.active;
 bool        bluetoothConnected      = false;
 
 uint32_t    lastTx                  = 0.0;
@@ -117,8 +118,8 @@ void setup() {
     displaySetup();
     POWER_Utils::externalPinSetup();
 
-    STATION_Utils::loadIndex(0);
-    STATION_Utils::loadIndex(1);
+    STATION_Utils::loadIndex(0);    // callsign Index
+    STATION_Utils::loadIndex(1);    // lora freq settins Index
     STATION_Utils::nearTrackerInit();
     startupScreen(loraIndex, versionDate);
 
@@ -136,12 +137,14 @@ void setup() {
     WiFi.mode(WIFI_OFF);
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "WiFi controller stopped");
 
-    if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
-        BLE_Utils::setup();
-    } else {
-        #ifdef HAS_BT_CLASSIC
-            BLUETOOTH_Utils::setup();
-        #endif
+    if (bluetoothActive) {
+        if (Config.bluetooth.useBLE) {
+            BLE_Utils::setup();
+        } else {
+            #ifdef HAS_BT_CLASSIC
+                BLUETOOTH_Utils::setup();
+            #endif
+        }
     }
 
     if (!Config.simplifiedTrackerMode) {
@@ -200,14 +203,16 @@ void loop() {
     MSG_Utils::processOutputBuffer();
     MSG_Utils::clean15SegBuffer();
 
-    if (Config.bluetooth.type == 0 || Config.bluetooth.type == 2) {
-        BLE_Utils::sendToPhone(packet.text.substring(3));
-        BLE_Utils::sendToLoRa();
-    } else {
-        #ifdef HAS_BT_CLASSIC
-            BLUETOOTH_Utils::sendToPhone(packet.text.substring(3));
-            BLUETOOTH_Utils::sendToLoRa();
-        #endif
+    if (bluetoothActive && bluetoothConnected) {
+        if (Config.bluetooth.useBLE) {
+            BLE_Utils::sendToPhone(packet.text.substring(3));
+            BLE_Utils::sendToLoRa();
+        } else {
+            #ifdef HAS_BT_CLASSIC
+                BLUETOOTH_Utils::sendToPhone(packet.text.substring(3));
+                BLUETOOTH_Utils::sendToLoRa();
+            #endif
+        }
     }
     
     MSG_Utils::ledNotification();
@@ -232,9 +237,7 @@ void loop() {
 
         if (!sendUpdate && gps_loc_update && smartBeaconActive) {
             GPS_Utils::calculateDistanceTraveled();
-            if (!sendUpdate) {
-                GPS_Utils::calculateHeadingDelta(currentSpeed);
-            }
+            if (!sendUpdate) GPS_Utils::calculateHeadingDelta(currentSpeed);
             STATION_Utils::checkStandingUpdateTime();
         }
         SMARTBEACON_Utils::checkFixedBeaconTime();

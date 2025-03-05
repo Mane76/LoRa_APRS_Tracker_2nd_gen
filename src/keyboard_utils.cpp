@@ -9,6 +9,7 @@
 #include "board_pinout.h"
 #include "power_utils.h"
 #include "sleep_utils.h"
+#include "menu_utils.h"
 #include "msg_utils.h"
 #include "display.h"
 #include "utils.h"
@@ -76,7 +77,7 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay >= 130 && menuDisplay <= 133) {
             menuDisplay--;
             if (menuDisplay < 130) menuDisplay = 133;
-        } 
+        }
 
         else if (menuDisplay >= 20 && menuDisplay <= 27) {
             menuDisplay--;
@@ -84,15 +85,23 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay >= 220 && menuDisplay <= 221) {
             menuDisplay--;
             if (menuDisplay < 220) menuDisplay = 221;
+        } else if (menuDisplay >= 2210 && menuDisplay <= 2212) {
+            menuDisplay--;
+            if (menuDisplay < 2210) menuDisplay = 2212;
         } else if (menuDisplay >= 240 && menuDisplay <= 241) {
             menuDisplay--;
             if (menuDisplay < 240) menuDisplay = 241;
-        } 
+        }
         
-        else if (menuDisplay >= 30 && menuDisplay <= 31) {
+        else if (menuDisplay >= 30 && menuDisplay <= 33) {
             menuDisplay--;
-            if (menuDisplay < 30) menuDisplay = 31;
-        } 
+            if (menuDisplay < 30) menuDisplay = 33;
+        }
+
+        else if (menuDisplay >= 40 && menuDisplay <= 41) {
+            menuDisplay--;
+            if (menuDisplay < 40) menuDisplay = 41;
+        }
         
         else if (menuDisplay >= 50 && menuDisplay <= 53) {
             menuDisplay--;
@@ -109,10 +118,14 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay >= 5084 && menuDisplay <= 5085) {
             menuDisplay--;
             if (menuDisplay < 5084) menuDisplay = 5085;
-        } else if (menuDisplay >= 60 && menuDisplay <= 63) {
+        }
+        
+        else if (menuDisplay >= 60 && menuDisplay <= 64) {
             menuDisplay--;
-            if (menuDisplay < 60) menuDisplay = 63;
-        } else if (menuDisplay >= 9000 && menuDisplay <= 9001) {
+            if (menuDisplay < 60) menuDisplay = 64;
+        }
+        
+        else if (menuDisplay >= 9000 && menuDisplay <= 9001) {
             menuDisplay--;
             if (menuDisplay < 9000) menuDisplay = 9001;
         }
@@ -128,11 +141,11 @@ namespace KEYBOARD_Utils {
                 displayTime = millis();   
                 displayState = true;  
             }
-        }    
+        }
         if (menuDisplay >= 1 && menuDisplay <= 6) {
             menuDisplay++;
             if (menuDisplay > 6) menuDisplay = 1;
-        } 
+        }
         else if (menuDisplay >= 10 && menuDisplay <= 13) {
             menuDisplay++;
             if (menuDisplay > 13) menuDisplay = 10;
@@ -150,7 +163,7 @@ namespace KEYBOARD_Utils {
             }
         } else if (menuDisplay == 110) {
             menuDisplay = 11;
-        } 
+        }
         
         else if (menuDisplay >= 20 && menuDisplay <= 27) {
         menuDisplay++;
@@ -158,20 +171,24 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay >= 220 && menuDisplay <= 221) {
             menuDisplay++;
             if (menuDisplay > 221) menuDisplay = 220;
+        } else if (menuDisplay >= 2210 && menuDisplay <= 2212) {
+            menuDisplay++;
+            if (menuDisplay > 2212) menuDisplay = 2210;
         } else if (menuDisplay >= 240 && menuDisplay <= 241) {
             menuDisplay++;
             if (menuDisplay > 241) menuDisplay = 240;
         }
 
-        else if (menuDisplay >= 30 && menuDisplay <= 31) {
+        else if (menuDisplay >= 30 && menuDisplay <= 33) {
             menuDisplay++;  
-            if (menuDisplay > 31) menuDisplay = 30;
-        }
-        
-        else if (menuDisplay == 40) {
-            menuDisplay = 4;
+            if (menuDisplay > 33) menuDisplay = 30;
         }
 
+        else if (menuDisplay >= 40 && menuDisplay <= 41) {
+            menuDisplay++;  
+            if (menuDisplay > 41) menuDisplay = 40;
+        }
+        
         else if (menuDisplay >= 50 && menuDisplay <= 53) {
         menuDisplay++;  
         if (menuDisplay > 53) menuDisplay = 50;
@@ -202,9 +219,9 @@ namespace KEYBOARD_Utils {
             if (menuDisplay > 5085) menuDisplay = 5084;
         } 
 
-        else if (menuDisplay >= 60 && menuDisplay <= 63) {
+        else if (menuDisplay >= 60 && menuDisplay <= 64) {
             menuDisplay++;
-            if (menuDisplay > 63) menuDisplay = 60;
+            if (menuDisplay > 64) menuDisplay = 60;
         }
 
         else if (menuDisplay >= 9000 && menuDisplay <= 9001) {
@@ -228,7 +245,7 @@ namespace KEYBOARD_Utils {
         } else if (menuDisplay == 1300 ||  menuDisplay == 1310) {
             messageText = "";
             menuDisplay = menuDisplay/10;
-        } else if ((menuDisplay>=10 && menuDisplay<=13) || (menuDisplay>=20 && menuDisplay<=29) || (menuDisplay == 120) || (menuDisplay>=130 && menuDisplay<=133) || (menuDisplay>=50 && menuDisplay<=53) || (menuDisplay>=200 && menuDisplay<=290) || (menuDisplay>=60 && menuDisplay<=63) || (menuDisplay>=30 && menuDisplay<=31) || (menuDisplay>=300 && menuDisplay<=310) || (menuDisplay == 40)) {
+        } else if ((menuDisplay>=10 && menuDisplay<=13) || (menuDisplay>=20 && menuDisplay<=29) || (menuDisplay == 120) || (menuDisplay>=130 && menuDisplay<=133) || (menuDisplay>=50 && menuDisplay<=53) || (menuDisplay>=200 && menuDisplay<=290) || (menuDisplay>=2210 && menuDisplay<=2212) || (menuDisplay>=60 && menuDisplay<=64) || (menuDisplay>=30 && menuDisplay<=33) || (menuDisplay>=40 && menuDisplay<=41) || (menuDisplay>=400 && menuDisplay<=410)) {
             menuDisplay = int(menuDisplay/10);
         } else if (menuDisplay == 5000 || menuDisplay == 5010 || menuDisplay == 5020 || menuDisplay == 5030 || menuDisplay == 5040 || menuDisplay == 5050 || menuDisplay == 5060 || menuDisplay == 5070 || menuDisplay == 5080) {
             menuDisplay = 5;
@@ -257,10 +274,10 @@ namespace KEYBOARD_Utils {
             menuDisplay = 63;
         }
     }
-    
+
     void rightArrow() {
         if (menuDisplay == 0 || menuDisplay == 200) {
-            if(myBeaconsIndex >= (myBeaconsSize - 1)) {
+            if (myBeaconsIndex >= (myBeaconsSize - 1)) {
                 myBeaconsIndex = 0;
             } else {
                 myBeaconsIndex++;
@@ -274,7 +291,7 @@ namespace KEYBOARD_Utils {
             STATION_Utils::saveIndex(0, myBeaconsIndex);
             sendStartTelemetry = true;
             if (menuDisplay == 200) menuDisplay = 20;
-        } else if ((menuDisplay >= 1 && menuDisplay <= 3) || (menuDisplay >= 11 &&menuDisplay <= 13) || (menuDisplay >= 20 && menuDisplay <= 27) || (menuDisplay >= 30 && menuDisplay <= 31)) {
+        } else if ((menuDisplay >= 1 && menuDisplay <= 6) || (menuDisplay >= 11 &&menuDisplay <= 13) || (menuDisplay >= 20 && menuDisplay <= 27) || (menuDisplay >= 40 && menuDisplay <= 41)) {
             menuDisplay = menuDisplay * 10;
         } else if (menuDisplay == 10) {
             MSG_Utils::loadMessagesFromMemory(0);
@@ -292,26 +309,16 @@ namespace KEYBOARD_Utils {
             displayShow("   INFO", "", "ALL MESSAGES DELETED!", 2000);
             MSG_Utils::loadNumMessages();
             menuDisplay = 12;
-        } else if (menuDisplay == 130) {
+        } else if (menuDisplay == 130 || menuDisplay == 131) {
             if (keyDetected) {
-                menuDisplay = 1300;
+                menuDisplay *= 10;
             } else {
                 displayShow(" APRS Thu.", "Sending:", "Happy #APRSThursday", "from LoRa Tracker 73!", "", "", 2000);
-                MSG_Utils::addToOutputBuffer(0, "APRSPH" , "HOTG Happy #APRSThursday from LoRa Tracker 73!");                
+                MSG_Utils::addToOutputBuffer(0, (menuDisplay == 130) ? "APRSPH" : "ANSRVR" , (menuDisplay == 130) ? "HOTG Happy #APRSThursday from LoRa Tracker 73!" : "CQ HOTG Happy #APRSThursday from LoRa Tracker 73!"); 
             }
-        } else if (menuDisplay == 131) {
-            if (keyDetected) {
-                menuDisplay = 1310;
-            } else {
-                displayShow(" APRS Thu.", "Sending:", "Happy #APRSThursday", "from LoRa Tracker 73!", "", "", 2000);
-                MSG_Utils::addToOutputBuffer(0, "ANSRVR", "CQ HOTG Happy #APRSThursday from LoRa Tracker 73!");
-            }
-        } else if (menuDisplay == 132) {
-            displayShow(" APRS Thu.", "", "   Unsubscribe", "   from APRS Thursday", "", "", 2000);
-            MSG_Utils::addToOutputBuffer(0, "ANSRVR", "U HOTG");
-        } else if (menuDisplay == 133) {
-            displayShow(" APRS Thu.", "", "  Keep Subscribed" ,"  for 12hours more", "", "", 2000);
-            MSG_Utils::addToOutputBuffer(0, "ANSRVR", "K HOTG");
+        } else if (menuDisplay == 132 || menuDisplay == 133) {
+            displayShow(" APRS Thu.", "", (menuDisplay == 132) ? "   Unsubscribe" : "  Keep Subscribed", (menuDisplay == 132) ? "   from APRS Thursday" : "  for 12hours more", "", "", 2000);
+            MSG_Utils::addToOutputBuffer(0, "ANSRVR", (menuDisplay == 132) ? "U HOTG" : "K HOTG");
         }
 
         else if (menuDisplay == 210) {
@@ -319,22 +326,40 @@ namespace KEYBOARD_Utils {
             STATION_Utils::saveIndex(1, loraIndex);
             menuDisplay = 21;
         } else if (menuDisplay == 220) {
-            if (!displayEcoMode) {
-                displayEcoMode = true;
-                displayShow(" DISPLAY", "", "   ECO MODE -> ON", 1000);
-            } else {
-                displayEcoMode = false;
-                displayShow(" DISPLAY", "", "   ECO MODE -> OFF", 1000);
-            }
+            displayEcoMode = !displayEcoMode;
+            displayShow(" DISPLAY", "", displayEcoMode ? "   ECO MODE -> ON" : "   ECO MODE -> OFF", 1000);
         } else if (menuDisplay == 221) {
-            if (screenBrightness ==1) {
-                displayShow("  SCREEN", "", "SCREEN BRIGHTNESS MAX", 1000);
-                screenBrightness = 255;   
-            } else {
-                displayShow("  SCREEN", "", "SCREEN BRIGHTNESS MIN", 1000);
-                screenBrightness = 1;
+            menuDisplay = 2210;
+        } else if (menuDisplay >= 2210 && menuDisplay <= 2212) {
+            switch (menuDisplay) {
+                case 2210:
+                    screenBrightness = 1;
+                    break;
+                case 2211:
+                    screenBrightness = 40;
+                    break;
+                case 2212:
+                    screenBrightness = 255;
+                    break;
+                default:
+                    #ifdef HAS_TFT
+                        screenBrightness = 40;
+                    #else
+                        screenBrightness = 1;
+                    #endif
+                    break;
             }
-        } else if (menuDisplay == 240) {
+            #ifdef HAS_TFT
+                analogWrite(TFT_BL, screenBrightness);
+            #endif
+            displayShow("  SCREEN", "", "SCREEN BRIGHTNESS " + MENU_Utils::screenBrightnessAsString(screenBrightness), 1000);
+            STATION_Utils::saveIndex(2, screenBrightness);
+            #ifdef HAS_JOYSTICK
+                menuDisplay = 221;
+            #endif
+        }
+        
+        else if (menuDisplay == 240) {
             displayShow("  STATUS", "", "WRITE STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } else if (menuDisplay == 241) {
             displayShow("  STATUS", "", "SELECT STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
@@ -342,14 +367,21 @@ namespace KEYBOARD_Utils {
             displayShow(" NOTIFIC", "", "NOTIFICATIONS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } 
 
-        else if (menuDisplay == 4) {
+        else if (menuDisplay == 30) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Loop", "%s", "wrl");
             MSG_Utils::addToOutputBuffer(0, "CA2RXU-15", "wrl");
+        } else if (menuDisplay == 31) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Loop", "%s", "9M2PJU-4: Hospital");
+            MSG_Utils::addToOutputBuffer(0, "9M2PJU-4", "hospital");
+        } else if (menuDisplay == 32) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Loop", "%s", "9M2PJU-4 : Police");
+            MSG_Utils::addToOutputBuffer(0, "9M2PJU-4", "police");
+        } else if (menuDisplay == 33) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Loop", "%s", "9M2PJU-4: Fire Station");
+            MSG_Utils::addToOutputBuffer(0, "9M2PJU-4", "fire_station");
         }
 
-        else if (menuDisplay == 5) {
-            menuDisplay = 50;
-        } else if (menuDisplay == 50) {
+        else if (menuDisplay == 50) {
             WINLINK_Utils::login();
             menuDisplay = 500;
         } else if (menuDisplay == 51) {
@@ -399,22 +431,11 @@ namespace KEYBOARD_Utils {
             } else {
                 menuDisplay = 50110;
             }
-        } else if (menuDisplay == 5020) {
-            menuDisplay = 5021;
-        } else if (menuDisplay == 5030) {
-            menuDisplay = 5031;
-        } else if (menuDisplay == 5040) {
-            menuDisplay = 5041;
-        } else if (menuDisplay == 5050) {
-            menuDisplay = 5051;
-        } else if (menuDisplay == 5060) {
-            menuDisplay = 5061;
-        } else if (menuDisplay == 5061) {
-            menuDisplay = 50610;
-        } else if (menuDisplay == 5061) {
-            menuDisplay = 50610;
-        } else if (menuDisplay == 5062) {
-            menuDisplay = 50620;
+
+        } else if (menuDisplay >= 5020 && menuDisplay <= 5060 && menuDisplay % 10 == 0) {
+            menuDisplay++;
+        } else if (menuDisplay >= 5061 && menuDisplay <= 5062) {
+            menuDisplay *= 10;
         } else if (menuDisplay == 5063) {
             MSG_Utils::addToOutputBuffer(1, "WLNK-1", "AL");
         } else if (menuDisplay == 5070) {
@@ -433,43 +454,26 @@ namespace KEYBOARD_Utils {
             menuDisplay = 5083;
         }
 
-        else if (menuDisplay == 6) {
-            menuDisplay = 60;
-        } else if (menuDisplay == 60) {
-            if (Config.notification.ledFlashlight) {
-                if (flashlight) {
-                    displayShow("  EXTRAS", "","     Flashlight","   Status --> OFF", "", "", 2000);
-                    flashlight = false;
-                } else {
-                    displayShow("  EXTRAS", "","     Flashlight","   Status --> ON", "", "", 2000);
-                    flashlight = true;
-                }
-            } else {
-                displayShow("  EXTRAS", "","     Flashlight","NOT ACTIVE IN CONFIG!", "", "", 2000);
-            }
+        else if (menuDisplay == 60) {
+            if (Config.email != "") MSG_Utils::addToOutputBuffer(0, "9M2PJU-4", "posmsg " + String(Config.email));
         } else if (menuDisplay == 61) {
-            if (digipeaterActive) {
-                displayShow("  EXTRAS", "","     Digipeater","   Status --> OFF", "", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater OFF");
-                digipeaterActive = false;
-            } else {
-                displayShow("  EXTRAS", "","     Digipeater","   Status --> ON","", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "Digipeater ON");
-                digipeaterActive = true;
-            }
+            digipeaterActive = !digipeaterActive;
+            displayShow("  EXTRAS", "", "     Digipeater", digipeaterActive ? "   Status --> ON" : "   Status --> OFF", "", "", 2000);
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", digipeaterActive ? "Digipeater ON" : "Digipeater OFF");
         } else if (menuDisplay == 62) {
-            if (sosActive) {
-                displayShow("  EXTRAS", "","       S.O.S.","   Status --> OFF", "", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "S.O.S Mode OFF");
-                sosActive = false;
-            } else {
-                displayShow("  EXTRAS", "","       S.O.S.","   Status --> ON", "", "", 2000);
-                logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "%s", "S.O.S Mode ON");
-                sosActive = true;
-            }
+            sosActive = !sosActive;
+            displayShow("  EXTRAS", "", "       S.O.S.", sosActive ? "   Status --> ON" : "   Status --> OFF", "", "", 2000);
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_WARN, "Main", "S.O.S Mode %s", sosActive ? "ON" : "OFF");
         } else if (menuDisplay == 63) {
             menuDisplay = 630;
-        }
+        } else if (menuDisplay == 64) {
+            if (Config.notification.ledFlashlight) {
+                flashlight = !flashlight;
+                displayShow("  EXTRAS", "", "     Flashlight", flashlight ? "   Status --> ON" : "   Status --> OFF", "", "", 2000);
+            } else {
+                displayShow("  EXTRAS", "", "     Flashlight", "NOT ACTIVE IN CONFIG!", "", "", 2000);
+            }
+        } 
 
         else if (menuDisplay == 9000) {
             #if defined(HAS_AXP192) || defined(HAS_AXP2101)
@@ -533,14 +537,11 @@ namespace KEYBOARD_Utils {
                 if (menuDisplay == 111) {
                     MSG_Utils::addToOutputBuffer(0, messageCallsign, messageText);
                     menuDisplay = 11;
-                } else if (menuDisplay == 1300) {
-                    messageCallsign = "APRSPH";
-                    MSG_Utils::addToOutputBuffer(0, messageCallsign, "HOTG " + messageText);                    
-                    menuDisplay = 130;
-                } else if (menuDisplay == 1310) {
-                    messageCallsign = "ANSRVR";
-                    MSG_Utils::addToOutputBuffer(0, messageCallsign, "CQ HOTG " + messageText);                    
-                    menuDisplay = 131;
+                } else if (menuDisplay == 1300 || menuDisplay == 1310) {
+                    messageCallsign = (menuDisplay == 1300) ? "APRSPH" : "ANSRVR";
+                    String prefix   = (menuDisplay == 1300) ? "HOTG "  : "CQ HOTG ";
+                    MSG_Utils::addToOutputBuffer(0, messageCallsign, prefix + messageText);
+                    menuDisplay /= 10;
                 }
                 messageCallsign = "";
                 messageText = "";

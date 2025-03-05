@@ -91,8 +91,10 @@ public:
 
 class BLUETOOTH {
 public:
-    byte    type;
     bool    active;
+    String  deviceName;
+    bool    useBLE;
+    bool    useKISS;
 };
 
 
@@ -113,6 +115,7 @@ public:
     bool    simplifiedTrackerMode;
     int     sendCommentAfterXBeacons;
     String  path;
+    String  email;
     int     nonSmartBeaconRate;
     int     rememberStationTime;
     int     standingUpdateTime;
