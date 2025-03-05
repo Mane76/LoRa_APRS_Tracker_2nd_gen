@@ -256,6 +256,22 @@
                                             >
                                         </div>
                                     </div>
+                                    <div class="col-12 mt-3">
+                                        <label
+                                            for="email"
+                                            class="form-label"
+                                            >Email<small> (to send GPS position)</small> </label
+                                        >
+                                        <div class="input-group">
+                                            <input
+                                                type="text"
+                                                name="email"
+                                                id="email"
+                                                class="form-control"
+                                                value=""
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -515,16 +531,49 @@
                                     <label
                                         for="bluetooth.active"
                                         class="form-label"
-                                        >Enable bluetooth</label
+                                        >Enable Bluetooth</label
                                     >
                                 </div>
-                                <div class="col-6 mt-1">
-                                    <label for="bluetooth.type" class="form-label">Bluetooth Type</label>
-                                    <select name="bluetooth.type" id="bluetooth.type" class="form-control">
-                                        <option value="0">BLE for iPhone</option>
-                                        <option value="1">BT Classic</option>
-                                        <option value="2">BLE for Android</option>
-                                    </select>
+                                <div class="col-12">
+                                    <label 
+                                        for="bluetooth.deviceName" 
+                                        class="form-label"
+                                        >Bluetooth Device Name</label>
+                                    <input
+                                        name="bluetooth.deviceName"
+                                        id="bluetooth.deviceName"
+                                        class="form-control"
+                                        placeholder="LoRaTracker"
+                                        value="LoRaTracker"
+                                    />
+                                </div>
+                                <div class="col-12 mt-3">
+                                    <div class="form-check form-switch">
+                                        <input
+                                            type="checkbox"
+                                            name="bluetooth.useBLE"
+                                            id="bluetooth.useBLE"
+                                            class="form-check-input"
+                                        />
+                                        <label
+                                            for="bluetooth.useBLE"
+                                            class="form-label"
+                                            >Enable: use BLE  / Disable: use BT Classic</label
+                                        >
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input
+                                            type="checkbox"
+                                            name="bluetooth.useKISS"
+                                            id="bluetooth.useKISS"
+                                            class="form-check-input"
+                                        />
+                                        <label
+                                            for="bluetooth.useKISS"
+                                            class="form-label"
+                                            >Enable: use KISS / Disable: use TNC2</label
+                                        >
+                                    </div>
                                 </div>
                             </div>
                         </div>

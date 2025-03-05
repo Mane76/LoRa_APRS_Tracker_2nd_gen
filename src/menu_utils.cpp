@@ -63,15 +63,10 @@ uint8_t     lowBatteryPercent       = 21;
 namespace MENU_Utils {
 
     const String checkBTType() {
-        switch (Config.bluetooth.type) {
-            case 0:
-                return "BLE iPhone";
-            case 1:
-                return "BT Android";
-            case 2:
-                return "BLE Text";
-            default:
-                return "no BT";
+        if (Config.bluetooth.useBLE) {
+            return "BLE";
+        } else {
+            return "BT Classic";
         }
     }
 
@@ -85,19 +80,21 @@ namespace MENU_Utils {
 
     const String screenBrightnessAsString(const uint8_t bright) {
         if (bright == 255) {
-            return "MAX";
+            return "Max";
+        } else if (bright == 1) {
+            return "Low";
         } else {
-            return "min";
+            return "Mid";
         }
     }
 
     void showOnScreen() {
-        String lastLine, firstLineDecoder, courseSpeedAltitude, speedPacketDec, coursePacketDec, pathDec;
+        String lastLine;
         uint32_t lastMenuTime = millis() - menuTime;
-        if (!(menuDisplay==0) && !(menuDisplay==300) && !(menuDisplay==310) && !(menuDisplay==40) && !(menuDisplay>=500 && menuDisplay<=5100) && lastMenuTime > 30*1000) {
-            menuDisplay = 0;
+        if (!(menuDisplay==0) && !(menuDisplay==400) && !(menuDisplay==410) && !(menuDisplay==300) && !(menuDisplay>=500 && menuDisplay<=5100) && lastMenuTime > 30*1000) {
+            menuDisplay     = 0;
             messageCallsign = "";
-            messageText = "";
+            messageText     = "";
         }
         if (keyDetected) {
             lastLine = "<Back Up/Down Select>";
@@ -132,19 +129,19 @@ namespace MENU_Utils {
 
         switch (menuDisplay) { // Graphic Menu is in here!!!!
             case 1:     // 1. Messages
-                displayShow("<< MENU >>","  6.Extras", "> 1.Messages", "  2.Configuration", "  3.Stations", lastLine);
+                displayShow("<< MENU >>","  6.Extras", "> 1.Messages", "  2.Configuration", "  3.Reports", lastLine);
                 break;
             case 2:     // 2. Configuration
-                displayShow("<< MENU >>", "  1.Messages", "> 2.Configuration", "  3.Stations", "  4.Weather Report", lastLine);
+                displayShow("<< MENU >>", "  1.Messages", "> 2.Configuration", "  3.Reports", "  4.Stations", lastLine);
                 break;
-            case 3:     //3. Stations
-                displayShow("<< MENU >>", "  2.Configuration", "> 3.Stations", "  4.Weather Report", "  5.Winlink/Mail", lastLine);
+            case 3:     //3. Reports
+                displayShow("<< MENU >>", "  2.Configuration", "> 3.Reports", "  4.Stations", "  5.Winlink/Mail", lastLine);
                 break;
-            case 4:     //4. Weather
-                displayShow("<< MENU >>", "  3.Stations", "> 4.Weather Report", "  5.Winlink/Mail", "  6.Extras", lastLine);
+            case 4:     //4. Stations
+                displayShow("<< MENU >>", "  3.Reports", "> 4.Stations", "  5.Winlink/Mail", "  6.Extras", lastLine);
                 break;
             case 5:     //5. Winlink
-                displayShow("<< MENU >>", "  4.Weather Report", "> 5.Winlink/Mail", "  6.Extras", "  1.Messages", lastLine);
+                displayShow("<< MENU >>", "  4.Stations", "> 5.Winlink/Mail", "  6.Extras", "  1.Messages", lastLine);
                 break;
             case 6:     //6. Extras
                 displayShow("<< MENU >>", "  5.Winlink/Mail", "> 6.Extras", "  1.Messages", "  2.Configuration", lastLine);
@@ -152,7 +149,7 @@ namespace MENU_Utils {
 
 //////////
             case 10:    // 1.Messages ---> Messages Read
-                displayShow("MESSAGES>", "> Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "  APRSThursday", lastLine);
+                displayShow(" MESSAGES>", "> Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "  APRSThursday", lastLine);
                 break;
             case 100:   // 1.Messages ---> Messages Read ---> Display Received/Saved APRS Messages
                 {
@@ -162,12 +159,12 @@ namespace MENU_Utils {
                     #ifdef HAS_TFT
                         displayMessage(msgSender, msgText, 26, true);
                     #else
-                        displayShow("MSG APRS>", "From --> " + msgSender, msgText, "", "", "           Next=Down");
+                        displayShow(" MSG APRS>", "From --> " + msgSender, msgText, "", "", "           Next=Down");
                     #endif                   
                 }
                 break;
             case 11:    // 1.Messages ---> Messages Write
-                displayShow("MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "> Write", "  Delete", "  APRSThursday", lastLine);
+                displayShow(" MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "> Write", "  Delete", "  APRSThursday", lastLine);
                 break;
             case 110:   // 1.Messages ---> Messages Write ---> Write
                 if (keyDetected) {
@@ -184,20 +181,20 @@ namespace MENU_Utils {
                         displayShow("WRITE MSG>", "CALLSIGN -> " + messageCallsign, "MSG -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")   Enter>");
                     }     
                 } else {
-                    displayShow("WRITE MSG>", "---  MSG TO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
+                    displayShow("WRITE MSG>", "--- MSG TOO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
                 }
                 break;
             case 12:    // 1.Messages ---> Messages Delete
-                displayShow("MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "> Delete", "  APRSThursday", lastLine);
+                displayShow(" MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "> Delete", "  APRSThursday", lastLine);
                 break;
             case 120:   // 1.Messages ---> Messages Delete ---> Delete: ALL
                 displayShow("DELETE MSG", "", "  DELETE APRS MSG?", "", "", " Confirm = LP or '>'");
                 break;
             case 13:    // 1.Messages ---> APRSThursday
-                displayShow("MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "> APRSThursday", lastLine);
+                displayShow(" MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "  Write", "  Delete", "> APRSThursday", lastLine);
                 break;
             case 130:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu.", "> Check In", "  Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow(" APRS Thu.", "> Check In", "  Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 1300:
                 if (messageText.length() <= 67) {
@@ -207,11 +204,11 @@ namespace MENU_Utils {
                         displayShow("WRITE MSG>", "  - APRSThursday -", "MSG -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")   Enter>");
                     }     
                 } else {
-                    displayShow("WRITE MSG>", "---  MSG TO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
+                    displayShow("WRITE MSG>", "--- MSG TOO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
                 }
                 break;
             case 131:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu.", "  Check In", "> Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow(" APRS Thu.", "  Check In", "> Join", "  Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 1310:
                 if (messageText.length() <= 67) {
@@ -221,14 +218,14 @@ namespace MENU_Utils {
                         displayShow("WRITE MSG>", "  - APRSThursday -", "MSG -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")   Enter>");
                     }     
                 } else {
-                    displayShow("WRITE MSG>", "---  MSG TO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
+                    displayShow("WRITE MSG>", "--- MSG TOO LONG! ---", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
                 }
                 break;
             case 132:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu.", "  Check In", "  Join", "> Unsubscribe", "  KeepSubscribed+12h", lastLine);
+                displayShow(" APRS Thu.", "  Check In", "  Join", "> Unsubscribe", "  KeepSubscribed+12h", lastLine);
                 break;
             case 133:   // 1.Messages ---> APRSThursday ---> Delete: ALL
-                displayShow("APRS Thu.", "  Check In", "  Join", "  Unsubscribe", "> KeepSubscribed+12h", lastLine);
+                displayShow(" APRS Thu.", "  Check In", "  Join", "  Unsubscribe", "> KeepSubscribed+12h", lastLine);
                 break;
 
 //////////            
@@ -259,7 +256,7 @@ namespace MENU_Utils {
 
 
             case 200:   // 2.Configuration ---> Change Callsign
-                displayShow("CALLSIGN>", "","  Confirm Change?","","","<Back         Select>");
+                displayShow(" CALLSIGN>", "","  Confirm Change?","","","<Back         Select>");
                 break;
 
             case 210:   // 2.Configuration ---> Change Frequency
@@ -272,10 +269,20 @@ namespace MENU_Utils {
                 break;
 
             case 220:   // 2.Configuration ---> Display ---> ECO Mode
-                displayShow(" DISPLAY>", "", "> ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","  Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
+                displayShow(" DISPLAY>", "", "> ECO Mode    (" + checkProcessActive(displayEcoMode) + ")", "  Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
                 break;
+
             case 221:   // 2.Configuration ---> Display ---> Brightness
-                displayShow(" DISPLAY>", "", "  ECO Mode    (" + checkProcessActive(displayEcoMode) + ")","> Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
+                displayShow(" DISPLAY>", "", "  ECO Mode    (" + checkProcessActive(displayEcoMode) + ")", "> Brightness  (" + screenBrightnessAsString(screenBrightness) + ")","",lastLine);
+                break;
+            case 2210:   // 2.Configuration ---> Display ---> Brightness: MIN
+                displayShow("BRIGHTNESS", "", "> Low", "  Mid","  Max",lastLine);
+                break;
+            case 2211:   // 2.Configuration ---> Display ---> Brightness: MID
+                displayShow("BRIGHTNESS", "", "  Low", "> Mid","  Max",lastLine);
+                break;
+            case 2212:   // 2.Configuration ---> Display ---> Brightness: MAX
+                displayShow("BRIGHTNESS", "", "  Low", "  Mid","> Max",lastLine);
                 break;
 
             case 230:
@@ -316,48 +323,49 @@ namespace MENU_Utils {
                 break;
 
 //////////
-            case 30:    //3.Stations ---> Packet Decoder
-                displayShow("STATIONS>", "", "> Packet Decoder", "  Near By Stations", "", "<Back");
+            case 30:     // 3. Reports : Wx Report
+                displayShow(" REPORTS >","> 1.Wx Report", "  2.Hospital QTH", "  3.Police QTH", "  4.Fire Station QTH", lastLine);
                 break;
-            case 31:    //3.Stations ---> Near By Stations
-                displayShow("STATIONS>", "", "  Packet Decoder", "> Near By Stations", "", "<Back");
+            case 31:     // 3. Reports : Nearest Hospital
+                displayShow(" REPORTS >","  1.Wx Report", "> 2.Hospital QTH", "  3.Police QTH", "  4.Fire Station QTH", lastLine);
+                break;
+            case 32:     // 3. Reports : Nearest Police Station
+                displayShow(" REPORTS >","  1.Wx Report", "  2.Hospital QTH", "> 3.Police QTH", "  4.Fire Station QTH", lastLine);
+                break;
+            case 33:     // 3. Reports : Nearest Fire Station
+                displayShow(" REPORTS >","  1.Wx Report", "  2.Hospital QTH", "  3.Police QTH", "> 4.Fire Station QTH", lastLine);
+                break;
+            
+            case 300:
+                // waiting for Report
                 break;
 
-            case 300:   //3.Stations ---> Packet Decoder
+//////////
+            case 40:    //3.Stations ---> Packet Decoder
+                displayShow(" STATIONS>", "", "> Packet Decoder", "  Near By Stations", "", "<Back");
+                break;
+            case 41:    //3.Stations ---> Near By Stations
+                displayShow(" STATIONS>", "", "  Packet Decoder", "> Near By Stations", "", "<Back");
+                break;
+
+            case 400:   //3.Stations ---> Packet Decoder
                 if (lastReceivedPacket.sender != currentBeacon->callsign) {
-                    firstLineDecoder = lastReceivedPacket.sender;
+                    String firstLineDecoder = lastReceivedPacket.sender;
                     for (int i = firstLineDecoder.length(); i < 9; i++) {
                         firstLineDecoder += ' ';
                     }
                     firstLineDecoder += lastReceivedPacket.symbol;
+
                     if (lastReceivedPacket.type == 0 || lastReceivedPacket.type == 4) {      // gps and Mic-E gps
-                        courseSpeedAltitude = String(lastReceivedPacket.altitude);
-                        for (int j = courseSpeedAltitude.length(); j < 4; j++) {
-                            courseSpeedAltitude = '0' + courseSpeedAltitude;
-                        }
-                        courseSpeedAltitude = "A=" + courseSpeedAltitude + "m ";
-                        speedPacketDec = String(lastReceivedPacket.speed);
-                        for (int k = speedPacketDec.length(); k < 3; k++) {
-                            speedPacketDec = ' ' + speedPacketDec;
-                        }
-                        courseSpeedAltitude += speedPacketDec + "km/h ";
-                        for (int l = courseSpeedAltitude.length(); l < 17; l++) {
-                            courseSpeedAltitude += ' ';
-                        }
-                        coursePacketDec = String(lastReceivedPacket.course);
-                        for (int m = coursePacketDec.length(); m < 3; m++) {
-                            coursePacketDec = ' ' + coursePacketDec;
-                        }
-                        courseSpeedAltitude += coursePacketDec;
-                        
+
+                        char bufferCourseSpeedAltitude[24];
+                        sprintf(bufferCourseSpeedAltitude, "A=%04dm %3dkm/h %3d", lastReceivedPacket.altitude, lastReceivedPacket.speed, lastReceivedPacket.course);
+                        String courseSpeedAltitude = String(bufferCourseSpeedAltitude);
+
                         double distanceKm = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude) / 1000.0;
                         double courseTo   = TinyGPSPlus::courseTo(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude);
                         
-                        if (lastReceivedPacket.path.length()>14) {
-                            pathDec = "P:";
-                        } else {
-                            pathDec = "PATH:  ";
-                        }
+                        String pathDec = (lastReceivedPacket.path.length() > 14) ? "P:" : "PATH:  ";
                         pathDec += lastReceivedPacket.path;
 
                         displayShow(firstLineDecoder, "GPS " + String(lastReceivedPacket.latitude,3) + " " + String(lastReceivedPacket.longitude,3), courseSpeedAltitude, "D:" + String(distanceKm) + "km    " + String(courseTo,0), pathDec, "< RSSI:" + String(lastReceivedPacket.rssi) + " SNR:" + String(lastReceivedPacket.snr));
@@ -372,13 +380,8 @@ namespace MENU_Utils {
                     }
                 }
                 break;
-            case 310:    //3.Stations ---> Near By Stations
-                displayShow("NEAR BY >", STATION_Utils::getNearTracker(0), STATION_Utils::getNearTracker(1), STATION_Utils::getNearTracker(2), STATION_Utils::getNearTracker(3), "<Back");
-                break;
-
-//////////
-            case 40:
-                // waiting for Weather Report
+            case 410:    //3.Stations ---> Near By Stations
+                displayShow(" NEAR BY>", STATION_Utils::getNearTracker(0), STATION_Utils::getNearTracker(1), STATION_Utils::getNearTracker(2), STATION_Utils::getNearTracker(3), "<Back");
                 break;
 
 //////////
@@ -502,7 +505,7 @@ namespace MENU_Utils {
                 if (winlinkBody.length() <= 67) {
                 displayShow("WLNK MAIL>", "-- Body (lenght=" + String(winlinkBody.length()) + ")", "-> " + winlinkBody, "", "", "<Clear Body    Enter>");
                 } else {
-                displayShow("WLNK MAIL>", "-- Body To Long = " + String(winlinkBody.length()) + "!", "-> " + winlinkBody, "", "", "<Clear Body");
+                displayShow("WLNK MAIL>", "-- Body Too Long = " + String(winlinkBody.length()), "-> " + winlinkBody, "", "", "<Clear Body");
                 }
                 break;
             case 5084:    // WINLINK: WRITE MAIL: End Mail? //
@@ -516,27 +519,32 @@ namespace MENU_Utils {
                 // check si no esta logeado o si
 
 //////////
-            case 60:    // 6. Extras ---> Flashlight
-                displayShow(" EXTRAS>", "> Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+            case 60:    // 6. Extras ---> Send Email with GPS info
+                displayShow(" EXTRAS>", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "> Send Email(GPS)", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")", lastLine);
                 break;
             case 61:    // 6. Extras ---> Digipeater
-                displayShow(" EXTRAS>", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "> Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+                displayShow(" EXTRAS>", "  Send Email(GPS)", "> Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")", "  Beacon(GPS) + Comment", lastLine);
                 break;
             case 62:    // 6. Extras ---> S.O.S.
-                displayShow(" EXTRAS>", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "> S.O.S.        (" + checkProcessActive(sosActive) + ")","  Send GPS + Comment",lastLine);
+                displayShow(" EXTRAS>", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "> S.O.S.        (" + checkProcessActive(sosActive) + ")", "  Beacon(GPS)+Comment", "  Flashlight    (" + checkProcessActive(flashlight) + ")", lastLine);
                 break;
-            case 63:    // 6. Extras ---> Extra Comment.
-                displayShow(" EXTRAS>", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", "  S.O.S.        (" + checkProcessActive(sosActive) + ")","> Send GPS + Comment",lastLine);
+            case 63:    // 6. Extras ---> Beacon(GPS) + Comment
+                displayShow(" EXTRAS>", "  S.O.S.        (" + checkProcessActive(sosActive) + ")", "> Beacon(GPS)+Comment", "  Flashlight    (" + checkProcessActive(flashlight) + ")", "  Send Email(GPS)", lastLine);
                 break;
+            case 64:    // 6. Extras ---> Flashlight
+                displayShow(" EXTRAS>", "  Beacon(GPS)+Comment", "> Flashlight    (" + checkProcessActive(flashlight) + ")", "  Send Email(GPS)", "  Digipeater    (" + checkProcessActive(digipeaterActive) + ")", lastLine);
+                break;
+
             case 630:
-                if (messageText.length() <= 67) {
-                    if (messageText.length() < 10) {
-                        displayShow(" COMMENT>", "Send this Comment in","the next GPS Beacon :", messageText, "", "<Back   (0" + String(messageText.length()) + ")   Enter>");
+                if (keyDetected) {
+                    if (messageText.length() <= 67) {
+                        String lengthStr = (messageText.length() < 10) ? "0" + String(messageText.length()) : String(messageText.length());
+                        displayShow(" COMMENT>", "Send this Comment in", "the next GPS Beacon :", messageText, "", "<Back   (" + lengthStr + ")   Enter>");
                     } else {
-                        displayShow(" COMMENT>", "Send this Comment in","the next GPS Beacon :", messageText, "", "<Back   (" + String(messageText.length()) + ")   Enter>");
-                    }     
+                        displayShow(" COMMENT>", "Comment is too long! ", "Comment too long:" + messageText, "", "", "<Back   (" + String(messageText.length()) + ")>");
+                    }
                 } else {
-                    displayShow(" COMMENT>", " Comment is to long! ", " -> " + messageText, "", "", "<Back   (" + String(messageText.length()) + ")");
+                    displayShow(" COMMENT>", "No Keyboard Detected", "", "", "", lastLine);
                 }
                 break;
 
@@ -657,8 +665,8 @@ namespace MENU_Utils {
                 if (POWER_Utils::getBatteryInfoIsConnected()) {
                     String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
                     String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
-                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
-					    sixthRowMainMenu = "Battery: ";
+                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V3_2_GPS) || defined(HELTEC_V3_2_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS) || defined(LIGHTTRACKER_PLUS_1_0)
+                        sixthRowMainMenu = "Battery: ";
                         sixthRowMainMenu += batteryVoltage;
                         sixthRowMainMenu += "V   ";
                         sixthRowMainMenu += BATTERY_Utils::getPercentVoltageBattery(batteryVoltage.toFloat());

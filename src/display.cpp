@@ -3,6 +3,7 @@
 #include "custom_characters.h"
 #include "custom_colors.h"
 #include "configuration.h"
+#include "station_utils.h"
 #include "board_pinout.h"
 #include "display.h"
 #include "TimeLib.h"
@@ -14,10 +15,7 @@
     TFT_eSPI    tft     = TFT_eSPI(); 
     TFT_eSprite sprite  = TFT_eSprite(&tft);
 
-    
-    int                 brightnessValues[6]     = {70, 90, 120, 160, 200, 250};
-    int                 tftBrightness           = 5;
-    unsigned short      grays[13];
+    unsigned short      grays[13];      // ready to delete this?
     
     #ifdef HELTEC_WIRELESS_TRACKER
         #define bigSizeFont     2
@@ -48,7 +46,7 @@
     #if defined(TTGO_T_Beam_S3_SUPREME_V3)
         #undef ssd1306
     #endif
-    #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC)
+    #if defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V3_2_GPS) || defined(HELTEC_V3_2_TNC)
         #define OLED_DISPLAY_HAS_RST_PIN
     #endif
 
@@ -70,12 +68,12 @@ extern int              menuDisplay;
 extern bool             bluetoothConnected;
 
 const char* symbolArray[]     = { "[", ">", "j", "b", "<", "s", "u", "R", "v", "(", ";", "-", "k",
-                                "C", "a", "Y", "O", "'", "=", "y", "U", "p"};
+                                "C", "a", "Y", "O", "'", "=", "y", "U", "p", "_"};
 int   symbolArraySize         = sizeof(symbolArray)/sizeof(symbolArray[0]);
 const uint8_t *symbolsAPRS[]  = {runnerSymbol, carSymbol, jeepSymbol, bikeSymbol, motorcycleSymbol, shipSymbol, 
                                 truck18Symbol, recreationalVehicleSymbol, vanSymbol, carsateliteSymbol, tentSymbol,
                                 houseSymbol, truckSymbol, canoeSymbol, ambulanceSymbol, yatchSymbol, baloonSymbol,
-                                aircraftSymbol, trainSymbol, yagiSymbol, busSymbol, dogSymbol};
+                                aircraftSymbol, trainSymbol, yagiSymbol, busSymbol, dogSymbol, wxSymbol};
 // T-Beams bought with soldered OLED Screen comes with only 4 pins (VCC, GND, SDA, SCL)
 // If your board didn't come with 4 pins OLED Screen and comes with 5 and one of them is RST...
 // Uncomment Next Line (Remember ONLY if your OLED Screen has a RST pin). This is to avoid memory issues.
@@ -251,14 +249,6 @@ extern logging::Logger logger;
     //sprite.fillSmoothRoundRect(308,   6,   8,  8 , 2, green,        grays[9]);          // bateria
     //sprite.fillSmoothRoundRect(275,   4,  34, 12 , 2, TFT_BLACK,    green);             // centro bateria
 
-    /*for (int i = 0; i < 5; i++) {                                                      // cubos que muestran el brillo (abajo a la derecha)
-        if(i < tftBrightness) {
-            sprite.fillRect(282+(i*8), 207, 5, 8, grays[3]);
-        } else {
-            sprite.fillRect(282+(i*8), 207, 5, 8, grays[7]);
-        }
-    }*/
-
     //for (int i = 0; i < 9; i++) sprite.drawFastHLine(4, 38+(i*18), 312, grays[8]);      // draw horizonatl lines
     
     /*sprite.setTextFont(0);
@@ -310,6 +300,7 @@ String fillStringLength(const String& line, uint8_t length) {
 
 void displaySetup() {
     delay(500);
+    STATION_Utils::loadIndex(2);    // Screen Brightness value
     #ifdef HAS_TFT
         tft.init();
         tft.begin();
@@ -319,8 +310,7 @@ void displaySetup() {
             tft.setRotation(1);
         }
         pinMode(TFT_BL, OUTPUT);
-        digitalWrite(TFT_BL, HIGH);
-        //analogWrite(BOARD_BL_PIN, brightnessValues[tftBrightness]);
+        analogWrite(TFT_BL, screenBrightness);
         tft.setTextFont(0);
         tft.fillScreen(TFT_BLACK);
         #if defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS)
@@ -375,7 +365,7 @@ void displaySetup() {
 void displayToggle(bool toggle) {
     if (toggle) {
         #ifdef HAS_TFT
-            digitalWrite(TFT_BL, HIGH);
+            analogWrite(TFT_BL, screenBrightness);
         #else
             #ifdef ssd1306
                 display.ssd1306_command(SSD1306_DISPLAYON); 
@@ -385,7 +375,7 @@ void displayToggle(bool toggle) {
         #endif
     } else {
         #ifdef HAS_TFT
-            digitalWrite(TFT_BL, LOW);
+            analogWrite(TFT_BL, 0);
         #else
             #ifdef ssd1306
                 display.ssd1306_command(SSD1306_DISPLAYOFF);
@@ -438,7 +428,7 @@ void displayShow(const String& header, const String& line1, const String& line2,
             sprite.setTextColor(TFT_WHITE, TFT_BLACK);
 
             for (int i = 0; i < 2; i++) {
-                sprite.drawString(*lines[i], 3,(lineSpacing * (2 + i)) - 2);
+                sprite.drawString(*lines[i], 3, (lineSpacing * (2 + i)) - 2);
             }
         #endif
         sprite.pushSprite(0,0);
@@ -507,7 +497,7 @@ void displayShow(const String& header, const String& line1, const String& line2,
             sprite.setTextColor(TFT_WHITE, TFT_BLACK);
 
             for (int i = 0; i < 5; i++) {
-                sprite.drawString(*lines[i], 3,(lineSpacing * (2 + i)) - 2);
+                sprite.drawString(*lines[i], 3, (lineSpacing * (2 + i)) - 2);
             }
         #endif
             if (menuDisplay == 0 && Config.display.showSymbol) {
