@@ -142,6 +142,15 @@ function loadSettings(settings) {
                     <option value="2" ${beacons.smartBeaconSetting == 2 ? 'selected' : ''}>Car/Motorcycle (Fast Speed)</option>
                 </select>
             </div>
+            <div class="form-floating col-12 col-md-9 px-1 mb-2" style="margin-left: 50px;">
+                 <input 
+                     type="text" 
+                     class="form-control form-control-sm" 
+                     name="beacons.${index}.profileLabel" 
+                     id="beacons.${index}.profileLabel" 
+                     value="${beacons.profileLabel}">
+                 <label for="beacons.${index}.profileLabel">Profile Label</label>
+             </div>
         `;
         beaconContainer.appendChild(beaconElement);
     });
@@ -223,10 +232,10 @@ function loadSettings(settings) {
     // WINLINK
     document.getElementById("winlink.password").value                   = settings.winlink.password;
 
-    // TELEMETRY WX Sensor
-    document.getElementById("wxsensor.active").checked                  = settings.wxsensor.active;
-    document.getElementById("wxsensor.temperatureCorrection").value     = settings.wxsensor.temperatureCorrection.toFixed(1);
-    document.getElementById("wxsensor.sendTelemetry").checked           = settings.wxsensor.sendTelemetry;
+    // TELEMETRY (WX Sensor)
+    document.getElementById("telemetry.active").checked                  = settings.telemetry.active;
+    document.getElementById("telemetry.sendTelemetry").checked           = settings.telemetry.sendTelemetry;
+    document.getElementById("telemetry.temperatureCorrection").value     = settings.telemetry.temperatureCorrection.toFixed(1);
     
     // NOTIFICATION
     document.getElementById("notification.ledTx").checked               = settings.notification.ledTx;

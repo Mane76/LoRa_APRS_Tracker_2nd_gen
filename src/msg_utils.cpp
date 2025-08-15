@@ -1,3 +1,21 @@
+/* Copyright (C) 2025 Ricardo Guzman - CA2RXU
+ * 
+ * This file is part of LoRa APRS Tracker.
+ * 
+ * LoRa APRS Tracker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ * 
+ * LoRa APRS Tracker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <APRSPacketLib.h>
 #include <TinyGPS++.h>
 #include <SPIFFS.h>
@@ -53,6 +71,7 @@ std::vector<String>             outputMessagesBuffer;
 std::vector<String>             outputAckRequestBuffer;
 std::vector<Packet15SegBuffer>  packet15SegBuffer;
 
+int         ackRequestNumber    = random(1,999);
 bool        ackRequestState     = false;
 String      ackCallsignRequest  = "";
 String      ackNumberRequest    = "";
@@ -252,7 +271,7 @@ namespace MSG_Utils {
         LoRa_Utils::sendNewPacket(newPacket);
     }
 
-    const String ackRequestNumberGenerator() {
+    String getAckRequestNumber() {
         ackRequestNumber++;
         if (ackRequestNumber > 999) {
             ackRequestNumber = 1;
@@ -281,7 +300,7 @@ namespace MSG_Utils {
                 }
             }               
             if (!alreadyInBuffer) {
-                outputMessagesBuffer.push_back(station + "," + textMessage + "{" + ackRequestNumberGenerator());
+                outputMessagesBuffer.push_back(station + "," + textMessage + "{" + getAckRequestNumber());
             }
         } else if (typeOfMessage == 0) {
             alreadyInBuffer = false;

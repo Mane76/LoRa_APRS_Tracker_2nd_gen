@@ -1,3 +1,21 @@
+/* Copyright (C) 2025 Ricardo Guzman - CA2RXU
+ * 
+ * This file is part of LoRa APRS Tracker.
+ * 
+ * LoRa APRS Tracker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ * 
+ * LoRa APRS Tracker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 #include "configuration.h"
@@ -27,6 +45,7 @@ void Configuration::writeFile() {
         data["beacons"][i]["smartBeaconSetting"]    = beacons[i].smartBeaconSetting;
         data["beacons"][i]["micE"]                  = beacons[i].micE;
         data["beacons"][i]["gpsEcoMode"]            = beacons[i].gpsEcoMode;
+        data["beacons"][i]["profileLabel"]          = beacons[i].profileLabel;
     }
 
     data["display"]["showSymbol"]               = display.showSymbol;
@@ -42,9 +61,9 @@ void Configuration::writeFile() {
 
     data["winlink"]["password"]                 = winlink.password;
 
-    data["wxsensor"]["active"]                  = wxsensor.active;
-    data["wxsensor"]["temperatureCorrection"]   = wxsensor.temperatureCorrection;
-    data["wxsensor"]["sendTelemetry"]           = wxsensor.sendTelemetry;
+    data["telemetry"]["active"]                 = telemetry.active;
+    data["telemetry"]["sendTelemetry"]          = telemetry.sendTelemetry;
+    data["telemetry"]["temperatureCorrection"]  = telemetry.temperatureCorrection;
 
     data["notification"]["ledTx"]               = notification.ledTx;
     data["notification"]["ledTxPin"]            = notification.ledTxPin;
@@ -129,6 +148,7 @@ bool Configuration::readFile() {
             bcn.smartBeaconSetting      = BeaconsArray[i]["smartBeaconSetting"] | 0;
             bcn.micE                    = BeaconsArray[i]["micE"] | "";
             bcn.gpsEcoMode              = BeaconsArray[i]["gpsEcoMode"] | false;
+            bcn.profileLabel            = BeaconsArray[i]["profileLabel"] | "";
             
             beacons.push_back(bcn);
         }
@@ -146,10 +166,10 @@ bool Configuration::readFile() {
 
         winlink.password                = data["winlink"]["password"] | "NOPASS";
 
-        wxsensor.active                 = data["wxsensor"]["active"] | false;
-        wxsensor.temperatureCorrection  = data["wxsensor"]["temperatureCorrection"] | 0.0;
-        wxsensor.sendTelemetry          = data["wxsensor"]["sendTelemetry"] | false;
-
+        telemetry.active                = data["telemetry"]["active"] | false;
+        telemetry.sendTelemetry         = data["telemetry"]["sendTelemetry"] | false;
+        telemetry.temperatureCorrection = data["telemetry"]["temperatureCorrection"] | 0.0;
+        
         notification.ledTx              = data["notification"]["ledTx"] | false;
         notification.ledTxPin           = data["notification"]["ledTxPin"]| 13;
         notification.ledMessage         = data["notification"]["ledMessage"] | false;
@@ -250,6 +270,7 @@ void Configuration::init() {
         beacon.smartBeaconSetting   = 0;
         beacon.micE                 = "";
         beacon.gpsEcoMode           = false;
+        beacon.profileLabel         = "";
         beacons.push_back(beacon);
     }
 
@@ -266,9 +287,9 @@ void Configuration::init() {
 
     winlink.password                = "NOPASS";
 
-    wxsensor.active                 = false;
-    wxsensor.temperatureCorrection  = 0.0;
-    wxsensor.sendTelemetry          = false;
+    telemetry.active                 = false;
+    telemetry.sendTelemetry          = false;
+    telemetry.temperatureCorrection  = 0.0;
 
     notification.ledTx              = false;
     notification.ledTxPin           = 13;

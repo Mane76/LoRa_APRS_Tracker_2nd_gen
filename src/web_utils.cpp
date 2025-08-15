@@ -1,3 +1,21 @@
+/* Copyright (C) 2025 Ricardo Guzman - CA2RXU
+ * 
+ * This file is part of LoRa APRS Tracker.
+ * 
+ * LoRa APRS Tracker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ * 
+ * LoRa APRS Tracker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <ArduinoJson.h>
 #include "configuration.h"
 #include "web_utils.h"
@@ -90,6 +108,7 @@ namespace WEB_Utils {
             Config.beacons[i].overlay               = request->getParam("beacons." + String(i) + ".overlay", true)->value();
             Config.beacons[i].micE                  = request->getParam("beacons." + String(i) + ".micE", true)->value();
             Config.beacons[i].comment               = request->getParam("beacons." + String(i) + ".comment", true)->value();
+            Config.beacons[i].profileLabel          = request->getParam("beacons." + String(i) + ".profileLabel", true)->value();
 
             String paramGpsEcoMode = "beacons." + String(i) + ".gpsEcoMode";
             if (request->hasParam(paramGpsEcoMode, true)) {
@@ -149,10 +168,10 @@ namespace WEB_Utils {
         //  Winlink
         Config.winlink.password                 = request->getParam("winlink.password", true)->value();
         
-        //  Wx Telemtry
-        Config.wxsensor.active                  = request->hasParam("wxsensor.active", true);
-        Config.wxsensor.temperatureCorrection   = request->getParam("wxsensor.temperatureCorrection", true)->value().toFloat();
-        Config.wxsensor.sendTelemetry           = request->hasParam("wxsensor.sendTelemetry", true);
+        //  Telemetry
+        Config.telemetry.active                 = request->hasParam("telemetry.active", true);
+        Config.telemetry.sendTelemetry          = request->hasParam("telemetry.sendTelemetry", true);
+        Config.telemetry.temperatureCorrection  = request->getParam("telemetry.temperatureCorrection", true)->value().toFloat();
 
         //  Notification
         Config.notification.ledTx               = request->hasParam("notification.ledTx", true);
