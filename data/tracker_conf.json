@@ -8,7 +8,8 @@
 			"micE":"",
 			"comment": "https://t1p.de/LORA",
 			"smartBeaconActive": true,
-			"smartBeaconSetting": 1
+			"smartBeaconSetting": 1,
+			"profileLabel": ""
 		},
 		{
 			"callsign": "NOCALL-7",
@@ -18,7 +19,8 @@
 			"micE":"",
 			"comment": "https://t1p.de/LORA",
 			"smartBeaconActive": true,
-			"smartBeaconSetting": 0
+			"smartBeaconSetting": 0,
+			"profileLabel": ""
 		},
 		{
 			"callsign": "NOCALL-9",
@@ -28,8 +30,9 @@
 			"micE":"",
 			"comment": "https://t1p.de/LORA",
 			"smartBeaconActive": true,
-			"smartBeaconSetting": 2
-		}
+			"smartBeaconSetting": 2,
+			"profileLabel": ""
+		}		
 	],
 	"display": {
 		"showSymbol": true,
@@ -59,10 +62,10 @@
 	"winlink": {
 		"password": "ChangeMe"
 	},
-	"wxsensor": {
+	"telemetry": {
 		"active": false,
-		"temperatureCorrection": 0.0,
-		"sendTelemetry": false
+		"sendTelemetry": false,
+		"temperatureCorrection": 0.0		
 	},
 	"notification": {
 		"ledTx": false,

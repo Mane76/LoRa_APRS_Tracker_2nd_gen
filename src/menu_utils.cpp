@@ -1,3 +1,21 @@
+/* Copyright (C) 2025 Ricardo Guzman - CA2RXU
+ * 
+ * This file is part of LoRa APRS Tracker.
+ * 
+ * LoRa APRS Tracker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ * 
+ * LoRa APRS Tracker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <APRSPacketLib.h>
 #include <TinyGPS++.h>
 #include <vector>
@@ -27,6 +45,7 @@ extern uint8_t              loraIndex;
 extern uint32_t             menuTime;
 extern bool                 symbolAvailable;
 extern bool                 keyDetected;
+extern bool                 keyboardConnected;
 extern String               messageCallsign;
 extern String               messageText;
 extern bool                 flashlight;
@@ -47,6 +66,8 @@ extern String               winlinkBody;
 extern String               winlinkAlias;
 extern String               winlinkAliasComplete;
 extern bool                 winlinkCommentState;
+
+extern bool                 batteryConnected;
 extern int                  wxModuleType;
 extern bool                 gpsIsActive;
 
@@ -183,7 +204,7 @@ namespace MENU_Utils {
                 displayShow(" MESSAGES>", "  Read (" + String(MSG_Utils::getNumAPRSMessages()) + ")", "> Write", "  Delete", "  APRSThursday", lastLine);
                 break;
             case 110:   // 1.Messages ---> Messages Write ---> Write
-                if (keyDetected) {
+                if (keyDetected || keyboardConnected) {
                     #ifdef HAS_TFT
                         #if defined(HELTEC_WIRELESS_TRACKER)
                             displayShow("WRITE MSG>", "", "CALLSIGN = " + String(messageCallsign), "", "", "<Back               Enter>");
@@ -437,14 +458,14 @@ namespace MENU_Utils {
                 break;
 
 //////////
-            case 40:    //3.Stations ---> Packet Decoder
+            case 40:    //4.Stations ---> Packet Decoder
                 displayShow(" STATIONS>", "", "> Packet Decoder", "  Near By Stations", "", "<Back");
                 break;
-            case 41:    //3.Stations ---> Near By Stations
+            case 41:    //4.Stations ---> Near By Stations
                 displayShow(" STATIONS>", "", "  Packet Decoder", "> Near By Stations", "", "<Back");
                 break;
 
-            case 400:   //3.Stations ---> Packet Decoder
+            case 400:   //4.Stations ---> Packet Decoder
                 if (lastReceivedPacket.sender != currentBeacon->callsign) {
                     String firstLineDecoder = lastReceivedPacket.sender;
                     for (int i = firstLineDecoder.length(); i < 9; i++) {
@@ -476,8 +497,8 @@ namespace MENU_Utils {
                     }
                 }
                 break;
-            case 410:    //3.Stations ---> Near By Stations
-                displayShow(" NEAR BY>", STATION_Utils::getNearTracker(0), STATION_Utils::getNearTracker(1), STATION_Utils::getNearTracker(2), STATION_Utils::getNearTracker(3), "<Back");
+            case 410:    //4.Stations ---> Near By Stations
+                displayShow(" NEAR BY>", STATION_Utils::getNearStation(0), STATION_Utils::getNearStation(1), STATION_Utils::getNearStation(2), STATION_Utils::getNearStation(3), "<Back");
                 break;
 
 //////////
@@ -777,7 +798,7 @@ namespace MENU_Utils {
                     fourthRowMainMenu += fourthRowSpeed;
                     fourthRowMainMenu += "km/h  ";
                     fourthRowMainMenu += fourthRowCourse;
-                    if (Config.wxsensor.active && (time_now % 10 < 5) && wxModuleType != 0) {
+                    if (Config.telemetry.active && (time_now % 10 < 5) && wxModuleType != 0) {
                         fourthRowMainMenu = WX_Utils::readDataSensor(1);
                     }
                     if (MSG_Utils::getNumWLNKMails() > 0) {
@@ -802,9 +823,8 @@ namespace MENU_Utils {
                     fifthRowMainMenu += MSG_Utils::getLastHeardTracker();
                 }
 
-                if (POWER_Utils::getBatteryInfoIsConnected()) {
-                    String batteryVoltage = POWER_Utils::getBatteryInfoVoltage();
-                    String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
+                if (batteryConnected) {
+                    String batteryVoltage = BATTERY_Utils::getBatteryInfoVoltage();
                     #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V3_2_GPS) || defined(HELTEC_V3_2_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS) || defined(LIGHTTRACKER_PLUS_1_0)
                         sixthRowMainMenu = "Battery: ";
                         sixthRowMainMenu += batteryVoltage;
@@ -812,54 +832,57 @@ namespace MENU_Utils {
                         sixthRowMainMenu += BATTERY_Utils::getPercentVoltageBattery(batteryVoltage.toFloat());
                         sixthRowMainMenu += "%";
                     #endif
-                    #ifdef HAS_AXP192
-                        if (batteryCharge.toInt() == 0) {
-                            sixthRowMainMenu = "Battery Charged ";
-                            sixthRowMainMenu += batteryVoltage;
-                            sixthRowMainMenu += "V";
-                        } else if (batteryCharge.toInt() > 0) {
-                            sixthRowMainMenu = "Battery ";
-                            sixthRowMainMenu += batteryVoltage;
-                            sixthRowMainMenu += "V ";
-                            sixthRowMainMenu += batteryCharge;
-                            sixthRowMainMenu += "mA";
-                        } else {
-                            sixthRowMainMenu = "Battery ";
-                            sixthRowMainMenu += batteryVoltage;
-                            sixthRowMainMenu += "V ";
-                            sixthRowMainMenu += batteryCharge;
-                            sixthRowMainMenu += "mA";
-                        }
-                    #endif
-                    #ifdef HAS_AXP2101
-                        if (Config.notification.lowBatteryBeep && !POWER_Utils::isCharging() && batteryCharge.toInt() < lowBatteryPercent) {
-                            lowBatteryPercent = batteryCharge.toInt();
-                            NOTIFICATION_Utils::lowBatteryBeep();
-                            if (batteryCharge.toInt() < 6) {
-                                NOTIFICATION_Utils::lowBatteryBeep();
+                    #if defined(HAS_AXP192) || defined(HAS_AXP2101)
+                        String batteryCharge = POWER_Utils::getBatteryInfoCurrent();
+                        #ifdef HAS_AXP192
+                            if (batteryCharge.toInt() == 0) {
+                                sixthRowMainMenu = "Battery Charged ";
+                                sixthRowMainMenu += batteryVoltage;
+                                sixthRowMainMenu += "V";
+                            } else if (batteryCharge.toInt() > 0) {
+                                sixthRowMainMenu = "Bat: ";
+                                sixthRowMainMenu += batteryVoltage;
+                                sixthRowMainMenu += "V ";
+                                sixthRowMainMenu += batteryCharge;
+                                sixthRowMainMenu += "mA";
+                            } else {
+                                sixthRowMainMenu = "Battery ";
+                                sixthRowMainMenu += batteryVoltage;
+                                sixthRowMainMenu += "V ";
+                                sixthRowMainMenu += batteryCharge;
+                                sixthRowMainMenu += "mA";
                             }
-                        } 
-                        if (POWER_Utils::isCharging()) {
-                            lowBatteryPercent = 21;
-                        }
-                        if (POWER_Utils::isCharging() && batteryCharge != "100") {
-                            sixthRowMainMenu = "Bat: ";
-                            sixthRowMainMenu += String(batteryVoltage);
-                            sixthRowMainMenu += "V (charging)";
-                        } else if (!POWER_Utils::isCharging() && batteryCharge == "100") {
-                            sixthRowMainMenu = "Battery Charged ";
-                            sixthRowMainMenu += String(batteryVoltage);
-                            sixthRowMainMenu += "V";
-                        } else {
-                            sixthRowMainMenu = "Battery  ";
-                            sixthRowMainMenu += String(batteryVoltage);
-                            sixthRowMainMenu += "V   ";
-                            sixthRowMainMenu += batteryCharge;
-                            sixthRowMainMenu += "%";
-                        }
+                        #endif
+                        #ifdef HAS_AXP2101
+                            if (Config.notification.lowBatteryBeep && !POWER_Utils::isCharging() && batteryCharge.toInt() < lowBatteryPercent) {
+                                lowBatteryPercent = batteryCharge.toInt();
+                                NOTIFICATION_Utils::lowBatteryBeep();
+                                if (batteryCharge.toInt() < 6) {
+                                    NOTIFICATION_Utils::lowBatteryBeep();
+                                }
+                            } 
+                            if (POWER_Utils::isCharging()) {
+                                lowBatteryPercent = 21;
+                            }
+                            if (POWER_Utils::isCharging() && batteryCharge != "100") {
+                                sixthRowMainMenu = "Bat: ";
+                                sixthRowMainMenu += String(batteryVoltage);
+                                sixthRowMainMenu += "V (charging)";
+                            } else if (!POWER_Utils::isCharging() && batteryCharge == "100") {
+                                sixthRowMainMenu = "Battery Charged ";
+                                sixthRowMainMenu += String(batteryVoltage);
+                                sixthRowMainMenu += "V";
+                            } else {
+                                sixthRowMainMenu = "Battery  ";
+                                sixthRowMainMenu += String(batteryVoltage);
+                                sixthRowMainMenu += "V   ";
+                                sixthRowMainMenu += batteryCharge;
+                                sixthRowMainMenu += "%";
+                            }
+                        #endif
                     #endif
                 } else {
-                    sixthRowMainMenu = "No Battery Connected" ;
+                    sixthRowMainMenu = "No Battery Connected";
                 }
                 displayShow(firstRowMainMenu,
                             secondRowMainMenu,

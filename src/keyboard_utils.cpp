@@ -1,3 +1,21 @@
+/* Copyright (C) 2025 Ricardo Guzman - CA2RXU
+ * 
+ * This file is part of LoRa APRS Tracker.
+ * 
+ * LoRa APRS Tracker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version.
+ * 
+ * LoRa APRS Tracker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <APRSPacketLib.h>
 #include <TinyGPS++.h>
 #include <logger.h>
@@ -287,7 +305,22 @@ namespace KEYBOARD_Utils {
             statusState  = true;
             statusTime = millis();
             winlinkCommentState = false;
-            displayShow("   INFO", "", "  CHANGING CALLSIGN!", "", "-----> " + Config.beacons[myBeaconsIndex].callsign, "", 2000);
+            
+            String newCallsign = "-----> ";
+            newCallsign += Config.beacons[myBeaconsIndex].callsign;
+            String profileLabel = "";
+            int labelLength = Config.beacons[myBeaconsIndex].profileLabel.length();
+            if (labelLength > 0 ) {
+                int extraSpaces = (max(0, (22 - (labelLength + 2)))) / 2;
+                for (int i = 0; i < extraSpaces; i++) {
+                    profileLabel += " ";
+                }
+                profileLabel += "(";
+                profileLabel += Config.beacons[myBeaconsIndex].profileLabel;
+                profileLabel += ")";
+            }
+            displayShow("   INFO", "", "  CHANGING CALLSIGN!", newCallsign, profileLabel, "", 2000);
+            
             STATION_Utils::saveIndex(0, myBeaconsIndex);
             sendStartTelemetry = true;
             if (menuDisplay == 200) menuDisplay = 20;
@@ -713,7 +746,7 @@ namespace KEYBOARD_Utils {
             } else if (key == 13 && messageText.length() > 0) {
                 messageText.trim();
                 if (messageText.length() > 67) messageText = messageText.substring(0, 67);
-                String packet = APRSPacketLib::generateBase91GPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encodeGPSIntoBase91(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate, "GPS"));
+                String packet = APRSPacketLib::generateBase91GPSBeaconPacket(currentBeacon->callsign, "APLRT1", Config.path, currentBeacon->overlay, APRSPacketLib::encodeGPSIntoBase91(gps.location.lat(),gps.location.lng(), gps.course.deg(), gps.speed.knots(), currentBeacon->symbol, Config.sendAltitude, gps.altitude.feet(), sendStandingUpdate));
                 packet += messageText;
                 displayShow("<<< TX >>>", "", packet,100);
                 LoRa_Utils::sendNewPacket(packet);       
@@ -755,7 +788,9 @@ namespace KEYBOARD_Utils {
     }
 
     void setup() {
-        if (keyboardAddress != 0x00) keyboardConnected = true;
+        if (!Config.simplifiedTrackerMode) {
+            if (keyboardAddress != 0x00) keyboardConnected = true;
+        }
     }
 
 }
