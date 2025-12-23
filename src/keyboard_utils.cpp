@@ -156,8 +156,8 @@ namespace KEYBOARD_Utils {
                 if (!gpsIsActive) SLEEP_Utils::gpsWakeUp();
             } else {
                 displayToggle(true);
-                displayTime = millis();   
-                displayState = true;  
+                displayTime = millis();
+                displayState = true;
             }
         }
         if (menuDisplay >= 1 && menuDisplay <= 6) {
@@ -412,7 +412,14 @@ namespace KEYBOARD_Utils {
             displayShow("  STATUS", "", "SELECT STATUS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
         } else if (menuDisplay == 250) {
             displayShow(" NOTIFIC", "", "NOTIFICATIONS","STILL IN DEVELOPMENT!", "", "", 2000); /////////////////////////
-        } 
+        } else if (menuDisplay == 270) {
+            #if defined(HAS_AXP192) || defined(HAS_AXP2101)
+                displayShow("", "", "    POWER OFF ...", 2000);
+            #else
+                displayShow("", "", " starting DEEP SLEEP", 2000);
+            #endif
+            POWER_Utils::shutdown();
+        }
 
         else if (menuDisplay == 30) {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_INFO, "Loop", "%s", "wrl");
@@ -532,7 +539,7 @@ namespace KEYBOARD_Utils {
             } else {
                 displayShow("  EXTRAS", "", "     Flashlight", "NOT ACTIVE IN CONFIG!", "", "", 2000);
             }
-        } 
+        }
 
         else if (menuDisplay == 9000) {
             #if defined(HAS_AXP192) || defined(HAS_AXP2101)
@@ -604,7 +611,7 @@ namespace KEYBOARD_Utils {
                         menuDisplay = 13;
                     #else
                         menuDisplay /= 10;
-                    #endif                    
+                    #endif
                 }
                 messageCallsign = "";
                 messageText = "";

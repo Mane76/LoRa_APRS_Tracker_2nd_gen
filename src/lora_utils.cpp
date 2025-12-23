@@ -88,6 +88,7 @@ namespace LoRa_Utils {
             case 0: loraCountryFreq = "EU/WORLD"; break;
             case 1: loraCountryFreq = "POLAND"; break;
             case 2: loraCountryFreq = "UK"; break;
+            case 3: loraCountryFreq = "US"; break;
         }
         String currentLoRainfo = "LoRa ";
         currentLoRainfo += loraCountryFreq;
@@ -199,9 +200,6 @@ namespace LoRa_Utils {
             delay(Config.ptt.postDelay);
             digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
         }
-        /*#ifdef HAS_TFT
-            cleanTFT();
-        #endif*/
     }
 
     void wakeRadio() {
