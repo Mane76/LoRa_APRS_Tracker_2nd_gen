@@ -122,21 +122,22 @@ namespace WEB_Utils {
             return defaultValue;
         };
 
-        /*auto getParamDoubleSafe = [&](const String& name, double defaultValue = 0.0) -> double {
+        auto getParamDoubleSafe = [&](const String& name, double defaultValue = 0.0) -> double {
             if (request->hasParam(name, true)) {
                 return request->getParam(name, true)->value().toDouble();
             }
             return defaultValue;
-        };*/
+        };
 
         //  Beacons
         for (int i = 0; i < 3; i++) {
-            Config.beacons[i].callsign              = request->getParam("beacons." + String(i) + ".callsign", true)->value();
-            Config.beacons[i].symbol                = request->getParam("beacons." + String(i) + ".symbol", true)->value();
-            Config.beacons[i].overlay               = request->getParam("beacons." + String(i) + ".overlay", true)->value();
-            Config.beacons[i].micE                  = request->getParam("beacons." + String(i) + ".micE", true)->value();
-            Config.beacons[i].comment               = request->getParam("beacons." + String(i) + ".comment", true)->value();
-            Config.beacons[i].profileLabel          = request->getParam("beacons." + String(i) + ".profileLabel", true)->value();
+            Config.beacons[i].callsign      = request->getParam("beacons." + String(i) + ".callsign", true)->value();
+            Config.beacons[i].symbol        = request->getParam("beacons." + String(i) + ".symbol", true)->value();
+            Config.beacons[i].overlay       = request->getParam("beacons." + String(i) + ".overlay", true)->value();
+            Config.beacons[i].micE          = request->getParam("beacons." + String(i) + ".micE", true)->value();
+            Config.beacons[i].comment       = request->getParam("beacons." + String(i) + ".comment", true)->value();
+            Config.beacons[i].status        = request->getParam("beacons." + String(i) + ".status", true)->value();
+            Config.beacons[i].profileLabel  = request->getParam("beacons." + String(i) + ".profileLabel", true)->value();
 
             String paramGpsEcoMode = "beacons." + String(i) + ".gpsEcoMode";
             if (request->hasParam(paramGpsEcoMode, true)) {
@@ -175,8 +176,8 @@ namespace WEB_Utils {
         Config.simplifiedTrackerMode            = request->hasParam("simplifiedTrackerMode", true);
 
         //  Display
-        Config.display.ecoMode                 = request->hasParam("display.alwaysOn", true);
-        if (!Config.display.ecoMode) {
+        Config.display.ecoMode                  = request->hasParam("display.ecoMode", true);
+        if (Config.display.ecoMode) {
             Config.display.timeout              = getParamIntSafe("display.timeout", Config.display.timeout);
         }
         Config.display.turn180                  = request->hasParam("display.turn180", true);
@@ -185,17 +186,17 @@ namespace WEB_Utils {
         //  Bluetooth
         Config.bluetooth.active                 = request->hasParam("bluetooth.active", true);
         if (Config.bluetooth.active) {
-            Config.bluetooth.deviceName             = getParamStringSafe("bluetooth.deviceName", Config.bluetooth.deviceName);
-            Config.bluetooth.useBLE                 = request->hasParam("bluetooth.useBLE", true);
-            Config.bluetooth.useKISS                = request->hasParam("bluetooth.useKISS", true);
+            Config.bluetooth.deviceName         = getParamStringSafe("bluetooth.deviceName", Config.bluetooth.deviceName);
+            Config.bluetooth.useBLE             = request->hasParam("bluetooth.useBLE", true);
+            Config.bluetooth.useKISS            = request->hasParam("bluetooth.useKISS", true);
         }
 
         // LORA
         for (int i = 0; i < 4; i++) {
-            Config.loraTypes[i].frequency       = request->getParam("lora." + String(i) + ".frequency", true)->value().toDouble();
-            Config.loraTypes[i].spreadingFactor = request->getParam("lora." + String(i) + ".spreadingFactor", true)->value().toInt();
-            Config.loraTypes[i].codingRate4     = request->getParam("lora." + String(i) + ".codingRate4", true)->value().toInt();
-            Config.loraTypes[i].signalBandwidth = request->getParam("lora." + String(i) + ".signalBandwidth", true)->value().toInt();
+            Config.loraTypes[i].frequency       = getParamDoubleSafe("lora." + String(i) + ".frequency", Config.loraTypes[i].frequency);
+            Config.loraTypes[i].spreadingFactor = getParamIntSafe("lora." + String(i) + ".spreadingFactor", Config.loraTypes[i].spreadingFactor);
+            Config.loraTypes[i].codingRate4     = getParamIntSafe("lora." + String(i) + ".codingRate4", Config.loraTypes[i].codingRate4);
+            Config.loraTypes[i].signalBandwidth = getParamIntSafe("lora." + String(i) + ".signalBandwidth", Config.loraTypes[i].signalBandwidth);
         }
 
         //  Battery
@@ -243,10 +244,10 @@ namespace WEB_Utils {
         //  PTT Trigger
         Config.ptt.active                       = request->hasParam("ptt.active", true);
         if (Config.ptt.active) {
-            Config.ptt.reverse                      = request->hasParam("ptt.reverse", true);
-            Config.ptt.io_pin                       = getParamIntSafe("ptt.io_pin", Config.ptt.io_pin);
-            Config.ptt.preDelay                     = getParamIntSafe("ptt.preDelay", Config.ptt.preDelay);
-            Config.ptt.postDelay                    = getParamIntSafe("ptt.postDelay", Config.ptt.postDelay);
+            Config.ptt.reverse                  = request->hasParam("ptt.reverse", true);
+            Config.ptt.io_pin                   = getParamIntSafe("ptt.io_pin", Config.ptt.io_pin);
+            Config.ptt.preDelay                 = getParamIntSafe("ptt.preDelay", Config.ptt.preDelay);
+            Config.ptt.postDelay                = getParamIntSafe("ptt.postDelay", Config.ptt.postDelay);
         }
 
         bool saveSuccess = Config.writeFile();

@@ -29,7 +29,7 @@ bool Configuration::writeFile() {
 
     Serial.println("Saving config..");
 
-    StaticJsonDocument<2800> data;
+    StaticJsonDocument<3584> data;
     File configFile = SPIFFS.open("/tracker_conf.json", "w");
 
     if (!configFile) {
@@ -47,12 +47,13 @@ bool Configuration::writeFile() {
             data["beacons"][i]["callsign"]              = beacons[i].callsign;
             data["beacons"][i]["symbol"]                = beacons[i].symbol;
             data["beacons"][i]["overlay"]               = beacons[i].overlay;
+            data["beacons"][i]["micE"]                  = beacons[i].micE;
             data["beacons"][i]["comment"]               = beacons[i].comment;
             data["beacons"][i]["smartBeaconActive"]     = beacons[i].smartBeaconActive;
             data["beacons"][i]["smartBeaconSetting"]    = beacons[i].smartBeaconSetting;
-            data["beacons"][i]["micE"]                  = beacons[i].micE;
             data["beacons"][i]["gpsEcoMode"]            = beacons[i].gpsEcoMode;
             data["beacons"][i]["profileLabel"]          = beacons[i].profileLabel;
+            data["beacons"][i]["status"]                = beacons[i].status;
         }
 
         data["display"]["ecoMode"]                  = display.ecoMode;
@@ -119,7 +120,6 @@ bool Configuration::writeFile() {
         data["other"]["standingUpdateTime"]         = standingUpdateTime;
         data["other"]["sendAltitude"]               = sendAltitude;
         data["other"]["disableGPS"]                 = disableGPS;
-        data["other"]["acceptOwnFrameFromTNC"]      = acceptOwnFrameFromTNC;
         data["other"]["email"]                      = email;
 
         serializeJson(data, configFile);
@@ -138,7 +138,7 @@ bool Configuration::readFile() {
 
     if (configFile) {
         bool needsRewrite = false;
-        StaticJsonDocument<2800> data;
+        StaticJsonDocument<3584> data;
 
         DeserializationError error = deserializeJson(data, configFile);
         if (error) {
@@ -158,13 +158,13 @@ bool Configuration::readFile() {
             bcn.callsign.toUpperCase();
             bcn.symbol                  = BeaconsArray[i]["symbol"] | "[";
             bcn.overlay                 = BeaconsArray[i]["overlay"] | "/";
+            bcn.micE                    = BeaconsArray[i]["micE"] | "";
             bcn.comment                 = BeaconsArray[i]["comment"] | "";
+            bcn.status                  = BeaconsArray[i]["status"] | "";
             bcn.smartBeaconActive       = BeaconsArray[i]["smartBeaconActive"] | true;
             bcn.smartBeaconSetting      = BeaconsArray[i]["smartBeaconSetting"] | 0;
-            bcn.micE                    = BeaconsArray[i]["micE"] | "";
             bcn.gpsEcoMode              = BeaconsArray[i]["gpsEcoMode"] | false;
             bcn.profileLabel            = BeaconsArray[i]["profileLabel"] | "";
-
             beacons.push_back(bcn);
         }
 
@@ -274,7 +274,6 @@ bool Configuration::readFile() {
             !data["other"].containsKey("standingUpdateTime") ||
             !data["other"].containsKey("sendAltitude") ||
             !data["other"].containsKey("disableGPS") ||
-            !data["other"].containsKey("acceptOwnFrameFromTNC") ||
             !data["other"].containsKey("email")) needsRewrite = true;
         simplifiedTrackerMode           = data["other"]["simplifiedTrackerMode"] | false;
         sendCommentAfterXBeacons        = data["other"]["sendCommentAfterXBeacons"] | 10;
@@ -284,7 +283,6 @@ bool Configuration::readFile() {
         standingUpdateTime              = data["other"]["standingUpdateTime"] | 15;
         sendAltitude                    = data["other"]["sendAltitude"] | true;
         disableGPS                      = data["other"]["disableGPS"] | false;
-        acceptOwnFrameFromTNC           = data["other"]["acceptOwnFrameFromTNC"] | false;
         email                           = data["other"]["email"] | "";
 
         configFile.close();
@@ -312,12 +310,13 @@ void Configuration::setDefaultValues() {
         beacon.callsign             = "NOCALL-7";
         beacon.symbol               = "[";
         beacon.overlay              = "/";
+        beacon.micE                 = "";
         beacon.comment              = "";
         beacon.smartBeaconActive    = true;
         beacon.smartBeaconSetting   = 0;
-        beacon.micE                 = "";
         beacon.gpsEcoMode           = false;
         beacon.profileLabel         = "";
+        beacon.status               = "";
         beacons.push_back(beacon);
     }
 
@@ -407,32 +406,9 @@ void Configuration::setDefaultValues() {
     standingUpdateTime              = 15;
     sendAltitude                    = true;
     disableGPS                      = false;
-    acceptOwnFrameFromTNC           = false;
     email                           = "";
 
     Serial.println("New Data Created... All is Written!");
-}
-
-bool Configuration::validateConfigFile(const String& currentBeaconCallsign) {
-    if (currentBeaconCallsign.indexOf("NOCALL") != -1) {
-        logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "Config", "Change all your callsigns in WebConfig");
-        displayShow("ERROR", "Callsigns = NOCALL!", "---> change it !!!", 2000);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool Configuration::validateMicE(const String& currentBeaconMicE) {
-    String miceMessageTypes[] = {"111", "110", "101", "100", "011", "010", "001" , "000"};
-    int arraySize = sizeof(miceMessageTypes) / sizeof(miceMessageTypes[0]);
-    bool validType = false;
-    for (int i = 0; i < arraySize; i++) {
-        if (currentBeaconMicE == miceMessageTypes[i]) {
-            validType = true;
-        }
-    }
-    return validType;
 }
 
 Configuration::Configuration() {

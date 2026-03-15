@@ -71,7 +71,8 @@ function loadSettings(settings) {
                     class="form-control form-control-sm" 
                     name="beacons.${index}.callsign" 
                     id="beacons.${index}.callsign" 
-                    value="${beacons.callsign}">
+                    value="${beacons.callsign}"
+                    oninput="this.value = this.value.toUpperCase();">
                 <label for="beacons.${index}.callsign">Callsign</label>
             </div>
             <div class="form-floating col-6 col-md-2 px-1 mb-2">
@@ -142,6 +143,15 @@ function loadSettings(settings) {
                     <option value="2" ${beacons.smartBeaconSetting == 2 ? 'selected' : ''}>Car/Motorcycle (Fast Speed)</option>
                 </select>
             </div>
+            <div class="form-floating col-12 col-md-9 px-1 mb-2" style="margin-left: 50px;">
+                 <input 
+                     type="text" 
+                     class="form-control form-control-sm" 
+                     name="beacons.${index}.status" 
+                     id="beacons.${index}.status" 
+                     value="${beacons.status}">
+                 <label for="beacons.${index}.status">Status</label>
+             </div>
             <div class="form-floating col-12 col-md-9 px-1 mb-2" style="margin-left: 50px;">
                  <input 
                      type="text" 
