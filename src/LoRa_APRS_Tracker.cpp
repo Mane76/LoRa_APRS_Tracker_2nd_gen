@@ -69,8 +69,8 @@ ____________________________________________________________________*/
 #endif
 
 
-String      versionDate             = "2025-11-01m";
-String      versionNumber           = "2.3.1";
+String      versionDate             = "2026-01-20m";
+String      versionNumber           = "2.4.2";
 Configuration                       Config;
 HardwareSerial                      gpsSerial(1);
 TinyGPSPlus                         gps;
@@ -88,7 +88,7 @@ LoraType    *currentLoRaType        = &Config.loraTypes[loraIndex];
 int         menuDisplay             = 100;
 uint32_t    menuTime                = millis();
 
-bool        statusState             = true;
+bool        statusUpdate            = true;
 bool        displayEcoMode          = Config.display.ecoMode;
 bool        displayState            = true;
 uint32_t    displayTime             = millis();
@@ -180,12 +180,14 @@ void setup() {
 
 void loop() {
     currentBeacon = &Config.beacons[myBeaconsIndex];
-    if (statusState) {
-        if (Config.validateConfigFile(currentBeacon->callsign)) {
+    if (statusUpdate) {
+        if (APRSPacketLib::checkNocall(currentBeacon->callsign)) {
+            logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "Config", "Change your callsigns in WebConfig");
+            displayShow("ERROR", "Callsigns = NOCALL!", "---> change it !!!", 2000);
             KEYBOARD_Utils::rightArrow();
             currentBeacon = &Config.beacons[myBeaconsIndex];
         }
-        miceActive = Config.validateMicE(currentBeacon->micE);
+        miceActive = APRSPacketLib::validateMicE(currentBeacon->micE);
     }
 
     SMARTBEACON_Utils::checkSettings(currentBeacon->smartBeaconSetting);

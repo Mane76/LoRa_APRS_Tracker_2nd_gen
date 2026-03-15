@@ -34,12 +34,13 @@ public:
     String  callsign;
     String  symbol;
     String  overlay;
+    String  micE;
     String  comment;
     bool    smartBeaconActive;
     byte    smartBeaconSetting;
-    String  micE;
     bool    gpsEcoMode;
     String  profileLabel;
+    String  status;
 };
 
 class Display {
@@ -140,13 +141,10 @@ public:
     int     standingUpdateTime;
     bool    sendAltitude;
     bool    disableGPS;
-    bool    acceptOwnFrameFromTNC;
 
     void setDefaultValues();
     bool writeFile();
     Configuration();
-    bool validateConfigFile(const String& currentBeaconCallsign);
-    bool validateMicE(const String& currentBeaconMicE);
 
 private:
     bool readFile();

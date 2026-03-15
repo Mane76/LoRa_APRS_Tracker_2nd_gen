@@ -191,7 +191,7 @@ namespace LoRa_Utils {
         if (state == RADIOLIB_ERR_NONE) {
             //Serial.println(F("success!"));
         } else {
-            Serial.print(F("failed, code "));
+            Serial.print(F("Tx failed, code "));
             Serial.println(state);
         }
         
@@ -240,8 +240,7 @@ namespace LoRa_Utils {
                         receivedLoraPacket.freqError  = radio.getFrequencyError();
                     }
                 } else {
-                    //Serial.println(packet);
-                    Serial.print(F("failed, code "));   // 7 = CRC mismatch
+                    Serial.print(F("Rx failed, code "));   // 7 = CRC mismatch
                     Serial.println(state);
                 }
             }
