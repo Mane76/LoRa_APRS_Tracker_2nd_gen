@@ -1,17 +1,17 @@
 /* Copyright (C) 2025 Ricardo Guzman - CA2RXU
- * 
+ *
  * This file is part of LoRa APRS Tracker.
- * 
+ *
  * LoRa APRS Tracker is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or 
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * LoRa APRS Tracker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -215,7 +215,7 @@ namespace MENU_Utils {
                         displayShow("WRITE MSG>", "", "CALLSIGN = " + String(messageCallsign), "", "", "<Back          Enter>");
                     #endif
                 } else {
-                    displayShow("WRITE MSG>", "", "No Keyboard Detected", "Can't write Message", "", "1P = Back");           
+                    displayShow("WRITE MSG>", "", "No Keyboard Detected", "Can't write Message", "", "1P = Back");
                 }
                 break;
             case 111:
@@ -449,7 +449,7 @@ namespace MENU_Utils {
             case 33:     // 3. Reports : Nearest Fire Station
                 displayShow(" REPORTS >","  1.Wx Report", "  2.Hospital QTH", "  3.Police QTH", "> 4.Fire Station QTH", lastLine);
                 break;
-            
+
             case 300:
                 // waiting for Report
                 break;
@@ -478,7 +478,7 @@ namespace MENU_Utils {
 
                         double distanceKm = TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude) / 1000.0;
                         double courseTo   = TinyGPSPlus::courseTo(gps.location.lat(), gps.location.lng(), lastReceivedPacket.latitude, lastReceivedPacket.longitude);
-                        
+
                         String pathDec = (lastReceivedPacket.path.length() > 14) ? "P:" : "PATH:  ";
                         pathDec += lastReceivedPacket.path;
 
@@ -589,7 +589,7 @@ namespace MENU_Utils {
             case 5051:    // WINLINK: Delete Mail //
                 displayShow("WLNK DEL>", "", "   DELETE MAIL N."  + winlinkMailNumber, "", "", "<Back          Enter>");
                 break;
-            
+
             case 5060:    // WINLINK: Alias Menu //
                 displayShow("WLNK MENU>", "  Delete Mail  (K#)", "> Alias Menu", "  Log Out", "  Write Mail", lastLine);
                 break;
@@ -735,9 +735,13 @@ namespace MENU_Utils {
                     const auto time_now = now();
                     secondRowMainMenu = Utils::createDateString(time_now) + "   " + Utils::createTimeString(time_now);
                     if (time_now % 10 < 5) {
-                        thirdRowMainMenu = String(gps.location.lat(), 4);
-                        thirdRowMainMenu += " ";
-                        thirdRowMainMenu += String(gps.location.lng(), 4);
+                        if (gps.satellites.value() == 0) {
+                            thirdRowMainMenu = "WAITING FOR GPS:";
+                        } else {
+                            thirdRowMainMenu = String(gps.location.lat(), 4);
+                            thirdRowMainMenu += " ";
+                            thirdRowMainMenu += String(gps.location.lng(), 4);
+                        }
                     } else {
                         thirdRowMainMenu = String(Utils::getMaidenheadLocator(gps.location.lat(), gps.location.lng(), 8));
                         thirdRowMainMenu += " LoRa[";
@@ -748,7 +752,7 @@ namespace MENU_Utils {
                             case 3: thirdRowMainMenu += "US]"; break;
                         }
                     }
-                    
+
                     for (int i = thirdRowMainMenu.length(); i < 18; i++) {
                         thirdRowMainMenu += " ";
                     }
@@ -821,7 +825,7 @@ namespace MENU_Utils {
 
                 if (batteryConnected) {
                     String batteryVoltage = BATTERY_Utils::getBatteryInfoVoltage();
-                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V3_2_GPS) || defined(HELTEC_V3_2_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS) || defined(LIGHTTRACKER_PLUS_1_0)
+                    #if defined(TTGO_T_Beam_V0_7) || defined(TTGO_T_LORA32_V2_1_GPS) || defined(TTGO_T_LORA32_V2_1_GPS_915) || defined(TTGO_T_LORA32_V2_1_TNC) || defined(TTGO_T_LORA32_V2_1_TNC_915) || defined(HELTEC_V3_GPS) || defined(HELTEC_V3_TNC) || defined(HELTEC_V3_2_GPS) || defined(HELTEC_V3_2_TNC) || defined(HELTEC_WIRELESS_TRACKER) || defined(HELTEC_WSL_V3_GPS_DISPLAY) || defined(TTGO_T_DECK_GPS) || defined(TTGO_T_DECK_PLUS) || defined(LIGHTTRACKER_PLUS_1_0) || defined(TTGO_LORA32_T3S3_V1_2_GPS)
                         sixthRowMainMenu = "Battery: ";
                         sixthRowMainMenu += batteryVoltage;
                         sixthRowMainMenu += "V   ";
@@ -854,7 +858,7 @@ namespace MENU_Utils {
                                 if (batteryCharge.toInt() < 6) {
                                     NOTIFICATION_Utils::lowBatteryBeep();
                                 }
-                            } 
+                            }
                             if (POWER_Utils::isCharging()) {
                                 lowBatteryPercent = 21;
                             }

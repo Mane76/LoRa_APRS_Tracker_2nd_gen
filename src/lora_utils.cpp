@@ -1,17 +1,17 @@
 /* Copyright (C) 2025 Ricardo Guzman - CA2RXU
- * 
+ *
  * This file is part of LoRa APRS Tracker.
- * 
+ *
  * LoRa APRS Tracker is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or 
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * LoRa APRS Tracker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -40,7 +40,7 @@ bool transmitFlag    = true;
 #if defined(HAS_SX1268)
     #if defined(LIGHTTRACKER_PLUS_1_0)
         SPIClass loraSPI(FSPI);
-        SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, loraSPI); 
+        SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, loraSPI);
     #else
         SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
     #endif
@@ -97,16 +97,21 @@ namespace LoRa_Utils {
         currentLoRainfo += String(currentLoRaType->spreadingFactor);
         currentLoRainfo += " / CR: ";
         currentLoRainfo += String(currentLoRaType->codingRate4);
-        
+
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", currentLoRainfo.c_str());
         displayShow("LORA FREQ>", "", "CHANGED TO: " + loraCountryFreq, "", "", "", 2000);
     }
 
     void setup() {
-        #ifdef LIGHTTRACKER_PLUS_1_0
+        #if defined(LIGHTTRACKER_PLUS_1_0) || defined(TTGO_T_BEAM_1W)
             pinMode(RADIO_VCC_PIN,OUTPUT);
             digitalWrite(RADIO_VCC_PIN,HIGH);
         #endif
+        #if defined(TTGO_T_BEAM_1W)
+            pinMode(RADIO_RXEN, OUTPUT);
+            digitalWrite(RADIO_RXEN, LOW);  // start setup in Tx mode
+        #endif
+
         logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "LoRa", "Set SPI pins!");
         #if defined(LIGHTTRACKER_PLUS_1_0)
             loraSPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN, RADIO_CS_PIN);
@@ -139,9 +144,12 @@ namespace LoRa_Utils {
         radio.setBandwidth(signalBandwidth);
         radio.setCodingRate(currentLoRaType->codingRate4);
         radio.setCRC(true);
-        
+
         #if defined(RADIO_RXEN) && defined(RADIO_TXEN)
             radio.setRfSwitchPins(RADIO_RXEN, RADIO_TXEN);
+        #endif
+        #if defined(TTGO_T_BEAM_1W)
+            radio.setRfSwitchPins(RADIO_RXEN, RADIOLIB_NC);
         #endif
 
         #ifdef HAS_1W_LORA  // Ebyte E22 400M30S (SX1268) / 900M30S (SX1262) / Ebyte E220 400M30S (LLCC68)
@@ -153,14 +161,21 @@ namespace LoRa_Utils {
             state = radio.setOutputPower(currentLoRaType->power + 2); // values available: 10, 17, 22 --> if 20 in tracker_conf.json it will be updated to 22.
             radio.setCurrentLimit(140);
         #endif
-        
+
         #if defined(HAS_SX1278) || defined(HAS_SX1276)
             state = radio.setOutputPower(currentLoRaType->power);
             radio.setCurrentLimit(100); // to be validated (80 , 100)?
         #endif
 
         #if defined(HAS_SX1262) || defined(HAS_SX1268) || defined(HAS_LLCC68)
-        radio.setRxBoostedGainMode(true);
+            radio.setRxBoostedGainMode(true);
+        #endif
+
+        #if defined(HAS_TCXO) && !defined(HAS_1W_LORA)
+            radio.setDio2AsRfSwitch();
+        #endif
+        #ifdef HAS_TCXO
+            radio.setTCXO(1.8);
         #endif
 
         if (state == RADIOLIB_ERR_NONE) {
@@ -168,7 +183,7 @@ namespace LoRa_Utils {
         } else {
             logger.log(logging::LoggerLevel::LOGGER_LEVEL_ERROR, "LoRa", "Starting LoRa failed! State: %d", state);
             while (true);
-        }        
+        }
     }
 
     void sendNewPacket(const String& newPacket) {
@@ -183,7 +198,10 @@ namespace LoRa_Utils {
         }
         if (Config.notification.ledTx) digitalWrite(Config.notification.ledTxPin, HIGH);
         if (Config.notification.buzzerActive && Config.notification.txBeep) NOTIFICATION_Utils::beaconTxBeep();
-        
+
+        #if defined(TTGO_T_BEAM_1W)
+            digitalWrite(RADIO_RXEN, LOW);
+        #endif
         int state = radio.transmit("\x3c\xff\x01" + newPacket);
         transmitFlag = true;
         if (state == RADIOLIB_ERR_NONE) {
@@ -192,7 +210,7 @@ namespace LoRa_Utils {
             Serial.print(F("Tx failed, code "));
             Serial.println(state);
         }
-        
+
         if (Config.notification.ledTx) digitalWrite(Config.notification.ledTxPin, LOW);
         if (Config.ptt.active) {
             delay(Config.ptt.postDelay);
@@ -207,6 +225,9 @@ namespace LoRa_Utils {
     ReceivedLoRaPacket receiveFromSleep() {
         ReceivedLoRaPacket receivedLoraPacket;
         String packet = "";
+        #if defined(TTGO_T_BEAM_1W)
+            digitalWrite(RADIO_RXEN, HIGH);
+        #endif
         int state = radio.readData(packet);
         if (state == RADIOLIB_ERR_NONE) {
             receivedLoraPacket.text       = packet;
@@ -225,6 +246,9 @@ namespace LoRa_Utils {
         if (operationDone) {
             operationDone = false;
             if (transmitFlag) {
+                #if defined(TTGO_T_BEAM_1W)
+                    digitalWrite(RADIO_RXEN, HIGH);
+                #endif
                 radio.startReceive();
                 transmitFlag = false;
             } else {

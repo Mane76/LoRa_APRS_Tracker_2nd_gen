@@ -1,17 +1,17 @@
 /* Copyright (C) 2025 Ricardo Guzman - CA2RXU
- * 
+ *
  * This file is part of LoRa APRS Tracker.
- * 
+ *
  * LoRa APRS Tracker is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or 
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * LoRa APRS Tracker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with LoRa APRS Tracker. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -32,7 +32,7 @@
          ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║
          ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 
-                       Ricardo Guzman - CA2RXU 
+                       Ricardo Guzman - CA2RXU
           https://github.com/richonguzman/LoRa_APRS_Tracker
              (donations : http://paypal.me/richonguzman)
 ____________________________________________________________________*/
@@ -69,8 +69,8 @@ ____________________________________________________________________*/
 #endif
 
 
-String      versionDate             = "2026-01-20";
-String      versionNumber           = "2.4.2";
+String      versionDate             = "2026-04-22";
+String      versionNumber           = "2.4.3.2";
 Configuration                       Config;
 HardwareSerial                      gpsSerial(1);
 TinyGPSPlus                         gps;
@@ -171,6 +171,9 @@ void setup() {
     #ifdef HAS_TOUCHSCREEN
         TOUCH_Utils::setup();
     #endif
+
+    esp_random();
+    randomSeed(esp_random());
 
     POWER_Utils::lowerCpuFrequency();
     logger.log(logging::LoggerLevel::LOGGER_LEVEL_DEBUG, "Main", "Smart Beacon is: %s", Utils::getSmartBeaconState());
